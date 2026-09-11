@@ -1,0 +1,756 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Link2,
+  Plus,
+  FileUp,
+  RefreshCw,
+  Send,
+  Trash2,
+  Copy,
+  Check,
+  ExternalLink,
+  ShieldCheck,
+  Info,
+  ListChecks,
+  Sparkles,
+} from 'lucide-react';
+import {
+  LinkList,
+  LinkListItem,
+  LinkListFrequency,
+  LinkListLinkStatus,
+  LinkListDeduplication,
+  DESTINATION_LABELS,
+  ROTATION_LABELS,
+} from '../../types/linkList';
+import { initialCampaigns } from '../../data/mockCampaigns';
+import { Button } from '../ui/Button';
+import { Badge, BadgeProps } from '../ui/Badge';
+import { NewListModal } from './NewListModal';
+import { AddLinksModal } from './AddLinksModal';
+
+const STATUS_BADGE: Record<LinkListLinkStatus, NonNullable<BadgeProps['variant']>> = {
+  Pendente: 'neutral',
+  Processando: 'info',
+  'Válido': 'success',
+  'Inválido': 'danger',
+  'Duplicado': 'warning',
+  'Na fila': 'info',
+  'Publicado': 'success',
+  'Ignorado': 'neutral',
+};
+
+const DEDUP_OPTIONS: { key: keyof LinkListDeduplication; label: string }[] = [
+  { key: 'checkQueue', label: 'Verificar itens da fila' },
+  { key: 'compareAutoSearch', label: 'Comparar com a Busca Automática' },
+  { key: 'compareOtherLists', label: 'Comparar com outras listas' },
+  { key: 'compareRecentPublications', label: 'Comparar com publicações recentes' },
+];
+
+const frequencyLabel = (f: LinkListFrequency) =>
+  `A cada ${f.minIntervalMinutes} min · máx ${f.maxPerHour}/h · máx ${f.maxPerDay}/dia · ${f.windowStart}–${f.windowEnd} · ${
+    f.activeDays.length >= 7 ? 'Todos os dias' : f.activeDays.join(', ')
+  }`;
+
+const nowTime = () =>
+  new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+export const LinkListPage: React.FC = () => {
+  const [lists, setLists] = useState<LinkList[]>([]);
+  const [activeListId, setActiveListId] = useState<string | null>(null);
+  const [isNewListOpen, setIsNewListOpen] = useState(false);
+  const [addLinksOpen, setAddLinksOpen] = useState(false);
+  const [addLinksMode, setAddLinksMode] = useState<'add' | 'import'>('add');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [processingNotice, setProcessingNotice] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [dedup, setDedup] = useState<LinkListDeduplication>({
+    checkQueue: true,
+    compareAutoSearch: true,
+    compareOtherLists: true,
+    compareRecentPublications: false,
+  });
+  const [toast, setToast] = useState<{ text: string; type: 'success' | 'info' } | null>(null);
+
+  const showToast = (text: string, type: 'success' | 'info' = 'success') => {
+    setToast({ text, type });
+    setTimeout(() => setToast(null), 3200);
+  };
+
+  const activeList = lists.find((l) => l.id === activeListId) ?? lists[0] ?? null;
+
+  useEffect(() => {
+    if (activeListId && !lists.some((l) => l.id === activeListId) && lists.length > 0) {
+      setActiveListId(lists[0].id);
+    }
+  }, [lists, activeListId]);
+
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [activeListId]);
+
+  const handleCreateList = (data: {
+    name: string;
+    description: string;
+    campaignId: string | null;
+    campaignName: string | null;
+    destination: LinkList['destination'];
+    rotation: LinkList['rotation'];
+    frequency: LinkListFrequency;
+  }) => {
+    const newList: LinkList = {
+      id: `LIST-${Date.now()}`,
+      name: data.name,
+      description: data.description,
+      campaignId: data.campaignId,
+      campaignName: data.campaignName,
+      destination: data.destination,
+      rotation: data.rotation,
+      frequency: data.frequency,
+      createdAt: new Date().toLocaleString('pt-BR', {
+        dateStyle: 'short',
+        timeStyle: 'short',
+      }),
+      links: [],
+      automationSource: 'LINK_LIST',
+    };
+    setLists((prev) => [...prev, newList]);
+    setActiveListId(newList.id);
+    setProcessingNotice(false);
+    showToast(`Lista "${data.name}" criada.`);
+  };
+
+  const handleAddLinks = (urls: string[]) => {
+    if (!activeList) return;
+    const items: LinkListItem[] = urls.map((url) => ({
+      id: `LINK-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      url,
+      marketplace: null,
+      productName: null,
+      status: 'Pendente',
+      campaignId: null,
+      campaignName: null,
+      addedAt: nowTime(),
+      automationSource: 'LINK_LIST',
+    }));
+    setLists((prev) =>
+      prev.map((l) =>
+        l.id === activeList.id ? { ...l, links: [...items, ...l.links] } : l
+      )
+    );
+    setProcessingNotice(false);
+    showToast(
+      `${items.length} link(s) adicionado(s) a "${activeList.name}".`
+    );
+  };
+
+  const handleRemoveLink = (linkId: string) => {
+    if (!activeList) return;
+    setLists((prev) =>
+      prev.map((l) =>
+        l.id === activeList.id
+          ? { ...l, links: l.links.filter((link) => link.id !== linkId) }
+          : l
+      )
+    );
+    setSelectedIds((prev) => prev.filter((id) => id !== linkId));
+    showToast('Link removido da lista.', 'info');
+  };
+
+  const handleSendToQueue = () => {
+    if (!activeList || selectedIds.length === 0) return;
+    const pending = new Set(selectedIds);
+    setLists((prev) =>
+      prev.map((l) =>
+        l.id === activeList.id
+          ? {
+              ...l,
+              links: l.links.map((link) =>
+                pending.has(link.id) && link.status === 'Pendente'
+                  ? { ...link, status: 'Na fila' }
+                  : link
+              ),
+            }
+          : l
+      )
+    );
+    const count = activeList.links.filter(
+      (link) => pending.has(link.id) && link.status === 'Pendente'
+    ).length;
+    setSelectedIds([]);
+    showToast(
+      `Enviado(s) para a fila de publicação: ${count} link(s).`
+    );
+  };
+
+  const handleDeleteList = (listId: string) => {
+    const target = lists.find((l) => l.id === listId);
+    setLists((prev) => prev.filter((l) => l.id !== listId));
+    if (activeListId === listId) {
+      const remaining = lists.filter((l) => l.id !== listId);
+      setActiveListId(remaining[0]?.id ?? null);
+    }
+    setSelectedIds([]);
+    setProcessingNotice(false);
+    showToast(`Lista "${target?.name ?? ''}" excluída.`, 'info');
+  };
+
+  const handleProcessLinks = () => {
+    setProcessingNotice(true);
+    showToast('Processamento disponível após integração com os marketplaces.', 'info');
+  };
+
+  const handleCopyLink = async (link: LinkListItem) => {
+    try {
+      await navigator.clipboard.writeText(link.url);
+      setCopiedId(link.id);
+      setTimeout(() => setCopiedId(null), 1500);
+    } catch {
+      showToast('Não foi possível copiar o link.', 'info');
+    }
+  };
+
+  const handleImportAction = () => {
+    if (lists.length === 0) {
+      showToast('Crie uma lista primeiro para importar links.', 'info');
+      return;
+    }
+    setAddLinksMode('import');
+    setAddLinksOpen(true);
+  };
+
+  const handleAddAction = () => {
+    if (lists.length === 0) {
+      showToast('Crie uma lista primeiro para adicionar links.', 'info');
+      return;
+    }
+    setAddLinksMode('add');
+    setAddLinksOpen(true);
+  };
+
+  const pendingCount =
+    activeList?.links.filter((l) => l.status === 'Pendente' || l.status === 'Processando').length ?? 0;
+  const queueCount = activeList?.links.filter((l) => l.status === 'Na fila').length ?? 0;
+  const selectedPending = activeList?.links.filter(
+    (l) => selectedIds.includes(l.id) && l.status === 'Pendente'
+  ).length ?? 0;
+
+  return (
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl font-bold text-[#E6E8EC] tracking-tight">
+              Lista de Links
+            </h1>
+            {activeList && (
+              <div className="flex items-center gap-1.5">
+                <Badge variant="neutral" size="xs">
+                  {activeList.links.length} links
+                </Badge>
+                <Badge variant="info" size="xs">
+                  {queueCount} na fila
+                </Badge>
+              </div>
+            )}
+          </div>
+          <p className="text-xs text-[#8E9BAE] mt-1">
+            Organize links de ofertas e prepare sua distribuição.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleImportAction}
+            leftIcon={<FileUp className="w-3.5 h-3.5" />}
+            className="text-xs"
+          >
+            Importar links
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setIsNewListOpen(true)}
+            leftIcon={<Plus className="w-3.5 h-3.5" />}
+            className="text-xs"
+          >
+            Nova lista
+          </Button>
+        </div>
+      </div>
+
+      {lists.length === 0 ? (
+        /* Empty state: nenhuma lista criada */
+        <div className="py-10 px-6 bg-[#0E1628] border border-[#1B2947] rounded-xl flex flex-col items-center gap-4 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-[#14203B] border border-[#1E3057] flex items-center justify-center">
+            <ListChecks className="w-7 h-7 text-[#38BDF8]" />
+          </div>
+          <div className="space-y-1.5">
+            <h3 className="text-base font-semibold text-[#E6E8EC] tracking-tight">
+              Nenhuma lista criada
+            </h3>
+            <p className="text-xs text-[#8E9BAE] max-w-sm">
+              Crie uma lista para adicionar ofertas e preparar o envio para a fila.
+            </p>
+          </div>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => setIsNewListOpen(true)}
+            leftIcon={<Plus className="w-4 h-4" />}
+          >
+            Criar primeira lista
+          </Button>
+        </div>
+      ) : (
+        <>
+          {/* List selector */}
+          <div className="flex flex-wrap items-center gap-2">
+            {lists.map((list) => {
+              const isActive = activeListId === list.id || (!activeListId && list.id === lists[0].id);
+              const pend = list.links.filter(
+                (l) => l.status === 'Pendente' || l.status === 'Processando'
+              ).length;
+              return (
+                <button
+                  key={list.id}
+                  type="button"
+                  onClick={() => setActiveListId(list.id)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer border ${
+                    isActive
+                      ? 'bg-[#142340] text-white border-[#1E5EFF]'
+                      : 'bg-[#0E1628] text-[#8E9BAE] border-[#1B2947] hover:text-[#E6E8EC] hover:border-[#283C66]'
+                  }`}
+                >
+                  <Link2 className={`w-3.5 h-3.5 ${isActive ? 'text-[#00C2FF]' : 'text-[#64748B]'}`} />
+                  <span className="truncate max-w-[180px]">{list.name}</span>
+                  <span className={`text-[10px] font-mono-numeric ${isActive ? 'text-[#70A1FF]' : 'text-[#64748B]'}`}>
+                    {list.links.length}
+                  </span>
+                  {pend > 0 && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  )}
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              onClick={() => setIsNewListOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#8E9BAE] hover:text-[#E6E8EC] hover:bg-[#0D162B] border border-dashed border-[#1B2947] transition-colors cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Nova lista
+            </button>
+          </div>
+
+          {activeList && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+              {/* Left column: lista + links */}
+              <div className="lg:col-span-8 space-y-4">
+                {/* List summary */}
+                <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-5 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                    <div className="min-w-0 space-y-1">
+                      <h3 className="text-sm font-bold text-[#E6E8EC] tracking-tight">
+                        {activeList.name}
+                      </h3>
+                      <p className="text-xs text-[#8E9BAE]">
+                        {activeList.description || 'Sem descrição'} · criada em{' '}
+                        {activeList.createdAt}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteList(activeList.id)}
+                      className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] text-[#8E9BAE] hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      Excluir lista
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px]">
+                    <div className="p-2.5 bg-[#0A1020] border border-[#162340] rounded-lg">
+                      <span className="text-[10px] text-[#64748B] block">Campanha</span>
+                      <span className="text-xs font-medium text-[#E6E8EC] mt-0.5 block truncate">
+                        {activeList.campaignName || '—'}
+                      </span>
+                    </div>
+                    <div className="p-2.5 bg-[#0A1020] border border-[#162340] rounded-lg">
+                      <span className="text-[10px] text-[#64748B] block">Destino</span>
+                      <span className="text-xs font-medium text-[#00C2FF] mt-0.5 block">
+                        {DESTINATION_LABELS[activeList.destination]}
+                      </span>
+                    </div>
+                    <div className="p-2.5 bg-[#0A1020] border border-[#162340] rounded-lg">
+                      <span className="text-[10px] text-[#64748B] block">Rotação</span>
+                      <span className="text-xs font-medium text-[#E6E8EC] mt-0.5 block">
+                        {ROTATION_LABELS[activeList.rotation]}
+                      </span>
+                    </div>
+                    <div className="p-2.5 bg-[#0A1020] border border-[#162340] rounded-lg">
+                      <span className="text-[10px] text-[#64748B] block">Pendentes</span>
+                      <span className="text-xs font-medium text-amber-400 mt-0.5 block">
+                        {pendingCount}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 bg-[#0A1020] border border-[#162340] rounded-lg text-[11px] text-[#8E9BAE]">
+                    Frequência: {frequencyLabel(activeList.frequency)}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={handleAddAction}
+                      leftIcon={<Plus className="w-3.5 h-3.5" />}
+                      className="text-xs"
+                    >
+                      Adicionar links
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleImportAction}
+                      leftIcon={<FileUp className="w-3.5 h-3.5" />}
+                      className="text-xs"
+                    >
+                      Importar arquivo
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleProcessLinks}
+                      leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
+                      className="text-xs"
+                    >
+                      Processar links
+                    </Button>
+                  </div>
+
+                  {processingNotice && (
+                    <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-amber-500/10 border border-amber-500/25 text-[11px] text-amber-300">
+                      <Info className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span>
+                        Processamento disponível após integração com os marketplaces.{' '}
+                        <button
+                          type="button"
+                          onClick={() => setProcessingNotice(false)}
+                          className="underline hover:text-amber-200 cursor-pointer"
+                        >
+                          Dispensar
+                        </button>
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Links table */}
+                <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl">
+                  <div className="px-5 py-4 border-b border-[#162442] flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-semibold text-[#E6E8EC] tracking-tight">
+                        Links adicionados
+                      </h4>
+                      <p className="text-xs text-[#8E9BAE] mt-0.5">
+                        Marketplace e produto são preenchidos após o processamento.
+                      </p>
+                    </div>
+                    {activeList.links.length > 0 && (
+                      <Badge variant="neutral" size="xs">
+                        {activeList.links.length} itens
+                      </Badge>
+                    )}
+                  </div>
+
+                  {activeList.links.length === 0 ? (
+                    <div className="py-8 px-6 flex flex-col items-center gap-3 text-center">
+                      <Link2 className="w-8 h-8 text-[#475569]" />
+                      <div className="space-y-1">
+                        <p className="text-sm font-semibold text-[#E6E8EC]">
+                          Nenhum link na lista ainda
+                        </p>
+                        <p className="text-xs text-[#8E9BAE] max-w-sm">
+                          Adicione links manualmente ou importe um arquivo TXT/CSV
+                          para começar a preparar o envio.
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleAddAction}
+                        leftIcon={<Plus className="w-3.5 h-3.5" />}
+                        className="text-xs"
+                      >
+                        Adicionar links
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      {selectedIds.length > 0 && (
+                        <div className="px-5 py-2.5 border-b border-[#162442] flex items-center justify-between gap-3 bg-[#101F3D]/60">
+                          <span className="text-xs text-[#8E9BAE]">
+                            <strong className="text-[#E6E8EC]">{selectedPending}</strong> link(s)
+                            pendente(s) selecionado(s)
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedIds([])}
+                              className="text-[11px] text-[#8E9BAE] hover:text-[#E6E8EC] transition-colors cursor-pointer"
+                            >
+                              Limpar seleção
+                            </button>
+                            <Button
+                              variant="primary"
+                              size="xs"
+                              onClick={handleSendToQueue}
+                              disabled={selectedPending === 0}
+                              leftIcon={<Send className="w-3 h-3" />}
+                              className="text-xs"
+                            >
+                              Enviar para fila
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="border-b border-[#162442]">
+                              <th className="px-3 py-2.5 w-9">
+                                <input
+                                  type="checkbox"
+                                  checked={
+                                    activeList.links.length > 0 &&
+                                    selectedIds.length ===
+                                      activeList.links.filter((l) => l.status === 'Pendente').length &&
+                                    activeList.links.some((l) => l.status === 'Pendente')
+                                  }
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedIds(
+                                        activeList.links
+                                          .filter((l) => l.status === 'Pendente')
+                                          .map((l) => l.id)
+                                      );
+                                    } else {
+                                      setSelectedIds([]);
+                                    }
+                                  }}
+                                  className="w-3.5 h-3.5 rounded border-[#374151] bg-[#0A1020] text-[#1E5EFF] focus:ring-0 cursor-pointer"
+                                />
+                              </th>
+                              {['Link', 'Marketplace', 'Produto', 'Status', 'Campanha', 'Fila', 'Ações'].map(
+                                (h) => (
+                                  <th
+                                    key={h}
+                                    className="px-3 py-2.5 text-left text-[10px] font-semibold text-[#64748B] uppercase tracking-wider whitespace-nowrap"
+                                  >
+                                    {h}
+                                  </th>
+                                )
+                              )}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {activeList.links.map((link) => (
+                              <tr
+                                key={link.id}
+                                className="border-b border-[#14203B] last:border-0 hover:bg-[#0A1020] transition-colors"
+                              >
+                                <td className="px-3 py-2.5">
+                                  {link.status === 'Pendente' ? (
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedIds.includes(link.id)}
+                                      onChange={(e) =>
+                                        setSelectedIds((prev) =>
+                                          e.target.checked
+                                            ? [...prev, link.id]
+                                            : prev.filter((id) => id !== link.id)
+                                        )
+                                      }
+                                      className="w-3.5 h-3.5 rounded border-[#374151] bg-[#0A1020] text-[#1E5EFF] focus:ring-0 cursor-pointer"
+                                    />
+                                  ) : (
+                                    <span className="inline-block w-3.5" />
+                                  )}
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <div className="flex items-center gap-1.5 min-w-0 max-w-[260px]">
+                                    <a
+                                      href={link.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="font-mono text-[11px] text-[#00C2FF] truncate hover:underline"
+                                    >
+                                      {link.url}
+                                    </a>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleCopyLink(link)}
+                                      className="text-[#64748B] hover:text-[#E6E8EC] transition-colors shrink-0 cursor-pointer"
+                                      title="Copiar link"
+                                    >
+                                      {copiedId === link.id ? (
+                                        <Check className="w-3 h-3 text-emerald-400" />
+                                      ) : (
+                                        <Copy className="w-3 h-3" />
+                                      )}
+                                    </button>
+                                    <a
+                                      href={link.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-[#64748B] hover:text-[#00C2FF] transition-colors shrink-0"
+                                      title="Abrir link"
+                                    >
+                                      <ExternalLink className="w-3 h-3" />
+                                    </a>
+                                  </div>
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <span className="text-[#64748B]">
+                                    {link.marketplace ? link.marketplace : '—'}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <span className="text-[#64748B]">
+                                    {link.productName ?? '—'}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <Badge variant={STATUS_BADGE[link.status]} size="xs">
+                                    {link.status}
+                                  </Badge>
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <span className="text-[#64748B]">
+                                    {link.campaignName ?? '—'}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <span className="text-[#64748B]">
+                                    {link.status === 'Na fila' ? (
+                                      <Badge variant="info" size="xs">
+                                        Na fila
+                                      </Badge>
+                                    ) : (
+                                      '—'
+                                    )}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveLink(link.id)}
+                                    className="text-[#64748B] hover:text-rose-400 transition-colors cursor-pointer"
+                                    title="Remover link"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Right column: configurações */}
+              <div className="lg:col-span-4 space-y-4">
+                {/* Deduplicação */}
+                <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-5 space-y-3.5">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-[#00C2FF]" />
+                    <h4 className="text-sm font-semibold text-[#E6E8EC] tracking-tight">
+                      Proteção contra duplicidade
+                    </h4>
+                  </div>
+                  <p className="text-xs text-[#8E9BAE] leading-relaxed">
+                    Antes de enviar para a fila, os links podem ser comparados com os
+                    destinos abaixo.
+                  </p>
+                  <div className="space-y-2">
+                    {DEDUP_OPTIONS.map((opt) => (
+                      <label
+                        key={opt.key}
+                        className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-[#0A1020] border border-[#162340] cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={dedup[opt.key]}
+                          onChange={(e) =>
+                            setDedup((prev) => ({
+                              ...prev,
+                              [opt.key]: e.target.checked,
+                            }))
+                          }
+                          className="w-4 h-4 rounded border-[#374151] bg-[#0A1020] text-[#1E5EFF] focus:ring-0 cursor-pointer"
+                        />
+                        <span className="text-xs text-[#E6E8EC]">{opt.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-[#64748B] leading-relaxed">
+                    Sem algoritmo real nesta etapa — a verificação será aplicada quando
+                    a integração for configurada.
+                  </p>
+                </div>
+
+                {/* Processamento info (agrupado) */}
+                <div className="bg-[#0B1220] border border-[#16233B] rounded-xl p-4 flex items-start gap-2.5">
+                  <Info className="w-4 h-4 text-[#00C2FF] shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-[#8E9BAE] leading-relaxed">
+                    Cada link adicionado entra com status{' '}
+                    <Badge variant="neutral" size="xs">Pendente</Badge>. Ao clicar em
+                    "Processar links", o marketplace e o produto serão identificados —
+                    disponível após integração. Nenhuma consulta externa, scraping ou
+                    fetch de URLs é realizado.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Modals */}
+      <NewListModal
+        isOpen={isNewListOpen}
+        onClose={() => setIsNewListOpen(false)}
+        campaigns={initialCampaigns.map((c) => ({ id: c.id, name: c.name }))}
+        onSave={handleCreateList}
+      />
+
+      <AddLinksModal
+        isOpen={addLinksOpen}
+        onClose={() => setAddLinksOpen(false)}
+        initialMode={addLinksMode}
+        listName={activeList?.name ?? ''}
+        onAddLinks={handleAddLinks}
+      />
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-[#0E172C] border border-[#1E3563] text-[#E6E8EC] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
+          {toast.type === 'info' ? (
+            <Sparkles className="w-4 h-4 text-[#00C2FF] shrink-0" />
+          ) : (
+            <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
+          )}
+          <span className="font-medium leading-relaxed">{toast.text}</span>
+        </div>
+      )}
+    </div>
+  );
+};

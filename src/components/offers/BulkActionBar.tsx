@@ -1,0 +1,94 @@
+import React from 'react';
+import { CheckCircle2, Clock, Send, XCircle, X } from 'lucide-react';
+import { Button } from '../ui/Button';
+
+interface BulkActionBarProps {
+  selectedCount: number;
+  onApproveSelected: () => void;
+  onScheduleSelected: () => void;
+  onPublishSelected: () => void;
+  onRejectSelected: () => void;
+  onClearSelection: () => void;
+}
+
+export const BulkActionBar: React.FC<BulkActionBarProps> = ({
+  selectedCount,
+  onApproveSelected,
+  onScheduleSelected,
+  onPublishSelected,
+  onRejectSelected,
+  onClearSelection,
+}) => {
+  if (selectedCount === 0) return null;
+
+  return (
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 max-w-2xl w-[92%] sm:w-auto">
+      <div className="bg-[#0B1326]/95 backdrop-blur-md border border-[#1E3A6D] text-[#E6E8EC] px-4 py-2.5 rounded-2xl shadow-2xl shadow-black/80 flex flex-wrap items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-4 duration-200">
+        {/* Selection Count */}
+        <div className="flex items-center gap-2 pr-2 border-r border-[#1B2B4E]">
+          <span className="w-6 h-6 rounded-full bg-[#1E5EFF] text-white flex items-center justify-center text-xs font-bold font-mono-numeric">
+            {selectedCount}
+          </span>
+          <span className="text-xs font-semibold text-[#E6E8EC] whitespace-nowrap">
+            {selectedCount === 1
+              ? '1 oferta selecionada'
+              : `${selectedCount} ofertas selecionadas`}
+          </span>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <Button
+            size="xs"
+            variant="secondary"
+            onClick={onApproveSelected}
+            leftIcon={<CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
+            className="text-xs hover:border-emerald-500/40"
+          >
+            Aprovar
+          </Button>
+
+          <Button
+            size="xs"
+            variant="secondary"
+            onClick={onScheduleSelected}
+            leftIcon={<Clock className="w-3.5 h-3.5 text-indigo-400" />}
+            className="text-xs hover:border-indigo-500/40"
+          >
+            Agendar
+          </Button>
+
+          <Button
+            size="xs"
+            variant="primary"
+            onClick={onPublishSelected}
+            leftIcon={<Send className="w-3.5 h-3.5" />}
+            className="text-xs font-semibold"
+          >
+            Publicar
+          </Button>
+
+          <Button
+            size="xs"
+            variant="ghost"
+            onClick={onRejectSelected}
+            leftIcon={<XCircle className="w-3.5 h-3.5 text-rose-400" />}
+            className="text-xs text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
+          >
+            Rejeitar
+          </Button>
+        </div>
+
+        {/* Clear Selection */}
+        <button
+          type="button"
+          onClick={onClearSelection}
+          className="p-1 rounded-lg text-[#8E9BAE] hover:text-[#E6E8EC] hover:bg-[#152345] transition-colors"
+          title="Limpar seleção"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+};

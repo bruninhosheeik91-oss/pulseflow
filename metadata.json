@@ -1,0 +1,6 @@
+{
+  "name": "DOMNEX DEALS",
+  "description": "Plataforma SaaS premium da Domnex Tech para automação e gestão inteligente de ofertas de afiliados.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

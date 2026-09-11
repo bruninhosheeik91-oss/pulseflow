@@ -1,0 +1,130 @@
+import {
+  Automation,
+  AutomationActivityItem,
+  AutomationDuplicateConflict,
+} from '../types';
+
+export const initialAutomations: Automation[] = [
+  {
+    id: 'AUTO-001',
+    type: 'AUTO_SEARCH',
+    name: 'Busca Automática',
+    description:
+      'Encontre automaticamente as melhores oportunidades nos marketplaces conectados.',
+    status: 'ACTIVE',
+    marketplaces: [],
+    metrics: {
+      entriesToday: 0,
+      processed: 0,
+      queued: 0,
+      published: 0,
+      invalid: 0,
+      duplicates: 0,
+      pending: 0,
+      lastRun: '—',
+    },
+    sources: [],
+    capabilities: {
+      detectNewEntries: 'AVAILABLE',
+      identifyProductAndLink: 'AVAILABLE',
+      generateAffiliateLink: 'AVAILABLE',
+      replaceAffiliateLink: 'AVAILABLE',
+      routeToChannels: 'AVAILABLE',
+      sendMessages: 'AVAILABLE',
+    },
+    requiresIntegration: false,
+  },
+  {
+    id: 'AUTO-002',
+    type: 'LINK_LIST',
+    name: 'Lista de Links',
+    description:
+      'Organize suas ofertas e deixe o DOMNEX cuidar da programação e distribuição.',
+    status: 'ACTIVE',
+    marketplaces: [],
+    metrics: {
+      entriesToday: 0,
+      processed: 0,
+      queued: 0,
+      published: 0,
+      invalid: 0,
+      duplicates: 0,
+      pending: 0,
+      lastRun: '—',
+    },
+    sources: [],
+    capabilities: {
+      detectNewEntries: 'AVAILABLE',
+      identifyProductAndLink: 'AVAILABLE',
+      generateAffiliateLink: 'AVAILABLE',
+      replaceAffiliateLink: 'REQUIRES_CONFIGURATION',
+      routeToChannels: 'AVAILABLE',
+      sendMessages: 'AVAILABLE',
+    },
+    requiresIntegration: false,
+  },
+  {
+    id: 'AUTO-003',
+    type: 'MIRROR',
+    name: 'Espelhamento',
+    description:
+      'Monitore fontes configuradas e processe novas oportunidades para sua operação.',
+    status: 'REQUIRES_CONFIGURATION',
+    marketplaces: [],
+    metrics: {
+      entriesToday: 0,
+      processed: 0,
+      queued: 0,
+      published: 0,
+      invalid: 0,
+      duplicates: 0,
+      pending: 0,
+      lastRun: '—',
+    },
+    sources: [],
+    capabilities: {
+      detectNewEntries: 'REQUIRES_INTEGRATION',
+      identifyProductAndLink: 'AVAILABLE',
+      generateAffiliateLink: 'REQUIRES_CONFIGURATION',
+      replaceAffiliateLink: 'REQUIRES_CONFIGURATION',
+      routeToChannels: 'AVAILABLE',
+      sendMessages: 'AVAILABLE',
+    },
+    requiresIntegration: true,
+    integrationHint: 'Disponibilidade depende da integração utilizada.',
+  },
+  {
+    id: 'AUTO-004',
+    type: 'MONITOR_GROUP',
+    name: 'Grupo Monitor',
+    description:
+      'Use uma fonte central para distribuir publicações entre seus destinos.',
+    status: 'REQUIRES_CONFIGURATION',
+    marketplaces: [],
+    metrics: {
+      entriesToday: 0,
+      processed: 0,
+      queued: 0,
+      published: 0,
+      invalid: 0,
+      duplicates: 0,
+      pending: 0,
+      lastRun: '—',
+    },
+    sources: [],
+    capabilities: {
+      detectNewEntries: 'REQUIRES_INTEGRATION',
+      identifyProductAndLink: 'REQUIRES_CONFIGURATION',
+      generateAffiliateLink: 'REQUIRES_CONFIGURATION',
+      replaceAffiliateLink: 'REQUIRES_CONFIGURATION',
+      routeToChannels: 'AVAILABLE',
+      sendMessages: 'AVAILABLE',
+    },
+    requiresIntegration: true,
+    integrationHint: 'Disponibilidade depende da integração utilizada.',
+  },
+];
+
+export const automationActivityMock: AutomationActivityItem[] = [];
+
+export const duplicateConflictsMock: AutomationDuplicateConflict[] = [];

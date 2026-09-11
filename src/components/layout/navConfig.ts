@@ -1,0 +1,62 @@
+import {
+  BarChart3,
+  CalendarClock,
+  Clock,
+  Copy,
+  ExternalLink,
+  FileText,
+  Headphones,
+  History,
+  LayoutDashboard,
+  Link2,
+  Megaphone,
+  MessageCircle,
+  Package,
+  Radio,
+  ScrollText,
+  Search,
+  Settings,
+  Sparkles,
+  Tag,
+  Ticket,
+  User,
+  UserCheck,
+  Users,
+  Workflow,
+  ShieldAlert,
+  type LucideIcon,
+} from 'lucide-react';
+
+export interface NavItem {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+}
+
+export const NAV_ITEMS: NavItem[] = [
+  { id: 'Dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'WhatsApp', label: 'WhatsApp', icon: MessageCircle },
+  { id: 'Canais e Grupos', label: 'Canais e Grupos', icon: Radio },
+  { id: 'Grupo Monitor', label: 'Grupo Monitor', icon: Users },
+  { id: 'Espelhamento', label: 'Espelhamento', icon: Copy },
+  { id: 'Busca Automática', label: 'Busca Automática', icon: Search },
+  { id: 'Automações', label: 'Automações', icon: Workflow },
+  { id: 'Agendamentos', label: 'Agendamentos', icon: CalendarClock },
+  { id: 'Fila de Publicação', label: 'Fila de Publicação', icon: Clock },
+  { id: 'Ofertas', label: 'Ofertas', icon: Tag },
+  { id: 'Campanhas', label: 'Campanhas', icon: Megaphone },
+  { id: 'Produtos', label: 'Produtos', icon: Package },
+  { id: 'Lista de Links', label: 'Lista de Links', icon: Link2 },
+  { id: 'Links de Redirecionamento', label: 'Links de Redirecionamento', icon: ExternalLink },
+  { id: 'Textos de Disparo', label: 'Textos de Disparo', icon: FileText },
+  { id: 'Divulgações com IA', label: 'Divulgações com IA', icon: Sparkles },
+  { id: 'Programas de Afiliado', label: 'Programas de Afiliado', icon: UserCheck },
+  { id: 'Cupons', label: 'Cupons', icon: Ticket },
+  { id: 'Logs de Automação', label: 'Logs de Automação', icon: ScrollText },
+  { id: 'Histórico', label: 'Histórico', icon: History },
+  { id: 'Analytics', label: 'Analytics', icon: BarChart3 },
+  { id: 'Perfil', label: 'Perfil', icon: User },
+  { id: 'Admin', label: 'Admin', icon: ShieldAlert },
+  { id: 'Configurações', label: 'Configurações', icon: Settings },
+  { id: 'Suporte', label: 'Suporte', icon: Headphones },
+];
