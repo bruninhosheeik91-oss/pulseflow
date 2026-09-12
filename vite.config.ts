@@ -10,6 +10,8 @@ const WATCH_IGNORED = [
   '**/server/tokens/**/*',
   '**/tokens/**',
   '**/tokens/**/*',
+  '**/server/data/**',
+  '**/server/data/**/*',
   '**/server/node_modules/**',
   '**/server/logs/**',
 ];

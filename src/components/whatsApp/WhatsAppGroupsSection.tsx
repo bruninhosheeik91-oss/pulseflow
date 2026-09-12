@@ -283,9 +283,16 @@ export const WhatsAppGroupsSection: React.FC<
                             </span>
                           )}
                         </div>
-                        <span className="text-[10px] text-[#64748B] font-mono-numeric block truncate mt-0.5">
-                          {formatGroupParticipantCount(group)} · {group.id}
-                        </span>
+                        <div className="flex items-center gap-2 mt-0.5 min-w-0">
+                          <span className="text-[10px] text-[#64748B] font-mono-numeric block truncate">
+                            {formatGroupParticipantCount(group)} · {group.id}
+                          </span>
+                          {group.sessionId && (
+                            <span className="shrink-0 text-[9px] font-medium px-1.5 py-0.5 rounded bg-[#101B33] border border-[#1C2C50] text-[#8E9BAE]">
+                              {group.sessionId}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       <span className="text-[10px] font-medium text-emerald-400/90 shrink-0">

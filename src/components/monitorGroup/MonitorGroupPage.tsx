@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   Settings,
   Unlink,
+  Activity,
 } from 'lucide-react';
 import {
   MonitorGroupConfig,
@@ -32,7 +33,7 @@ import {
 import { Badge, BadgeProps } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Select } from '../ui/Select';
-import { getGroupDisplayName } from '../../types/whatsApp';
+import { getGroupDisplayName, DOMNEX_DEFAULT_SESSION_ID } from '../../types/whatsApp';
 import {
   replaceChildGroups,
   removeChildGroup,
@@ -43,6 +44,10 @@ import {
   MonitorGroupDraft,
 } from './MonitorGroupFormModal';
 import { LinkedGroupsModal } from './LinkedGroupsModal';
+import {
+  getMonitorStatus,
+  MonitorServerStatus,
+} from '../../services/whatsApp/monitorService';
 
 const PLATFORM_ICONS = {
   WhatsApp: MessageSquare,
@@ -66,6 +71,20 @@ interface Toast {
   type: 'success' | 'info';
 }
 
+function formatTimestamp(iso: string | null): string {
+  if (!iso) return '—';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+}
+
 export const MonitorGroupPage: React.FC = () => {
   const [config, setConfig] = useState<MonitorGroupConfig | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -74,9 +93,37 @@ export const MonitorGroupPage: React.FC = () => {
   >(null);
   const [linkedModalOpen, setLinkedModalOpen] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [monitor, setMonitor] = useState<MonitorServerStatus | null>(null);
+  const [monitorReachable, setMonitorReachable] = useState<boolean | null>(
+    null
+  );
 
   const { groups, parentGroupId, childGroupIds } = useWhatsAppGroupConfig();
   const parentGroup = groups.find((g) => g.id === parentGroupId) ?? null;
+  const monitorSessionId =
+    parentGroup?.sessionId ?? DOMNEX_DEFAULT_SESSION_ID;
+
+  // Indicadores reais do monitor no backend (polling leve, dados honestos).
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const next = await getMonitorStatus(monitorSessionId);
+        if (cancelled) return;
+        setMonitor(next);
+        setMonitorReachable(true);
+      } catch {
+        if (cancelled) return;
+        setMonitorReachable(false);
+      }
+    };
+    void load();
+    const interval = setInterval(load, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [monitorSessionId]);
 
   // Grupo Monitor consome os grupos reais sincronizados na aba WhatsApp.
   // Quando um Grupo Mãe é definido lá, a configuração é derivada automaticamente.
@@ -267,6 +314,9 @@ export const MonitorGroupPage: React.FC = () => {
   );
 
   const isPaused = config?.status === 'paused';
+  const monitorActive =
+    monitorReachable === true &&
+    Boolean(monitor?.enabled && monitor?.parentGroupId);
 
   return (
     <div className="space-y-5">
@@ -321,6 +371,69 @@ export const MonitorGroupPage: React.FC = () => {
             </p>
           </div>
 
+          {/* Monitor real (backend) */}
+          <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-5">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Activity className="w-4 h-4 text-[#00C2FF]" />
+                <h2 className="text-sm font-semibold text-[#E6E8EC] tracking-tight">
+                  Monitor
+                </h2>
+                {parentGroup?.sessionId && (
+                  <span className="text-[10px] text-[#64748B] font-mono-numeric">
+                    · {parentGroup.sessionId}
+                  </span>
+                )}
+              </div>
+              <Badge
+                size="xs"
+                variant={monitorActive ? 'success' : 'neutral'}
+              >
+                {monitorReachable === false
+                  ? 'Backend indisponível'
+                  : monitorActive
+                  ? 'Ativo'
+                  : 'Inativo'}
+              </Badge>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 text-xs">
+              <div className="rounded-lg border border-[#1B2947] bg-[#0A1020] px-3 py-2.5">
+                <span className="text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider block">
+                  Última mensagem recebida
+                </span>
+                <span className="text-sm text-[#E6E8EC] mt-0.5 block font-mono-numeric">
+                  {monitorReachable === false
+                    ? '—'
+                    : formatTimestamp(monitor?.lastMessageAt ?? null)}
+                </span>
+              </div>
+              <div className="rounded-lg border border-[#1B2947] bg-[#0A1020] px-3 py-2.5">
+                <span className="text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider block">
+                  Último envio
+                </span>
+                <span className="text-sm text-[#E6E8EC] mt-0.5 block font-mono-numeric">
+                  {monitorReachable === false
+                    ? '—'
+                    : formatTimestamp(monitor?.lastSendAt ?? null)}
+                </span>
+              </div>
+            </div>
+            {monitorReachable === false ? (
+              <p className="text-[10px] text-amber-200/80 pt-2">
+                Servidor de conexão offline — indicadores indisponíveis.
+              </p>
+            ) : monitor?.lastError ? (
+              <p className="text-[10px] text-red-300/90 pt-2">
+                Último erro: {monitor.lastError}
+              </p>
+            ) : (
+              <p className="text-[10px] text-[#64748B] pt-2">
+                Replicação de texto para mensagens novas no grupo mãe — nenhum
+                histórico é reprocessado.
+              </p>
+            )}
+          </div>
+
           {/* Grupo Mãe */}
           <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -357,6 +470,11 @@ export const MonitorGroupPage: React.FC = () => {
                 {parentGroup && (
                   <Badge variant="info" size="xs">
                     Sincronizado do WhatsApp
+                  </Badge>
+                )}
+                {parentGroup?.sessionId && (
+                  <Badge variant="neutral" size="xs">
+                    Conta · {parentGroup.sessionId}
                   </Badge>
                 )}
                 <Badge variant={STATUS_BADGE[config.status]} size="xs">
@@ -425,6 +543,11 @@ export const MonitorGroupPage: React.FC = () => {
                 <span className="text-xs font-bold text-[#E6E8EC] mt-0.5 truncate max-w-full">
                   {config.name}
                 </span>
+                {parentGroup?.sessionId && (
+                  <span className="text-[9px] text-[#64748B] font-mono-numeric mt-0.5">
+                    {parentGroup.sessionId}
+                  </span>
+                )}
               </div>
               <div className="flex sm:flex-col items-center justify-center gap-0.5 text-[#2A3E6D] px-1">
                 <ArrowRight className="w-4 h-4 sm:hidden" />

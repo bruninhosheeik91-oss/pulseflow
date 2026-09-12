@@ -40,11 +40,35 @@ if (!getWhatsAppProvider()) {
   configureWhatsAppProvider(createWppConnectProvider());
 }
 
+const ACTIVE_VIEW_STORAGE_KEY = 'domnex.activeView';
+
+function readInitialView(): string {
+  try {
+    const stored = window.localStorage.getItem(ACTIVE_VIEW_STORAGE_KEY);
+    if (stored && NAV_ITEMS.some((item) => item.id === stored)) {
+      return stored;
+    }
+  } catch {
+    // armazenamento indisponível: usa a view padrão
+  }
+  return 'Fila de Publicação';
+}
+
 export default function App() {
-  // Navigation state: Default to 'Fila de Publicação' for Fila de Publicações
-  const [activeNav, setActiveNav] = useState('Fila de Publicação');
+  // A view persistida é lida UMA única vez aqui. Depois disso o estado atual
+  // é a fonte da verdade; nenhum effect/polling reidrata a navegação.
+  const [activeNav, setActiveNav] = useState(readInitialView);
   const [offers, setOffers] = useState<ProductOffer[]>(initialOffers);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const changeView = (view: string) => {
+    try {
+      window.localStorage.setItem(ACTIVE_VIEW_STORAGE_KEY, view);
+    } catch {
+      // armazenamento indisponível: mantém apenas o estado em memória
+    }
+    setActiveNav(view);
+  };
 
   // Modals state
   const [selectedOfferForDetail, setSelectedOfferForDetail] =
@@ -96,7 +120,7 @@ export default function App() {
   };
 
   const handleSidebarNavigate = (itemId: string) => {
-    setActiveNav(itemId);
+    changeView(itemId);
   };
 
   const getPageInfo = () => {
@@ -178,7 +202,7 @@ export default function App() {
         <Topbar
           onOpenNewCampaign={() => {
             if (activeNav !== 'Campanhas') {
-              setActiveNav('Campanhas');
+              changeView('Campanhas');
             } else {
               setIsNewCampaignOpen(true);
             }
@@ -241,7 +265,7 @@ export default function App() {
                   <EngineStatusCard />
                   <AutomationsSummaryCard onNavigate={handleSidebarNavigate} />
                   <PublishingQueue
-                    onOpenFullQueue={() => setActiveNav('Fila de Publicação')}
+                    onOpenFullQueue={() => changeView('Fila de Publicação')}
                   />
                 </div>
               </div>

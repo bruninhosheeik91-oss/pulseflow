@@ -1,5 +1,9 @@
 import { useSyncExternalStore } from 'react';
-import { WhatsAppGroup } from '../../types/whatsApp';
+import {
+  WhatsAppGroup,
+  DOMNEX_DEFAULT_SESSION_ID,
+} from '../../types/whatsApp';
+import { updateMonitorServerConfig } from './monitorService';
 
 const STORAGE_KEY = 'domnex.whatsapp.groups.v1';
 
@@ -7,6 +11,7 @@ export interface WhatsAppGroupConfig {
   groups: WhatsAppGroup[];
   syncedAt: string | null;
   parentGroupId: string | null;
+  parentSessionId: string | null;
   childGroupIds: string[];
 }
 
@@ -14,6 +19,7 @@ const EMPTY_CONFIG: WhatsAppGroupConfig = {
   groups: [],
   syncedAt: null,
   parentGroupId: null,
+  parentSessionId: null,
   childGroupIds: [],
 };
 
@@ -25,7 +31,9 @@ function isWhatsAppGroup(value: unknown): value is WhatsAppGroup {
     Boolean(g.id) &&
     (g.name === null || typeof g.name === 'string') &&
     (g.participantCount === null || typeof g.participantCount === 'number') &&
-    g.isGroup === true
+    g.isGroup === true &&
+    (g.whatsappAccountId === null || typeof g.whatsappAccountId === 'string') &&
+    (g.sessionId === null || typeof g.sessionId === 'string')
   );
 }
 
@@ -43,15 +51,27 @@ function readFromStorage(): WhatsAppGroupConfig {
       typeof parsed.parentGroupId === 'string' && ids.has(parsed.parentGroupId)
         ? parsed.parentGroupId
         : null;
+    const parentGroup = groups.find((g) => g.id === parentGroupId) ?? null;
+    const parentSessionId =
+      typeof parsed.parentSessionId === 'string'
+        ? parsed.parentSessionId
+        : parentGroup?.sessionId ?? null;
     const childGroupIds = Array.isArray(parsed.childGroupIds)
       ? parsed.childGroupIds.filter(
-          (id): id is string => typeof id === 'string' && ids.has(id) && id !== parentGroupId
+          (id): id is string =>
+            typeof id === 'string' &&
+            ids.has(id) &&
+            id !== parentGroupId &&
+            !parentSessionId
+              ? Boolean(groups.find((g) => g.id === id)?.sessionId === null)
+              : groups.find((g) => g.id === id)?.sessionId === parentSessionId
         )
       : [];
     return {
       groups,
       syncedAt: typeof parsed.syncedAt === 'string' ? parsed.syncedAt : null,
       parentGroupId,
+      parentSessionId,
       childGroupIds,
     };
   } catch {
@@ -76,42 +96,108 @@ function commit(next: WhatsAppGroupConfig) {
   state = next;
   persist();
   listeners.forEach((listener) => listener());
+  void syncMonitorServerConfig();
+}
+
+// Espelha a seleção Grupo Mãe / destinos no backend para o listener real da
+// conta correta. Nunca é bloqueante: se o backend estiver offline, a próxima
+// alteração retenta.
+function syncMonitorServerConfig() {
+  try {
+    void updateMonitorServerConfig({
+      sessionId: state.parentSessionId ?? DOMNEX_DEFAULT_SESSION_ID,
+      parentGroupId: state.parentGroupId,
+      childGroupIds: state.childGroupIds,
+    }).catch(() => {
+      // backend indisponível; sincronização refeita na próxima alteração
+    });
+  } catch {
+    // nenhuma alteração de seleção pode ser bloqueada por falha de rede
+  }
 }
 
 export function getGroupConfig(): WhatsAppGroupConfig {
   return state;
 }
 
+function tagGroupsWithSession(
+  groups: WhatsAppGroup[],
+  sessionId: string
+): WhatsAppGroup[] {
+  return groups
+    .filter((g) => g && typeof g.id === 'string' && Boolean(g.id))
+    .map((g) => ({
+      ...g,
+      whatsappAccountId: sessionId,
+      sessionId,
+    }));
+}
+
+// Sincroniza os grupos de UMA conta específica, preservando os grupos das
+// demais contas no armazenamento local.
+export function setSyncedGroupsForSession(
+  groups: WhatsAppGroup[],
+  sessionId: string,
+  syncedAt: string = new Date().toISOString()
+) {
+  const valid = tagGroupsWithSession(groups, sessionId);
+  const others = state.groups.filter((g) => g.sessionId !== sessionId);
+  const nextGroups = [...others, ...valid];
+  const ids = new Set(nextGroups.map((g) => g.id));
+  const parentGroupId =
+    state.parentGroupId && ids.has(state.parentGroupId)
+      ? state.parentGroupId
+      : null;
+  const parentGroup = nextGroups.find((g) => g.id === parentGroupId) ?? null;
+  const parentSessionId = parentGroup?.sessionId ?? null;
+  const childGroupIds = state.childGroupIds.filter(
+    (id) =>
+      ids.has(id) &&
+      id !== parentGroupId &&
+      nextGroups.find((g) => g.id === id)?.sessionId === parentSessionId
+  );
+  commit({
+    groups: nextGroups,
+    syncedAt,
+    parentGroupId,
+    parentSessionId,
+    childGroupIds,
+  });
+}
+
 export function setSyncedGroups(
   groups: WhatsAppGroup[],
   syncedAt: string = new Date().toISOString()
 ) {
-  const valid = groups.filter((g) => g && typeof g.id === 'string' && Boolean(g.id));
-  const ids = new Set(valid.map((g) => g.id));
-  const parentGroupId =
-    state.parentGroupId && ids.has(state.parentGroupId) ? state.parentGroupId : null;
-  const childGroupIds = state.childGroupIds.filter(
-    (id) => ids.has(id) && id !== parentGroupId
-  );
-  commit({ groups: valid, syncedAt, parentGroupId, childGroupIds });
+  setSyncedGroupsForSession(groups, DOMNEX_DEFAULT_SESSION_ID, syncedAt);
 }
 
 export function setParentGroup(id: string | null) {
   if (id === null) {
-    commit({ ...state, parentGroupId: null });
+    commit({ ...state, parentGroupId: null, parentSessionId: null });
     return;
   }
-  if (!state.groups.some((g) => g.id === id)) return;
+  const group = state.groups.find((g) => g.id === id);
+  if (!group) return;
+  const sessionId = group.sessionId ?? DOMNEX_DEFAULT_SESSION_ID;
   commit({
     ...state,
     parentGroupId: id,
-    childGroupIds: state.childGroupIds.filter((child) => child !== id),
+    parentSessionId: sessionId,
+    childGroupIds: state.childGroupIds.filter(
+      (child) => child !== id && state.groups.find((g) => g.id === child)?.sessionId === sessionId
+    ),
   });
 }
 
 export function addChildGroup(id: string) {
-  if (!state.groups.some((g) => g.id === id)) return;
+  const group = state.groups.find((g) => g.id === id);
+  if (!group) return;
   if (id === state.parentGroupId) return;
+  // Nunca misturar grupos de contas diferentes.
+  if (!state.parentSessionId || group.sessionId !== state.parentSessionId) {
+    return;
+  }
   if (state.childGroupIds.includes(id)) return;
   commit({ ...state, childGroupIds: [...state.childGroupIds, id] });
 }
@@ -123,13 +209,20 @@ export function removeChildGroup(id: string) {
 export function replaceChildGroups(ids: string[]) {
   const unique = Array.from(new Set(ids));
   const valid = unique.filter(
-    (id) => id !== state.parentGroupId && state.groups.some((g) => g.id === id)
+    (id) =>
+      id !== state.parentGroupId &&
+      state.groups.some((g) => g.id === id && g.sessionId === state.parentSessionId)
   );
   commit({ ...state, childGroupIds: valid });
 }
 
 export function clearGroupSelection() {
-  commit({ ...state, parentGroupId: null, childGroupIds: [] });
+  commit({
+    ...state,
+    parentGroupId: null,
+    parentSessionId: null,
+    childGroupIds: [],
+  });
 }
 
 export function subscribeGroupConfig(listener: () => void): () => void {

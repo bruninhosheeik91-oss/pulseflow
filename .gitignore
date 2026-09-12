@@ -10,3 +10,6 @@ coverage/
 # WhatsApp session data (WPPConnect) — never versioned
 server/tokens/
 server/node_modules/
+
+# Runtime state do backend (monitor-config, contas) — never versioned
+server/data/

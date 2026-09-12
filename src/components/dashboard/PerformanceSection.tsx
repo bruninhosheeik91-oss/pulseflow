@@ -77,17 +77,17 @@ export const PerformanceSection: React.FC = () => {
   const cliquePath = createSmoothPath(cliquePoints);
   const pedidoPath = createSmoothPath(pedidoPoints);
 
-  const cliqueAreaPath = `${cliquePath} L ${
-    cliquePoints[cliquePoints.length - 1].x
-  },${paddingTop + innerHeight} L ${cliquePoints[0].x},${
-    paddingTop + innerHeight
-  } Z`;
+  const cliqueAreaPath = hasData
+    ? `${cliquePath} L ${cliquePoints[cliquePoints.length - 1].x},${
+        paddingTop + innerHeight
+      } L ${cliquePoints[0].x},${paddingTop + innerHeight} Z`
+    : '';
 
-  const pedidoAreaPath = `${pedidoPath} L ${
-    pedidoPoints[pedidoPoints.length - 1].x
-  },${paddingTop + innerHeight} L ${pedidoPoints[0].x},${
-    paddingTop + innerHeight
-  } Z`;
+  const pedidoAreaPath = hasData
+    ? `${pedidoPath} L ${pedidoPoints[pedidoPoints.length - 1].x},${
+        paddingTop + innerHeight
+      } L ${pedidoPoints[0].x},${paddingTop + innerHeight} Z`
+    : '';
 
   return (
     <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-5 flex flex-col justify-between h-full">

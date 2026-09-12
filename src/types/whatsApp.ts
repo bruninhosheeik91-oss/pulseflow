@@ -15,10 +15,16 @@ export const WHATSAPP_STATUS_LABELS: Record<WhatsAppConnectionStatus, string> = 
   error: 'Erro',
 };
 
+export const DOMNEX_DEFAULT_SESSION_ID = 'domnex-main';
+
 export interface WhatsAppAccount {
+  id: string;
+  sessionId: string;
   number: string;
   name: string;
+  status: WhatsAppConnectionStatus;
   connectionStatus: WhatsAppConnectionStatus;
+  connectedAt: string | null;
   lastSyncAt: string | null;
 }
 
@@ -27,6 +33,8 @@ export interface WhatsAppGroup {
   name: string | null;
   participantCount: number | null;
   isGroup: true;
+  whatsappAccountId: string | null;
+  sessionId: string | null;
 }
 
 export function formatGroupParticipantCount(group: WhatsAppGroup): string {

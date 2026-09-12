@@ -6,6 +6,7 @@ import { WhatsAppConnectModal } from './WhatsAppConnectModal';
 import { WhatsAppFlowSteps } from './WhatsAppFlowSteps';
 import { WhatsAppGroupsSection } from './WhatsAppGroupsSection';
 import { WhatsAppIntegrationHint } from './WhatsAppIntegrationHint';
+import { WhatsAppAccountsSection } from './WhatsAppAccountsSection';
 
 export const WhatsAppPage: React.FC = () => {
   const {
@@ -45,6 +46,9 @@ export const WhatsAppPage: React.FC = () => {
           Conecte e gerencie a conta utilizada pelas automações do DOMNEX.
         </p>
       </div>
+
+      {/* Contas (multissessão) */}
+      <WhatsAppAccountsSection />
 
       {/* Connection */}
       <WhatsAppConnectionCard

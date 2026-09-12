@@ -19,13 +19,17 @@ export interface WhatsAppQrPayload {
 export interface WhatsAppProvider {
   readonly id: string;
   readonly label: string;
-  connect(): Promise<void>;
-  disconnect(): Promise<void>;
-  getConnectionStatus(): Promise<WhatsAppConnectionStatus>;
-  getQrCode(): Promise<WhatsAppQrPayload | null>;
-  getAccount(): Promise<WhatsAppAccount | null>;
-  getGroups(): Promise<WhatsAppGroup[]>;
+  connect(sessionId?: string): Promise<void>;
+  disconnect(sessionId?: string): Promise<void>;
+  getConnectionStatus(sessionId?: string): Promise<WhatsAppConnectionStatus>;
+  getQrCode(sessionId?: string): Promise<WhatsAppQrPayload | null>;
+  getAccount(sessionId?: string): Promise<WhatsAppAccount | null>;
+  getGroups(sessionId?: string): Promise<WhatsAppGroup[]>;
+  /** Grupos de uma conta específica, já etiquetados com a sessão de origem. */
+  getGroupsForSession(sessionId: string): Promise<WhatsAppGroup[]>;
   sendMessage(to: string, text: string): Promise<void>;
+  listAccounts(): Promise<WhatsAppAccount[]>;
+  createAccount(name?: string): Promise<WhatsAppAccount>;
 }
 
 export class WhatsAppProviderNotConfiguredError extends Error {
