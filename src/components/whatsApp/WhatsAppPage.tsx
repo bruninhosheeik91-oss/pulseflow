@@ -1,19 +1,11 @@
 import React, { useState } from 'react';
 import { useWhatsAppConnection } from '../../services/whatsApp/useWhatsAppConnection';
-import {
-  configureWhatsAppProvider,
-  getWhatsAppProvider,
-} from '../../services/whatsApp/provider';
-import { createWppConnectProvider } from '../../services/whatsApp/wppConnectProvider';
+import { useWhatsAppGroupConfig } from '../../services/whatsApp/groupConfigStore';
 import { WhatsAppConnectionCard } from './WhatsAppConnectionCard';
 import { WhatsAppConnectModal } from './WhatsAppConnectModal';
 import { WhatsAppFlowSteps } from './WhatsAppFlowSteps';
 import { WhatsAppGroupsSection } from './WhatsAppGroupsSection';
 import { WhatsAppIntegrationHint } from './WhatsAppIntegrationHint';
-
-if (!getWhatsAppProvider()) {
-  configureWhatsAppProvider(createWppConnectProvider());
-}
 
 export const WhatsAppPage: React.FC = () => {
   const {
@@ -21,14 +13,15 @@ export const WhatsAppPage: React.FC = () => {
     qrData,
     errorMessage,
     account,
-    groups,
     isSyncing,
+    groupsError,
     connect,
     reconnect,
     disconnect,
     syncGroups,
     sendMessage,
   } = useWhatsAppConnection();
+  const { groups } = useWhatsAppGroupConfig();
 
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
 
@@ -71,6 +64,9 @@ export const WhatsAppPage: React.FC = () => {
       <WhatsAppGroupsSection
         isConnected={status === 'connected'}
         groups={groups}
+        isSyncing={isSyncing}
+        syncError={groupsError}
+        onSyncGroups={syncGroups}
         onSend={sendMessage}
       />
 

@@ -391,31 +391,75 @@ app.post('/api/whatsapp/disconnect', async (req, res) => {
   }
 });
 
+// Converte ids do WPPConnect ({ user, server, _serialized }) em string.
+function toSerializedId(id) {
+  if (!id) return null;
+  if (typeof id === 'string') return id;
+  if (id._serialized) return id._serialized;
+  const user = id.user || (id.id && id.id.user);
+  const server = id.server || (id.id && id.id.server);
+  if (user && server) return `${user}@${server}`;
+  return null;
+}
+
+// Normaliza um grupo real da API em { id, name, participantCount, isGroup }.
+// Campos ausentes viram null. Nenhum valor é inventado.
+function normalizeGroupSource(raw) {
+  const chat = raw || {};
+  const id = toSerializedId(chat.id);
+  if (!id || !/^[^\s@]+@g\.us$/i.test(id)) return null;
+  const lower = id.toLowerCase();
+  if (lower === 'status@broadcast' || id.includes('@broadcast') || id.includes('@newsletter')) {
+    return null;
+  }
+
+  const meta = chat.groupMetadata || null;
+  let participantCount = null;
+  if (meta && Number.isFinite(meta.size)) {
+    participantCount = meta.size;
+  } else if (meta && Array.isArray(meta.participants)) {
+    participantCount = meta.participants.length;
+  }
+
+  const rawName =
+    (typeof chat.name === 'string' && chat.name.trim()) ||
+    (typeof chat.formattedTitle === 'string' && chat.formattedTitle.trim()) ||
+    (meta && typeof meta.subject === 'string' && meta.subject.trim());
+  const name = rawName || null;
+
+  return { id, name, participantCount, isGroup: true };
+}
+
 app.get('/api/whatsapp/groups', requireConnected, async (req, res) => {
   try {
-    const chats = await client.getAllChats();
-    const groups = (chats || [])
-      .filter((chat) => chat.isGroup)
-      .map((chat) => {
-        const participants =
-          chat.groupMetadata && Array.isArray(chat.groupMetadata.participants)
-            ? chat.groupMetadata.participants.length
-            : undefined;
-        return {
-          id: (chat.id && (chat.id._serialized || chat.id)) || '',
-          name:
-            chat.name ||
-            chat.formattedTitle ||
-            'Grupo sem nome',
-          participants,
-          type: 'Grupo',
-        };
-      })
-      .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
-    logWhatsApp(`grupos carregados = ${groups.length}`);
+    let source = [];
+    // API real da versão instalada. getAllGroups garante os metadados do grupo
+    // (participants/size). listChats é o substituto moderno, getAllChats o fallback.
+    if (typeof client.getAllGroups === 'function') {
+      source = await client.getAllGroups(false);
+    } else if (typeof client.listChats === 'function') {
+      const chats = await client.listChats({ onlyGroups: true });
+      source = chats || [];
+    } else if (typeof client.getAllChats === 'function') {
+      const chats = await client.getAllChats();
+      source = (chats || []).filter((chat) => chat && chat.isGroup);
+    } else {
+      throw new Error('Nenhuma API de consulta de grupos disponível.');
+    }
+
+    const groups = (Array.isArray(source) ? source : [])
+      .map(normalizeGroupSource)
+      .filter((group) => group && group.id)
+      .sort((a, b) => {
+        const an = a.name || '';
+        const bn = b.name || '';
+        return an.localeCompare(bn, 'pt-BR') || a.id.localeCompare(b.id);
+      });
+
+    logWhatsApp(`grupos reais carregados = ${groups.length}`);
     res.json({ ok: true, groups, total: groups.length });
   } catch (err) {
-    logError('[WhatsApp] falha ao listar grupos');
+    logError(`[WhatsApp] falha ao listar grupos: ${String((err && err.message) || err)}`);
     res.status(500).json({ ok: false, error: 'Falha ao listar grupos.' });
   }
 });

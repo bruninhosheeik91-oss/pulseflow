@@ -30,6 +30,15 @@ import { FullQueueModal } from './components/dashboard/FullQueueModal';
 import { initialOffers } from './data/mockData';
 import { ProductOffer } from './types';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
+import {
+  configureWhatsAppProvider,
+  getWhatsAppProvider,
+} from './services/whatsApp/provider';
+import { createWppConnectProvider } from './services/whatsApp/wppConnectProvider';
+
+if (!getWhatsAppProvider()) {
+  configureWhatsAppProvider(createWppConnectProvider());
+}
 
 export default function App() {
   // Navigation state: Default to 'Fila de Publicação' for Fila de Publicações

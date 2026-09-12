@@ -92,13 +92,17 @@ export class WppConnectProvider implements WhatsAppProvider {
 
   async getGroups(): Promise<WhatsAppGroup[]> {
     const data = await apiFetch<{
-      groups: { id: string; name: string; participants?: number }[];
+      groups: WhatsAppGroup[];
     }>(this.baseUrl, '/api/whatsapp/groups');
-    return (data.groups || []).map((group) => ({
-      id: group.id,
-      name: group.name,
-      memberCount: group.participants ?? 0,
-    }));
+    return (data.groups || [])
+      .map((group) => ({
+        id: group.id,
+        name: typeof group.name === 'string' && group.name.trim() ? group.name : null,
+        participantCount:
+          typeof group.participantCount === 'number' ? group.participantCount : null,
+        isGroup: true as const,
+      }))
+      .filter((group) => Boolean(group.id && group.id.trim()));
   }
 
   async getAccount(): Promise<WhatsAppAccount | null> {

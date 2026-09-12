@@ -2,12 +2,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   WhatsAppAccount,
   WhatsAppConnectionStatus,
-  WhatsAppGroup,
 } from '../../types/whatsApp';
 import {
   getWhatsAppProvider,
   WhatsAppProviderNotConfiguredError,
 } from './provider';
+import { setSyncedGroups } from './groupConfigStore';
 
 const PROVIDER_NOT_CONFIGURED_MESSAGE =
   'Provedor de conexão ainda não configurado.';
@@ -29,8 +29,8 @@ export function useWhatsAppConnection() {
   const [qrData, setQrData] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [account, setAccount] = useState<WhatsAppAccount | null>(null);
-  const [groups, setGroups] = useState<WhatsAppGroup[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [groupsError, setGroupsError] = useState<string | null>(null);
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -236,20 +236,32 @@ export function useWhatsAppConnection() {
     setQrData(null);
     setErrorMessage(null);
     setAccount(null);
-    setGroups([]);
+    setGroupsError(null);
+    setSyncedGroups([]);
   }, []);
 
   const syncGroups = useCallback(async () => {
     const provider = getWhatsAppProvider();
 
-    if (!provider) return;
+    if (!provider) {
+      const error = 'Provedor de conexão ainda não configurado.';
+      setGroupsError(error);
+      return { ok: false as const, error };
+    }
 
     setIsSyncing(true);
+    setGroupsError(null);
     try {
       const result = await provider.getGroups();
-      if (mountedRef.current) setGroups(result);
-    } catch {
-      if (mountedRef.current) setGroups([]);
+      if (mountedRef.current) setSyncedGroups(result);
+      return { ok: true as const };
+    } catch (err) {
+      const error =
+        err instanceof Error
+          ? err.message
+          : 'Falha ao sincronizar os grupos.';
+      if (mountedRef.current) setGroupsError(error);
+      return { ok: false as const, error };
     } finally {
       if (mountedRef.current) setIsSyncing(false);
     }
@@ -285,8 +297,8 @@ export function useWhatsAppConnection() {
     qrData,
     errorMessage,
     account,
-    groups,
     isSyncing,
+    groupsError,
     connect,
     reconnect,
     disconnect,

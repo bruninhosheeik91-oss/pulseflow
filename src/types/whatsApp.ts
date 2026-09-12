@@ -24,6 +24,19 @@ export interface WhatsAppAccount {
 
 export interface WhatsAppGroup {
   id: string;
-  name: string;
-  memberCount: number;
+  name: string | null;
+  participantCount: number | null;
+  isGroup: true;
+}
+
+export function formatGroupParticipantCount(group: WhatsAppGroup): string {
+  if (group.participantCount === null || group.participantCount === undefined) {
+    return 'participantes não informados';
+  }
+  return `${group.participantCount} ${group.participantCount === 1 ? 'participante' : 'participantes'}`;
+}
+
+export function getGroupDisplayName(group: WhatsAppGroup): string {
+  if (group.name && group.name.trim()) return group.name;
+  return 'Grupo sem nome';
 }

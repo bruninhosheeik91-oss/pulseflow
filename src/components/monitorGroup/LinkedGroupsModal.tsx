@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link2, Users } from 'lucide-react';
-import { DistributionChannel } from '../../types';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
+
+export interface LinkedGroupItem {
+  id: string;
+  name: string;
+  subtitle: string;
+}
 
 interface LinkedGroupsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  channels: DistributionChannel[];
+  items: LinkedGroupItem[];
   linkedIds: string[];
   onSave: (ids: string[]) => void;
 }
@@ -15,7 +20,7 @@ interface LinkedGroupsModalProps {
 export const LinkedGroupsModal: React.FC<LinkedGroupsModalProps> = ({
   isOpen,
   onClose,
-  channels,
+  items,
   linkedIds,
   onSave,
 }) => {
@@ -36,32 +41,32 @@ export const LinkedGroupsModal: React.FC<LinkedGroupsModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Vincular grupos"
-      subtitle="Selecione os grupos que receberão as distribuições do Grupo Monitor."
+      subtitle="Selecione os grupos reais que receberão as distribuições do Grupo Monitor."
       maxWidth="md"
     >
       <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
-        {channels.length === 0 ? (
+        {items.length === 0 ? (
           <div className="py-8 px-4 flex flex-col items-center text-center bg-[#0A1020] border border-[#162340] rounded-xl">
             <div className="w-10 h-10 rounded-full bg-[#101B33] border border-[#1C2C50] flex items-center justify-center mb-2">
               <Users className="w-4 h-4 text-[#64748B]" />
             </div>
             <span className="text-xs font-semibold text-[#8E9BAE]">
-              Nenhum canal ou grupo criado.
+              Nenhum grupo sincronizado.
             </span>
             <p className="text-[10px] text-[#64748B] mt-1 max-w-[260px] leading-relaxed">
-              Crie grupos e canais primeiro em "Canais e Grupos" para poder
-              vinculá-los aqui.
+              Sincronize seus grupos reais na aba WhatsApp para poder vinculá-los
+              aqui como destinos.
             </p>
           </div>
         ) : (
           <div className="space-y-1.5">
-            {channels.map((ch) => {
-              const checked = selected.includes(ch.id);
+            {items.map((item) => {
+              const checked = selected.includes(item.id);
               return (
                 <button
-                  key={ch.id}
+                  key={item.id}
                   type="button"
-                  onClick={() => toggle(ch.id)}
+                  onClick={() => toggle(item.id)}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-colors cursor-pointer text-left ${
                     checked
                       ? 'bg-[#121E38] border-[#1E325C]'
@@ -85,11 +90,13 @@ export const LinkedGroupsModal: React.FC<LinkedGroupsModalProps> = ({
                         checked ? 'text-[#E6E8EC]' : 'text-[#94A3B8]'
                       }`}
                     >
-                      {ch.name}
+                      {item.name}
                     </span>
-                    <span className="text-[10px] text-[#64748B] block">
-                      {ch.platform} · {ch.identifier}
-                    </span>
+                    {item.subtitle && (
+                      <span className="text-[10px] text-[#64748B] block">
+                        {item.subtitle}
+                      </span>
+                    )}
                   </div>
                 </button>
               );

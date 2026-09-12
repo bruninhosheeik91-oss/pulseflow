@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Users,
   ArrowDown,
@@ -29,11 +29,15 @@ import {
   DEFAULT_RULES,
   DEFAULT_PROCESSING,
 } from '../../types/monitorGroup';
-import { DistributionChannel } from '../../types';
 import { Badge, BadgeProps } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Select } from '../ui/Select';
-import { initialChannels } from '../../data/mockChannels';
+import { getGroupDisplayName } from '../../types/whatsApp';
+import {
+  replaceChildGroups,
+  removeChildGroup,
+  useWhatsAppGroupConfig,
+} from '../../services/whatsApp/groupConfigStore';
 import {
   MonitorGroupFormModal,
   MonitorGroupDraft,
@@ -71,10 +75,55 @@ export const MonitorGroupPage: React.FC = () => {
   const [linkedModalOpen, setLinkedModalOpen] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const channels = initialChannels;
-  const linkedChannels = channels.filter((c) =>
-    config?.linkedGroupIds.includes(c.id)
-  );
+  const { groups, parentGroupId, childGroupIds } = useWhatsAppGroupConfig();
+  const parentGroup = groups.find((g) => g.id === parentGroupId) ?? null;
+
+  // Grupo Monitor consome os grupos reais sincronizados na aba WhatsApp.
+  // Quando um Grupo Mãe é definido lá, a configuração é derivada automaticamente.
+  useEffect(() => {
+    if (!parentGroup) return;
+    setConfig((prev) => {
+      const base: MonitorGroupConfig =
+        prev ?? {
+          id: `MONITOR-${Date.now().toString(36).toUpperCase()}`,
+          name: getGroupDisplayName(parentGroup),
+          platform: 'WhatsApp',
+          identifier: parentGroup.id,
+          status: 'configured',
+          linkedGroupIds: [],
+          rules: { ...DEFAULT_RULES },
+          processing: { ...DEFAULT_PROCESSING },
+          createdAt: new Date().toLocaleDateString('pt-BR'),
+          automationSource: 'MONITOR_GROUP',
+        };
+      return {
+        ...base,
+        name: getGroupDisplayName(parentGroup),
+        platform: 'WhatsApp',
+        identifier: parentGroup.id,
+        linkedGroupIds: childGroupIds,
+      };
+    });
+  }, [parentGroup, childGroupIds]);
+
+  const linkedGroups = groups.filter((g) => childGroupIds.includes(g.id));
+  const linkedChannels: {
+    id: string;
+    name: string;
+    platform: 'WhatsApp';
+    identifier: string;
+  }[] = linkedGroups.map((g) => ({
+    id: g.id,
+    name: getGroupDisplayName(g),
+    platform: 'WhatsApp',
+    identifier: g.id,
+  }));
+
+  const linkedGroupItems = groups.map((g) => ({
+    id: g.id,
+    name: getGroupDisplayName(g),
+    subtitle: `WhatsApp · ${g.id}`,
+  }));
 
   const showToast = (message: string, type: Toast['type'] = 'success') => {
     const id = Date.now() + Math.random();
@@ -149,16 +198,18 @@ export const MonitorGroupPage: React.FC = () => {
   };
 
   const handleSaveLinks = (ids: string[]) => {
+    replaceChildGroups(ids);
     setConfig((prev) => (prev ? { ...prev, linkedGroupIds: ids } : prev));
     showToast(
       ids.length > 0
-        ? `${ids.length} grupo(s) vinculado(s).`
+        ? `${ids.length} grupo(s) vinculado(s) como destino.`
         : 'Nenhum grupo vinculado.',
       'info'
     );
   };
 
   const unlinkChannel = (id: string) => {
+    removeChildGroup(id);
     setConfig((prev) =>
       prev
         ? {
@@ -241,10 +292,10 @@ export const MonitorGroupPage: React.FC = () => {
           <h2 className="text-sm font-semibold text-[#E6E8EC]">
             Grupo Monitor não configurado
           </h2>
-          <p className="text-xs text-[#8E9BAE] mt-1.5 max-w-sm leading-relaxed">
-            Configure seu grupo principal e vincule os grupos que receberão suas
-            publicações.
-          </p>
+<p className="text-xs text-[#8E9BAE] mt-1.5 max-w-sm leading-relaxed">
+              Sincronize seus grupos na aba WhatsApp, defina o Grupo Mãe e
+              vincule os destinos que receberão suas publicações.
+            </p>
           <Button
             variant="primary"
             size="sm"
@@ -303,6 +354,11 @@ export const MonitorGroupPage: React.FC = () => {
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
+                {parentGroup && (
+                  <Badge variant="info" size="xs">
+                    Sincronizado do WhatsApp
+                  </Badge>
+                )}
                 <Badge variant={STATUS_BADGE[config.status]} size="xs">
                   {isPaused ? 'Pausada' : 'Configurada'}
                 </Badge>
@@ -406,7 +462,7 @@ export const MonitorGroupPage: React.FC = () => {
             {/* Linked list */}
             {linkedChannels.length > 0 && (
               <div className="pt-4 space-y-1.5">
-                {linkedChannels.map((ch: DistributionChannel) => (
+                {linkedChannels.map((ch) => (
                   <div
                     key={ch.id}
                     className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-[#0A1020] border border-[#162340]"
@@ -682,8 +738,8 @@ export const MonitorGroupPage: React.FC = () => {
       <LinkedGroupsModal
         isOpen={linkedModalOpen}
         onClose={() => setLinkedModalOpen(false)}
-        channels={channels}
-        linkedIds={config?.linkedGroupIds ?? []}
+        items={linkedGroupItems}
+        linkedIds={config?.linkedGroupIds ?? childGroupIds}
         onSave={handleSaveLinks}
       />
 
