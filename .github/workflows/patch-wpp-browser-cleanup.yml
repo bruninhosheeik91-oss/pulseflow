@@ -1,3 +1,4 @@
+# retry after workflow registration
 name: Patch WPP browser cleanup race
 on:
   push:
