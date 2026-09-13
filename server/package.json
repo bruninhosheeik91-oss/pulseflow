@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node server.js",
     "test:link": "node linkConversion/tests/affiliateLinkConverter.test.js",
-    "test:api": "node linkConversion/tests/shopeeApiClient.test.js"
+    "test:api": "node linkConversion/tests/shopeeApiClient.test.js",
+    "test:monitor": "node monitorPipeline.test.js && node monitorOfferMessage.test.js"
   },
   "dependencies": {
     "@wppconnect-team/wppconnect": "^2.3.3",
