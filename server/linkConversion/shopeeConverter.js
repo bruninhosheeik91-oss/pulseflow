@@ -19,7 +19,10 @@ const { createShopeeApiClient } = require('./shopeeApiClient');
 
 const SHOPEE_HOST_REGEX =
   /(?:^|\.)shopee\.(?:com|com\.br|com\.mx|com\.ar|com\.co|co\.th|com\.sg|com\.my|com\.ph|id|vn|com\.tw|com\.in|com\.mm|es)\b$/i;
-const SHOPEE_SHORTLINK_REGEX = /(?:^|\.)shp\.ee$/i;
+// Shortlinks reais usados pela Shopee, inclusive o formato brasileiro
+// https://s.shopee.com.br/....
+const SHOPEE_SHORTLINK_REGEX =
+  /^(?:s\.shopee\.(?:com|com\.br|com\.mx|com\.ar|com\.co|co\.th|com\.sg|com\.my|com\.ph|id|vn|com\.tw|com\.in|com\.mm|es)|(?:[^.]+\.)?shp\.ee)$/i;
 
 const MAX_SUB_IDS = 5;
 
