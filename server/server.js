@@ -518,27 +518,147 @@ function extractShopeeUrlProductRef(rawUrl) {
 // Resolve dados REAIS do produto pela Affiliate Open API. Busca pelo slug do
 // título e confirma pelo itemId presente na URL (itemId única por produto).
 // Se a API não devolver o produto, retorna null (seguro, nada é inventado).
+async function fetchShopeePublicProduct(ref) {
+  if (
+    !ref ||
+    !Number.isFinite(Number(ref.shopId)) ||
+    !Number.isFinite(Number(ref.itemId))
+  ) {
+    return null;
+  }
+
+  const shopId = Number(ref.shopId);
+  const itemId = Number(ref.itemId);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+
+  try {
+    const endpoint =
+      `https://shopee.com.br/api/v2/item/get?itemid=${encodeURIComponent(itemId)}` +
+      `&shopid=${encodeURIComponent(shopId)}`;
+    const response = await fetch(endpoint, {
+      method: 'GET',
+      signal: controller.signal,
+      headers: {
+        Accept: 'application/json,text/plain,*/*',
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/140 Safari/537.36',
+        Referer: `https://shopee.com.br/product/${shopId}/${itemId}`,
+      },
+    });
+    if (!response.ok) return null;
+
+    const json = await response.json();
+    const item =
+      (json && json.item) ||
+      (json && json.data && json.data.item) ||
+      null;
+    if (!item || typeof item !== 'object') return null;
+
+    const money = (value) => {
+      const n = Number(value);
+      if (!Number.isFinite(n) || n <= 0) return null;
+      return n >= 100000 ? n / 100000 : n;
+    };
+
+    const price = money(item.price ?? item.price_min ?? item.price_max);
+    const originalPrice = money(
+      item.price_before_discount ??
+      item.price_min_before_discount ??
+      item.price_max_before_discount
+    );
+
+    let discountPercentage = null;
+    if (typeof item.discount === 'string') {
+      const match = item.discount.match(/(\d+(?:[.,]\d+)?)\s*%/);
+      if (match) discountPercentage = Number(match[1].replace(',', '.'));
+    } else if (Number.isFinite(Number(item.discount))) {
+      discountPercentage = Number(item.discount);
+    }
+    if (
+      !Number.isFinite(discountPercentage) &&
+      price !== null &&
+      originalPrice !== null &&
+      originalPrice > price
+    ) {
+      discountPercentage =
+        Math.round((1 - price / originalPrice) * 10000) / 100;
+    }
+
+    const imageToken =
+      typeof item.image === 'string' && item.image.trim()
+        ? item.image.trim()
+        : '';
+    const imageUrl = imageToken
+      ? /^https?:\/\//i.test(imageToken)
+        ? imageToken
+        : `https://down-br.img.susercontent.com/file/${imageToken}`
+      : '';
+
+    return {
+      itemId,
+      shopId,
+      productName:
+        typeof item.name === 'string' ? item.name.trim() : '',
+      shopName: '',
+      imageUrl,
+      price,
+      originalPrice:
+        originalPrice !== null && price !== null && originalPrice > price
+          ? originalPrice
+          : null,
+      discountPercentage:
+        Number.isFinite(discountPercentage) && discountPercentage > 0
+          ? Math.round(discountPercentage * 100) / 100
+          : 0,
+      commissionAmount: null,
+      commissionRate: null,
+      sales: Number(item.historical_sold ?? item.sold ?? 0) || 0,
+      rating:
+        item.item_rating && Number.isFinite(Number(item.item_rating.rating_star))
+          ? Number(item.item_rating.rating_star)
+          : null,
+      productLink: `https://shopee.com.br/product/${shopId}/${itemId}`,
+      offerLink: '',
+    };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function resolveMonitorProduct(shopeeClient, rawUrl) {
   const ref = extractShopeeUrlProductRef(rawUrl);
   if (!ref) return null;
-  let nodes = [];
-  try {
-    const result = await shopeeClient.productOfferV2({
-      keyword: ref.slug,
-      limit: 10,
-    });
-    nodes = Array.isArray(result.nodes) ? result.nodes : [];
-  } catch {
-    return null;
-  }
-  for (const node of nodes) {
-    const product = normalizeShopeeNode(node);
-    if (!product || product.itemId === null || product.itemId === undefined) {
-      continue;
+
+  const searches = [];
+  if (ref.slug) searches.push(ref.slug);
+  if (ref.itemId != null) searches.push(String(ref.itemId));
+
+  for (const keyword of [...new Set(searches)]) {
+    try {
+      const result = await shopeeClient.productOfferV2({
+        keyword,
+        limit: 50,
+      });
+      const nodes = Array.isArray(result.nodes) ? result.nodes : [];
+      for (const node of nodes) {
+        const product = normalizeShopeeNode(node);
+        if (!product || product.itemId === null || product.itemId === undefined) {
+          continue;
+        }
+        if (Number(product.itemId) === Number(ref.itemId)) return product;
+      }
+    } catch {
+      // Continue to the next safe fallback.
     }
-    if (ref.itemTokens.has(Number(product.itemId))) return product;
   }
-  return null;
+
+  // Affiliate API can legitimately omit products from productOfferV2.
+  // Fall back to Shopee's public product detail using exact shopId/itemId
+  // extracted from the canonical redirect. No fabricated commercial data.
+  return fetchShopeePublicProduct(ref);
 }
 
 // Converte UMA única URL Shopee do Grupo Mãe em oferta afiliada do tenant do
