@@ -1,9 +1,9 @@
 'use strict';
 
 // One-time, deterministic migration of server/server.js.
-// It fixes the canonical monitor pipeline integration left half-applied by the
-// previous refactor and wires the dynamic offer-message engine without touching
-// unrelated WhatsApp/Shopee routes. Safe to run more than once.
+// Fixes the half-applied canonical monitor refactor and wires the dynamic
+// offer-message engine without touching unrelated WhatsApp/Shopee routes.
+// Safe to run more than once.
 
 const fs = require('fs');
 const path = require('path');
@@ -12,14 +12,38 @@ const serverPath = path.join(__dirname, 'server.js');
 let source = fs.readFileSync(serverPath, 'utf8');
 let changed = false;
 
-function replaceOnce(label, before, after) {
-  if (source.includes(after)) return;
-  const first = source.indexOf(before);
-  if (first < 0) throw new Error(`[patch] padrão não encontrado: ${label}`);
-  if (source.indexOf(before, first + before.length) >= 0) {
-    throw new Error(`[patch] padrão ambíguo (mais de uma ocorrência): ${label}`);
+function countOccurrences(haystack, needle) {
+  if (!needle) return 0;
+  let count = 0;
+  let cursor = 0;
+  while (true) {
+    const index = haystack.indexOf(needle, cursor);
+    if (index < 0) return count;
+    count += 1;
+    cursor = index + needle.length;
   }
-  source = source.slice(0, first) + after + source.slice(first + before.length);
+}
+
+function replaceOnce(label, before, after) {
+  if (source.includes(after) && !source.includes(before)) return;
+  const count = countOccurrences(source, before);
+  if (count !== 1) {
+    throw new Error(`[patch] ${label}: esperado 1 padrão, encontrado ${count}`);
+  }
+  source = source.replace(before, after);
+  changed = true;
+}
+
+function replaceExactCount(label, before, after, expectedCount) {
+  const remaining = countOccurrences(source, before);
+  const already = countOccurrences(source, after);
+  if (remaining === 0 && already >= expectedCount) return;
+  if (remaining !== expectedCount) {
+    throw new Error(
+      `[patch] ${label}: esperado ${expectedCount} padrão(ões), encontrado ${remaining}`
+    );
+  }
+  source = source.split(before).join(after);
   changed = true;
 }
 
@@ -51,10 +75,10 @@ replaceOnce(
   "  const messageMode = cfg.messageMode === 'custom' ? 'custom' : 'dynamic';\n  const message =\n    messageMode === 'custom'\n      ? buildMonitorOfferMessage(cfg.template, offer)\n      : buildDynamicMonitorOfferMessage(offer, { seed: offer.itemId || msgId });\n  monitorLog(sessionId, `mensagem de oferta montada (modo=${messageMode})`);\n  if (!message) {\n    cfg.lastMessageAt = new Date().toISOString();\n    cfg.lastMessageId = msgId;\n    cfg.lastError = 'Não foi possível montar a mensagem da oferta.';\n"
 );
 
-// 5) Corrige estruturalmente o handler do monitor: o refactor anterior importou
-// normalizeMonitorMessage/resolveMonitorRoute/createMonitorDeduper, mas deixou o
-// corpo legado referenciando rawMessageId/processedMessageIds/extractUrls. Isso
-// só falhava em runtime. Agora TODO evento passa por um único normalizador.
+// 5) Corrige estruturalmente o handler do monitor. O refactor anterior passou a
+// importar normalizeMonitorMessage/resolveMonitorRoute/createMonitorDeduper,
+// mas deixou o corpo legado referenciando helpers removidos. Isso quebraria em
+// runtime. Agora todo evento passa por um único normalizador canônico.
 const handlerStart = source.indexOf('async function handleMonitorReplication(sessionId, message) {');
 const handlerEndMarker = '\n// ===== Mapeamento de estados do WPPConnect =====';
 const handlerEnd = source.indexOf(handlerEndMarker, handlerStart);
@@ -89,8 +113,8 @@ if (!currentHandler.includes('const canonical = normalizeMonitorMessage(message)
       monitorLog(sessionId, 'mensagem duplicada ignorada');
       return;
     }
-    // Reserva o id antes de qualquer await: dois eventos concorrentes com o
-    // mesmo id nunca atravessam o pipeline ao mesmo tempo.
+    // Reserva antes de qualquer await: o mesmo messageId nunca atravessa o
+    // pipeline simultaneamente em duas entregas do listener.
     monitorDeduper.remember(msgId);
     monitorLog(sessionId, 'mensagem canônica recebida');
     monitorLog(sessionId, 'grupo mãe validado');
@@ -132,7 +156,7 @@ if (!currentHandler.includes('const canonical = normalizeMonitorMessage(message)
       return;
     }
 
-    // Replicação comum preserva o escopo atual: primeiro grupo filho.
+    // Replicação comum preserva o comportamento existente: primeiro filho.
     const target = children[0];
     const st = getSessionState(sessionId);
     if (!st.client || typeof st.client.sendText !== 'function') {
@@ -178,11 +202,13 @@ if (!currentHandler.includes('const canonical = normalizeMonitorMessage(message)
   changed = true;
 }
 
-// 6) API de configuração expõe o modo sem quebrar configs antigas.
-replaceOnce(
-  'monitor status messageMode',
+// 6) API de configuração expõe o modo sem quebrar configs antigas. Existem
+// exatamente dois payloads com template+tenant: GET /status e resposta do POST.
+replaceExactCount(
+  'monitor responses messageMode',
   "    template: cfg.template ?? DEFAULT_MONITOR_TEMPLATE,\n    tenantId: cfg.tenantId ?? null,\n",
-  "    template: cfg.template ?? DEFAULT_MONITOR_TEMPLATE,\n    messageMode: cfg.messageMode === 'custom' ? 'custom' : 'dynamic',\n    tenantId: cfg.tenantId ?? null,\n"
+  "    template: cfg.template ?? DEFAULT_MONITOR_TEMPLATE,\n    messageMode: cfg.messageMode === 'custom' ? 'custom' : 'dynamic',\n    tenantId: cfg.tenantId ?? null,\n",
+  2
 );
 
 replaceOnce(
@@ -196,17 +222,6 @@ replaceOnce(
   "  if (tenantId !== undefined) {\n",
   "  if (messageMode !== undefined) {\n    if (messageMode === 'dynamic' || messageMode === 'custom') {\n      cfg.messageMode = messageMode;\n    } else {\n      return res.status(400).json({ ok: false, error: 'messageMode invalido.' });\n    }\n  }\n\n  if (tenantId !== undefined) {\n"
 );
-
-// Segundo response do POST /api/monitor. O primeiro já foi atualizado pelo
-// replace do status; aqui procuramos a ocorrência restante.
-const postResponseNeedle = "    template: cfg.template ?? DEFAULT_MONITOR_TEMPLATE,\n    tenantId: cfg.tenantId ?? null,\n";
-if (source.includes(postResponseNeedle)) {
-  replaceOnce(
-    'monitor POST response messageMode',
-    postResponseNeedle,
-    "    template: cfg.template ?? DEFAULT_MONITOR_TEMPLATE,\n    messageMode: cfg.messageMode === 'custom' ? 'custom' : 'dynamic',\n    tenantId: cfg.tenantId ?? null,\n"
-  );
-}
 
 if (changed) {
   fs.writeFileSync(serverPath, source, 'utf8');
