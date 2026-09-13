@@ -5,6 +5,7 @@ export interface MonitorServerStatus {
   enabled: boolean;
   parentGroupId: string | null;
   childGroupIds: string[];
+  childGroupDelays?: Record<string, number>;
   lastMessageAt: string | null;
   lastMessageId: string | null;
   lastSendAt: string | null;
@@ -54,6 +55,7 @@ export function updateMonitorServerConfig(config: {
   sessionId?: string;
   parentGroupId: string | null;
   childGroupIds: string[];
+  childGroupDelays?: Record<string, number>;
 }): Promise<MonitorServerStatus> {
   return api<MonitorServerStatus>('/api/monitor', {
     method: 'POST',
@@ -61,6 +63,7 @@ export function updateMonitorServerConfig(config: {
       sessionId: config.sessionId,
       parentGroupId: config.parentGroupId,
       childGroupIds: config.childGroupIds,
+      childGroupDelays: config.childGroupDelays || {},
     }),
   });
 }
