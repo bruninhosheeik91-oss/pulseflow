@@ -244,7 +244,7 @@ export const OfferComparisonTable: React.FC<OfferComparisonTableProps> = ({
                         onClick={() => onUseOffer?.(offer)}
                         className={`h-7 px-2.5 text-xs font-semibold ${
                           isBest
-                            ? 'bg-[#2563EB] hover:bg-[#F8FAFC] text-white shadow-xs'
+                            ? 'bg-[#2563EB] hover:bg-[#1D4ED8] active:bg-[#1E40AF] text-white shadow-xs'
                             : 'border-[#CBD5E1] hover:border-[#E2E8F0] text-[#172033]'
                         }`}
                       >
