@@ -32,7 +32,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   const variantClasses = {
     primary:
-      'bg-[#2563EB] text-white hover:bg-[#F8FAFC] active:bg-[#F8FAFC] border border-transparent shadow-sm shadow-[#2563EB]/20',
+      'bg-[#2563EB] text-white hover:bg-[#1D4ED8] active:bg-[#1E40AF] border border-transparent shadow-sm shadow-[#2563EB]/20',
     secondary:
       'bg-[#EFF6FF] text-[#172033] hover:bg-[#F8FAFC] active:bg-[#F1F5F9] border border-[#94A3B8] hover:border-[#E2E8F0]',
     outline:
