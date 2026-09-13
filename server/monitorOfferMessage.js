@@ -94,7 +94,7 @@ function buildPriceBlock(offer) {
       lines.push(`💰 De: ~${formatBRL(originalPrice)}~`);
       lines.push(`🔥 Por: *${formatBRL(price)}*`);
     } else {
-      lines.push(`💰 *${formatBRL(price)}*`);
+      lines.push(`🔥 Por: *${formatBRL(price)}*`);
     }
   }
 
@@ -140,7 +140,7 @@ function buildDynamicMonitorOfferMessage(offer = {}) {
   const productName =
     typeof offer.productName === 'string' ? offer.productName.trim() : '';
 
-  const lines = [buildProductHeadline(productName), ''];
+  const lines = ['🛍️ *LINK DA OFERTA*', ''];
 
   if (productName) {
     lines.push(`*${productName}*`, '');
