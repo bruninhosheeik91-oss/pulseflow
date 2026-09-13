@@ -4,13 +4,27 @@ const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const { create } = require('@wppconnect-team/wppconnect');
-const { existsSync, mkdirSync, readFileSync, writeFileSync } = require('fs');
+const { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } = require('fs');
+const { spawn } = require('child_process');
+const {
+  createAffiliateCredentialsStore,
+  EncryptionKeyMissingError,
+} = require('./linkConversion/affiliateCredentialsStore.js');
+const { runSearch: runShopeeAutoSearch, buildMessageFromTemplate } = require('./linkConversion/shopeeAutoSearch.js');
+const {
+  createTenantAutomationsStore,
+} = require('./linkConversion/tenantAutomationsStore.js');
+const {
+  createTenantAutoSearchSendsStore,
+} = require('./linkConversion/tenantAutoSearchSendsStore.js');
 
 const PORT = Number(process.env.PORT || 3001);
 const HOST = '127.0.0.1';
 const DOMNEX_DEFAULT_SESSION = 'domnex-main';
-// Escopo da fase: suporte a 2 contas simultâneas.
-const MAX_ACCOUNTS = 2;
+// Limite técnico de contas, opcional e configurável por ambiente.
+// 0 (padrão) = ilimitado. Caso um plano comercial limite a quantidade no
+// futuro, basta definir MAX_WHATSAPP_ACCOUNTS no ambiente do servidor.
+const MAX_ACCOUNTS = Number(process.env.MAX_WHATSAPP_ACCOUNTS || 0);
 const SESSION_DIR = path.join(__dirname, 'tokens');
 const DATA_DIR = path.join(__dirname, 'data');
 const ACCOUNTS_FILE = path.join(DATA_DIR, 'accounts.json');
@@ -20,6 +34,14 @@ const CHROME_PATH =
 const RECENT_LIMIT = 200;
 
 const SESSION_ID_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9-]*$/;
+
+// ===== Credenciais de Afiliados por Cliente (multi-tenant) =====
+// Cada cliente (tenant) mantém as PRÓPRIAS credenciais dos programas de
+// afiliados. Segredos são cifrados em repouso; nunca voltam ao frontend e
+// nunca aparecem em logs. Persistência: server/data/credentials/<tenant>.json
+const affiliateStore = createAffiliateCredentialsStore({ dataDir: DATA_DIR });
+const automationsStore = createTenantAutomationsStore({ dataDir: DATA_DIR });
+const autoSearchSendsStore = createTenantAutoSearchSendsStore({ dataDir: DATA_DIR });
 
 function logInfo(message) {
   console.log(`[info] ${new Date().toISOString()} ${message}`);
@@ -33,6 +55,8 @@ function logWhatsApp(message) {
   console.log(`[WhatsApp] ${new Date().toISOString()} ${message}`);
 }
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 // ===== Sessões (uma por conta WhatsApp) =====
 function createSessionState(sessionId) {
   return {
@@ -42,12 +66,114 @@ function createSessionState(sessionId) {
     qrCode: null,
     lastError: null,
     starting: false,
+    // Geração monotônica da inicialização: cada createSession/recover incrementa
+    // o contador. Callbacks assíncronos (QR, statusFind, socket, listeners)
+    // capturam a geração em que foram criados e são IGNORADOS se ela mudou —
+    // impede que um timeout antigo ou um QR/browser órfão sobrescreva um estado
+    // posterior (ex.: connected).
+    initGen: 0,
+    initRetries: 0,
+    // Vigilância de QR/init: evita "Gerando QR Code..." infinito quando o
+    // WPPConnect fica sem canvas de QR real ("QR (undefined)" / sessão não
+    // pareada) ou quando a inicialização trava (wapi.js failed / timeout).
+    qrStuckBaseAt: null,
+    qrLastDataAt: null,
+    qrWatchdog: null,
     recentMessages: [],
     connectedAt: null,
     lastSyncAt: null,
     deviceName: null,
     devicePhone: null,
   };
+}
+
+// Se nenhum QR real chegar dentro deste limite estando 'awaiting_qr', a
+// sessão vai para 'error' (a UI mostra o erro + "Tentar novamente").
+const QR_STUCK_TIMEOUT_MS = 60_000;
+const QR_WATCHDOG_INTERVAL_MS = 4_000;
+
+function clearQrWatchdog(state) {
+  if (state.qrWatchdog) {
+    clearInterval(state.qrWatchdog);
+    state.qrWatchdog = null;
+  }
+  state.qrStuckBaseAt = null;
+}
+
+// Vigilância única do ciclo de inicialização/QR. Começa no createSession e só
+// é encerrada ao conectar, ao exibir QR REAL ou ao falhar de vez.
+// - Com QR REAL exibido: não intervém (o WA rotaciona o QR e mantém qrCode).
+// - Sem QR REAL por mais de QR_STUCK_TIMEOUT_MS (canvas "QR (undefined)",
+//   catraca travada em wapi.js/timeout, etc.): estado de erro + recuperação.
+function startQrStuckWatchdog(state) {
+  if (state.qrWatchdog) return;
+  state.qrStuckBaseAt = Date.now();
+  state.qrWatchdog = setInterval(() => {
+    if (state.connectionState === 'connected') {
+      clearQrWatchdog(state);
+      return;
+    }
+    if (state.qrCode && state.qrCode.length) {
+      return;
+    }
+    const base = state.qrStuckBaseAt || Date.now();
+    if (Date.now() - base > QR_STUCK_TIMEOUT_MS) {
+      clearQrWatchdog(state);
+      state.qrCode = null;
+      state.lastError =
+        'Falha ao gerar o QR Code real (sessão não pareada). Toque em "Tentar novamente" para gerar um novo QR.';
+      setSessionState(state, 'error');
+      logError(
+        `[WhatsApp ${state.sessionId}] nenhum QR real em ${
+          QR_STUCK_TIMEOUT_MS / 1000
+        }s - estado de erro + recuperação disponível`
+      );
+    }
+  }, QR_WATCHDOG_INTERVAL_MS);
+}
+
+// Entrada no estado "aguardando QR". SÓ quando há QR REAL para exibir. Sem QR,
+// permanece no estado intermediário honesto (connecting/reconnecting) e a
+// vigilância é quem decide entre error e conexão.
+function enterAwaitingQr(state) {
+  if (!state.qrCode || !state.qrCode.length) {
+    return;
+  }
+  if (state.connectionState !== 'connected') {
+    setSessionState(state, 'awaiting_qr');
+  }
+}
+
+// Encerra o processo PRINCIPAL do Chrome cujo user-data-dir é o perfil desta
+// sessão (para liberar o lock da pasta de tokens). Escopo estrito por sessão:
+// filhos (--type=*) e perfis de OUTRAS sessões não são tocados. NÃO apaga
+// tokens/cookies — a próxima inicialização reutiliza a auth existente quando
+// válida. Best-effort: nunca derruba o fluxo em caso de falha.
+function killSessionBrowser(sessionId) {
+  const profilePath = path.join(SESSION_DIR, sessionId);
+  const ps = `
+& {
+  $profile = $args[0]
+  if (-not (Test-Path -LiteralPath $profile)) { return }
+  Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" | Where-Object {
+    $cmd = $_.CommandLine
+    if (-not $cmd) { return $false }
+    if ($cmd -like '*--type=*') { return $false }
+    $cmd.ToLower().Contains($profile.ToLower())
+  } | ForEach-Object {
+    try { Stop-Process -Id $_.ProcessId -Force -ErrorAction Stop | Out-Null } catch { }
+  }
+}`;
+  const proc = spawn(
+    'powershell',
+    ['-NoProfile', '-NonInteractive', '-Command', ps, profilePath],
+    { windowsHide: true }
+  );
+  proc.on('error', () => {});
+  proc.unref();
+  logWhatsApp(
+    `[${sessionId}] encerramento best-effort do browser órfão da sessão (tokens preservados)`
+  );
 }
 
 const sessions = new Map();
@@ -507,26 +633,31 @@ async function handleMonitorReplication(sessionId, message) {
 }
 
 // ===== Mapeamento de estados do WPPConnect =====
-function handleStatusFind(state, statusSession) {
+// generation: callbacks de inicializações anteriores são ignorados para que
+// um statusFind antigo nunca sobrescreva um estado posterior (ex.: connected).
+function handleStatusFind(state, generation, statusSession) {
+  if (state.initGen !== generation) return;
   const s = String(statusSession || '');
   switch (s) {
     case 'inChat':
     case 'isLogged':
-      state.qrCode = null;
-      if (state.connectionState !== 'connected') setSessionState(state, 'connecting');
+      if (state.connectionState !== 'connected') {
+        state.qrCode = null;
+        setSessionState(state, 'connecting');
+      }
       logWhatsApp(`[${state.sessionId}] sessão autenticada no WhatsApp Web`);
       break;
     case 'qrReadSuccess':
       state.qrCode = null;
-      setSessionState(state, 'connecting');
+      if (state.connectionState !== 'connected') setSessionState(state, 'connecting');
       logWhatsApp(`[${state.sessionId}] QR autenticado - aguardando cliente pronto`);
       break;
     case 'notLogged':
-      setSessionState(state, 'awaiting_qr');
+      enterAwaitingQr(state);
       break;
     case 'qrReadError':
     case 'qrReadFail':
-      setSessionState(state, 'awaiting_qr');
+      enterAwaitingQr(state);
       logWhatsApp(`[${state.sessionId}] leitura de QR falhou - novo QR gerado`);
       break;
     case 'phoneNotConnected':
@@ -536,8 +667,8 @@ function handleStatusFind(state, statusSession) {
     case 'browserClose':
     case 'serverClose':
     case 'disconnectedMobile':
-      setSessionState(state, 'disconnected');
       state.qrCode = null;
+      setSessionState(state, 'disconnected');
       logWhatsApp(`[${state.sessionId}] sessão encerrada/fechada (${s})`);
       break;
     default:
@@ -546,11 +677,14 @@ function handleStatusFind(state, statusSession) {
 }
 
 // Estados intermediários válidos NUNCA viram ERROR.
-function handleSocketState(state, socketState) {
+function handleSocketState(state, generation, socketState) {
+  if (state.initGen !== generation) return;
   const s = String(socketState || '').toUpperCase();
   switch (s) {
     case 'CONNECTED':
+      state.initRetries = 0;
       state.qrCode = null;
+      clearQrWatchdog(state);
       setSessionState(state, 'connected');
       void refreshHostDevice(state);
       break;
@@ -560,7 +694,7 @@ function handleSocketState(state, socketState) {
       break;
     case 'UNPAIRED':
     case 'UNPAIRED_IDLE':
-      setSessionState(state, 'awaiting_qr');
+      enterAwaitingQr(state);
       break;
     case 'CONFLICT':
       state.lastError = 'CONFLICT - sessão aberta em outro dispositivo';
@@ -586,26 +720,119 @@ function handleSocketState(state, socketState) {
   logWhatsApp(`[${state.sessionId}] estado = ${state.connectionState}`);
 }
 
+// Callback de QR: só armazena QR REAL (não vazio). QR vazio/indefinido
+// ("QR (undefined)" / sessão não pareada sem canvas) NUNCA é exposto como QR
+// válido — mantém o estado intermediário até a vigilância decidir o desfecho.
+function decodeQr(state, generation, base64Qr) {
+  if (state.initGen !== generation) return;
+  const data = typeof base64Qr === 'string' ? base64Qr : '';
+  if (!data) {
+    logError(
+      `[WhatsApp ${state.sessionId}] QR vazio/indefinido (init #${generation}) - sem canvas de QR - estado intermediário mantido`
+    );
+    return;
+  }
+  state.qrCode = data;
+  state.qrLastDataAt = Date.now();
+  logWhatsApp(`[${state.sessionId}] QR real gerado (init #${generation}) - pronto para escaneamento`);
+  enterAwaitingQr(state);
+}
+
+// Falha real do ciclo create(). Priorização de estados (tempo não pode
+// sobrescrever conectividade posterior):
+//   1) connected posterior vence qualquer timeout anterior;
+//   2) QR real vence (awaiting_qr);
+//   3) falha: encerra o browser órfão desta sessão (SEM apagar tokens) e
+//      reinicializa UMA vez para obter um cliente utilizável. Esgotou ->
+//      error + recuperação ("Tentar novamente").
+async function handleCreateFailure(state, generation, err) {
+  const msg = String((err && err.message) || err);
+  logError(`[WhatsApp ${state.sessionId}] falha ao iniciar sessão (init #${generation}): ${msg}`);
+  if (state.initGen !== generation) return state;
+
+  if (state.connectionState === 'connected') {
+    state.starting = false;
+    return state;
+  }
+  if (state.qrCode && state.qrCode.length) {
+    state.starting = false;
+    enterAwaitingQr(state);
+    return state;
+  }
+
+  clearQrWatchdog(state);
+
+  if (state.initRetries >= 1) {
+    state.starting = false;
+    state.client = null;
+    state.lastError = msg;
+    state.qrCode = null;
+    setSessionState(state, 'error');
+    killSessionBrowser(state.sessionId);
+    logError(
+      `[WhatsApp ${state.sessionId}] tentativas de inicialização esgotadas - estado de erro + "Tentar novamente" disponível`
+    );
+    return state;
+  }
+
+  state.initRetries += 1;
+  state.starting = false;
+  state.lastError = msg;
+  state.qrCode = null;
+  setSessionState(state, 'reconnecting');
+  logWhatsApp(
+    `[${state.sessionId}] reiniciando sessão após falha de init (tentativa ${state.initRetries}/1) - browser órfão encerrado, tokens preservados`
+  );
+  killSessionBrowser(state.sessionId);
+  await sleep(1500);
+  if (state.initGen !== generation) return state;
+  if (state.qrCode && state.qrCode.length) {
+    enterAwaitingQr(state);
+    return state;
+  }
+  return createSession(state.sessionId);
+}
+
 async function createSession(sessionId) {
   const state = getSessionState(sessionId);
-  if (state.client || state.starting) return state;
+  // Double-start guard: uma única inicialização por sessão por vez.
+  if (state.starting) return state;
+  if (state.client) {
+    // Cliente vivo (conectado/conectando/QR) é reutilizado.
+    if (
+      state.connectionState !== 'disconnected' &&
+      state.connectionState !== 'error'
+    ) {
+      logWhatsApp(
+        `[${sessionId}] cliente existente em uso (${state.connectionState}) - reutilizando`
+      );
+      return state;
+    }
+    // Cliente obsoleto em estado final/down fica preso em memória. Encerra
+    // antes de reconectar para permitir uma nova sessão sem apagar tokens.
+    logWhatsApp(
+      `[${sessionId}] cliente obsoleto (${state.connectionState}) - encerrando para reconectar`
+    );
+    await destroySession(sessionId);
+    if (state.starting) return state;
+  }
+  const generation = state.initGen + 1;
+  state.initGen = generation;
   state.starting = true;
   state.qrCode = null;
+  state.qrLastDataAt = null;
   state.lastError = null;
   setSessionState(state, 'connecting');
+  startQrStuckWatchdog(state);
 
-  logWhatsApp(`[${sessionId}] connect solicitado - iniciando sessão WPPConnect`);
+  logWhatsApp(`[${sessionId}] connect solicitado - iniciando sessão WPPConnect (init #${generation})`);
 
   try {
     const created = await create({
       session: sessionId,
       folderNameToken: SESSION_DIR,
-      catchQR: (base64Qr) => {
-        state.qrCode = String(base64Qr || '');
-        setSessionState(state, 'awaiting_qr');
-        logWhatsApp(`[${sessionId}] QR gerado - pronto para escaneamento`);
-      },
-      statusFind: (statusSession) => handleStatusFind(state, statusSession),
+      catchQR: (base64Qr) => decodeQr(state, generation, base64Qr),
+      statusFind: (statusSession) => handleStatusFind(state, generation, statusSession),
       headless: true,
       logQR: false,
       puppeteerOptions: {
@@ -616,16 +843,28 @@ async function createSession(sessionId) {
       autoClose: 0,
     });
 
+    // Uma inicialização mais nova começou enquanto esta terminava: descarta
+    // este cliente para não deixar DOIS browsers no mesmo perfil.
+    if (state.initGen !== generation) {
+      try {
+        if (typeof created.close === 'function') await created.close();
+      } catch {
+        // ignorado
+      }
+      return state;
+    }
+
     state.client = created;
     state.starting = false;
-    logWhatsApp(`[${sessionId}] cliente inicializado`);
+    state.initRetries = 0;
+    logWhatsApp(`[${sessionId}] cliente inicializado (init #${generation})`);
 
     // A v2.3.3 resolve o create() já com a sessão conectada quando há tokens
     // válidos. Confirma com getConnectionState e só então marca CONNECTED.
     let socketState = null;
-    if (typeof state.client.getConnectionState === 'function') {
+    if (typeof created.getConnectionState === 'function') {
       try {
-        socketState = await state.client.getConnectionState();
+        socketState = await created.getConnectionState();
       } catch (err) {
         logError(
           `[WhatsApp ${sessionId}] getConnectionState falhou: ${String((err && err.message) || err)}`
@@ -633,32 +872,32 @@ async function createSession(sessionId) {
       }
     }
     if (socketState) {
-      handleSocketState(state, socketState);
+      handleSocketState(state, generation, socketState);
     } else {
       state.qrCode = null;
       setSessionState(state, 'connected');
       void refreshHostDevice(state);
     }
 
-    registerSessionListeners(state);
+    registerSessionListeners(state, generation);
   } catch (err) {
-    state.starting = false;
-    const msg = String((err && err.message) || err);
-    state.lastError = msg;
-    setSessionState(state, 'error');
-    state.client = null;
-    logError(`[WhatsApp ${sessionId}] falha ao iniciar sessão: ${msg}`);
+    if (state.initGen === generation) {
+      await handleCreateFailure(state, generation, err);
+    }
   }
   return state;
 }
 
 // Listeners reais da API v2.3.3 (sem client.on).
 // Cada registro é isolado: falha em listener NUNCA derruba a sessão.
-function registerSessionListeners(state) {
+// generation: callbacks do cliente anterior (inicialização obsoleta) são
+// descartados para nunca corromperem o estado da inicialização corrente.
+function registerSessionListeners(state, generation) {
   const sessionClient = state.client;
   if (sessionClient && typeof sessionClient.onMessage === 'function') {
     try {
       sessionClient.onMessage((message) => {
+        if (state.initGen !== generation) return;
         registerMessage(state, message);
       });
       logWhatsApp(`[${state.sessionId}] listener onMessage registrado`);
@@ -682,6 +921,7 @@ function registerSessionListeners(state) {
   if (monitorListenerFn) {
     try {
       monitorListenerFn((message) => {
+        if (state.initGen !== generation) return;
         void handleMonitorReplication(state.sessionId, message);
       });
       logWhatsApp(
@@ -704,7 +944,8 @@ function registerSessionListeners(state) {
   if (sessionClient && typeof sessionClient.onStateChange === 'function') {
     try {
       sessionClient.onStateChange((socketState) => {
-        handleSocketState(state, socketState);
+        if (state.initGen !== generation) return;
+        handleSocketState(state, generation, socketState);
       });
       logWhatsApp(`[${state.sessionId}] listener onStateChange registrado`);
     } catch (err) {
@@ -719,6 +960,7 @@ function registerSessionListeners(state) {
 
 async function destroySession(sessionId) {
   const state = getSessionState(sessionId);
+  clearQrWatchdog(state);
   const current = state.client;
   state.client = null;
   if (current) {
@@ -737,11 +979,58 @@ async function destroySession(sessionId) {
       }
     }
   }
+  // Best-effort: garante que o processo principal do Chrome desta sessão saiu
+  // (libera o lock do perfil). Não apaga tokens/cookies da sessão.
+  killSessionBrowser(sessionId);
+  await sleep(1500);
   state.qrCode = null;
   state.starting = false;
   setSessionState(state, 'disconnected');
   state.lastError = null;
   logWhatsApp(`[${sessionId}] sessão destruída`);
+}
+
+// Limpa SOMENTE o dado de autenticação WhatsApp da sessão informada (dados
+// mortos que bloqueiam o QR: "Session Unpaired" + QR undefined). SEMPRE após
+// encerrar o browser da sessão. NÃO remove a conta/metadados e NÃO toca nas
+// demais sessões. Se o browser ainda estiver aberto, o rm falha (EPERM) e o
+// erro é registrado (a UI ainda verá o estado via vigilância do QR).
+function clearSessionAuthData(sessionId) {
+  const profileDir = path.join(SESSION_DIR, sessionId);
+  const targets = [
+    'Default/Local Storage',
+    'Default/Session Storage',
+    'Default/IndexedDB',
+    'Default/Service Worker',
+  ];
+  const removed = [];
+  for (const rel of targets) {
+    const target = path.join(profileDir, rel);
+    try {
+      if (existsSync(target)) {
+        rmSync(target, { recursive: true, force: true });
+        removed.push(rel);
+      }
+    } catch (err) {
+      logError(
+        `[WhatsApp ${sessionId}] falha ao limpar auth de ${rel}: ${String((err && err.message) || err)}`
+      );
+    }
+  }
+  const tokenFile = path.join(SESSION_DIR, `${sessionId}.data.json`);
+  try {
+    if (existsSync(tokenFile)) {
+      rmSync(tokenFile, { force: true });
+      removed.push('<session>.data.json');
+    }
+  } catch (err) {
+    logError(
+      `[WhatsApp ${sessionId}] falha ao remover arquivo de token: ${String((err && err.message) || err)}`
+    );
+  }
+  if (removed.length) {
+    logWhatsApp(`[${sessionId}] auth WhatsApp morta removida (${removed.join(', ')})`);
+  }
 }
 
 const app = express();
@@ -773,6 +1062,32 @@ function resolveSessionId(req, res, next) {
     return res.status(400).json({ ok: false, error: 'sessionId invalido.' });
   }
   req.resolvedSessionId = raw;
+  next();
+}
+
+// Identifica o tenant (cliente/org) autenticado. Sem auth ainda, o tenant é
+// passado por X-Tenant-Id; a validação de existência garante isolamento.
+function resolveTenant(req, res, next) {
+  const raw = String(req.headers['x-tenant-id'] || '').trim();
+  if (!raw) {
+    return res
+      .status(401)
+      .json({ ok: false, error: 'Tenant não identificado (falta X-Tenant-Id).' });
+  }
+  if (!SESSION_ID_PATTERN.test(raw)) {
+    return res.status(400).json({ ok: false, error: 'tenantId invalido.' });
+  }
+  req.tenantId = raw;
+  next();
+}
+
+// Endpoints tenant-scoped exigem tenant cadastrado (404 se desconhecido).
+function requireTenantExists(req, res, next) {
+  if (!affiliateStore.tenantExists(req.tenantId)) {
+    return res
+      .status(404)
+      .json({ ok: false, error: 'Tenant não cadastrado.', tenant: req.tenantId });
+  }
   next();
 }
 
@@ -919,6 +1234,16 @@ async function sendViaClient(sessionClient, groupId, message) {
   return messageId;
 }
 
+// Erro de envio sanitizado (nunca expõe segredos do tenant/Shopee).
+function sanitizeSendError(err) {
+  const raw =
+    err && typeof err.message === 'string'
+      ? err.message
+      : String((err && err.toString && err.toString()) || '');
+  if (!raw || !raw.trim()) return 'erro desconhecido.';
+  return raw.trim().slice(0, 300);
+}
+
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, service: 'domnex-whatsapp-server', session: DOMNEX_DEFAULT_SESSION });
 });
@@ -929,10 +1254,11 @@ app.get('/api/whatsapp/accounts', (req, res) => {
 });
 
 app.post('/api/whatsapp/accounts', (req, res) => {
-  if (accounts.length >= MAX_ACCOUNTS) {
-    return res
-      .status(409)
-      .json({ ok: false, error: `Limite de ${MAX_ACCOUNTS} contas atingido.` });
+  if (MAX_ACCOUNTS > 0 && accounts.length >= MAX_ACCOUNTS) {
+    return res.status(409).json({
+      ok: false,
+      error: `Limite de ${MAX_ACCOUNTS} contas atingido (definido por MAX_WHATSAPP_ACCOUNTS).`,
+    });
   }
   const { sessionId, name } = req.body || {};
   let sid = typeof sessionId === 'string' && sessionId.trim() ? sessionId.trim() : nextSessionId();
@@ -955,6 +1281,52 @@ app.post('/api/whatsapp/accounts', (req, res) => {
   logWhatsApp(`conta adicionada: ${sid}`);
   res.json({ ok: true, account: buildAccountView().find((a) => a.sessionId === sid) });
 });
+
+// ===== Remoção definitiva de uma sessão (conta + estado + monitor + tokens) =====
+app.delete(
+  '/api/whatsapp/:sessionId/account',
+  resolveSessionId,
+  async (req, res) => {
+    const sessionId = req.resolvedSessionId;
+    if (sessionId === DOMNEX_DEFAULT_SESSION) {
+      return res.status(409).json({
+        ok: false,
+        error: 'A conta principal (domnex-main) não pode ser removida.',
+      });
+    }
+    try {
+      await destroySession(sessionId);
+    } catch (err) {
+      logError(
+        `[WhatsApp ${sessionId}] falha ao encerrar sessão antes da remoção: ${String(
+          (err && err.message) || err
+        )}`
+      );
+    }
+    sessions.delete(sessionId);
+    accounts = accounts.filter((acc) => acc.sessionId !== sessionId);
+    saveAccounts();
+    if (monitorBySession[sessionId]) {
+      delete monitorBySession[sessionId];
+      saveMonitorConfig();
+    }
+    const tokenDir = path.join(SESSION_DIR, sessionId);
+    if (existsSync(tokenDir)) {
+      try {
+        rmSync(tokenDir, { recursive: true, force: true });
+        logWhatsApp(`[${sessionId}] pasta de tokens removida`);
+      } catch (err) {
+        logError(
+          `[WhatsApp ${sessionId}] falha ao remover tokens: ${String(
+            (err && err.message) || err
+          )}`
+        );
+      }
+    }
+    logWhatsApp(`conta removida: ${sessionId}`);
+    res.json({ ok: true, session: sessionId, status: 'removed' });
+  }
+);
 
 // ===== Rotas com sessão explícita (:sessionId) =====
 app.get(
@@ -997,6 +1369,29 @@ app.get(
       return res.status(204).json({ qr: null });
     }
     res.json({ qr });
+  }
+);
+
+// Recupera o QR travado: encerra a sessão órfã (logout + close), remove a
+// auth morta que bloqueia o canvas de QR e recria a sessão -> QR REAL novo.
+app.post(
+  '/api/whatsapp/:sessionId/recover-qr',
+  resolveSessionId,
+  async (req, res) => {
+    const sessionId = req.resolvedSessionId;
+    try {
+      clearQrWatchdog(getSessionState(sessionId));
+      await destroySession(sessionId);
+      clearSessionAuthData(sessionId);
+      void createSession(sessionId);
+      logWhatsApp(`[${sessionId}] recuperação de QR solicitada (nova sessão real iniciada)`);
+      res.json({ ok: true, session: sessionId, status: 'connecting' });
+    } catch (err) {
+      logError(
+        `[WhatsApp ${sessionId}] falha ao recuperar QR: ${String((err && err.message) || err)}`
+      );
+      res.status(500).json({ ok: false, error: 'Falha ao gerar novo QR. Tente novamente.' });
+    }
   }
 );
 
@@ -1130,6 +1525,21 @@ app.get('/api/whatsapp/qr', (req, res) => {
     return res.status(204).json({ qr: null });
   }
   res.json({ qr });
+});
+
+app.post('/api/whatsapp/recover-qr', async (req, res) => {
+  try {
+    const sessionId = DOMNEX_DEFAULT_SESSION;
+    clearQrWatchdog(getSessionState(sessionId));
+    await destroySession(sessionId);
+    clearSessionAuthData(sessionId);
+    void createSession(sessionId);
+    logWhatsApp(`[${sessionId}] recuperação de QR solicitada (rota legada)`);
+    res.json({ ok: true, session: sessionId, status: 'connecting' });
+  } catch (err) {
+    logError(`[WhatsApp] falha ao recuperar QR: ${String((err && err.message) || err)}`);
+    res.status(500).json({ ok: false, error: 'Falha ao gerar novo QR. Tente novamente.' });
+  }
 });
 
 app.get('/api/whatsapp/account', makeRequireConnected(DOMNEX_DEFAULT_SESSION), async (req, res) => {
@@ -1280,6 +1690,404 @@ app.post('/api/monitor', (req, res) => {
     parentGroupId: cfg.parentGroupId,
     childGroupIds: cfg.childGroupIds,
   });
+});
+
+// ===== Credenciais de Afiliados por Tenant (multi-cliente) =====
+// TODAS as rotas são scoped pelo tenant atual (X-Tenant-Id).
+// GET → view 100% segura (nunca contém secret) com appId mascarado.
+// POST → salva/atualiza credenciais Shopee do tenant autenticado.
+// POST /test → teste de conexão real usando EXCLUSIVAMENTE credenciais do
+//              tenant atual; retorna apenas status sanitizado.
+app.get(
+  '/api/affiliate/credentials/shopee',
+  resolveTenant,
+  requireTenantExists,
+  (req, res) => {
+    const view = affiliateStore.getShopeePublicView(req.tenantId);
+    res.json({ ok: true, tenant: req.tenantId, credentials: view });
+  }
+);
+
+app.post(
+  '/api/affiliate/credentials/shopee',
+  resolveTenant,
+  (req, res) => {
+    const body = req.body || {};
+    if (typeof body !== 'object' || Array.isArray(body)) {
+      return res.status(400).json({ ok: false, error: 'corpo inválido.' });
+    }
+    try {
+      affiliateStore.putCredentials(req.tenantId, {
+        shopee: body,
+      });
+      const view = affiliateStore.getShopeePublicView(req.tenantId);
+      logInfo(`credenciais Shopee atualizadas (tenant=${req.tenantId})`);
+      res.json({ ok: true, tenant: req.tenantId, credentials: view });
+    } catch (err) {
+      if (err instanceof EncryptionKeyMissingError) {
+        return res.status(500).json({
+          ok: false,
+          error: 'Chave de encriptação (ENCRYPTION_KEY) não configurada. Segredo não persistido.',
+        });
+      }
+      logError(
+        `falha ao salvar credenciais Shopee (tenant=${req.tenantId}): ${String(
+          (err && err.message) || err
+        )}`
+      );
+      res.status(500).json({ ok: false, error: 'Falha ao salvar credenciais.' });
+    }
+  }
+);
+
+app.post(
+  '/api/affiliate/credentials/shopee/test',
+  resolveTenant,
+  requireTenantExists,
+  async (req, res) => {
+    try {
+      const sourceUrl =
+        req.body && typeof req.body.sourceUrl === 'string'
+          ? req.body.sourceUrl.trim()
+          : undefined;
+      const result = await affiliateStore.testShopee(req.tenantId, {
+        sourceUrl,
+      });
+      res.json({ ok: true, tenant: req.tenantId, ...result });
+    } catch (err) {
+      logError(
+        `falha no teste de credencial (tenant=${req.tenantId}): ${String(
+          (err && err.message) || err
+        )}`
+      );
+      res.status(500).json({ ok: false, error: 'Falha no teste de credencial.' });
+    }
+  }
+);
+
+// ===== Busca Automática (fonte real Shopee, tenant-scoped) =====
+// GET → status da fonte real (configurada/habilitada) para o tenant.
+// POST /run → executa a busca real (productOfferV2), aplica filtros e gera
+//             short links afiliados (generateShortLink) para aprovados.
+// Tudo com as credenciais do tenant; o frontend nunca chama a Shopee.
+app.get('/api/affiliate/auto-search/config', resolveTenant, (req, res) => {
+  const view = affiliateStore.getShopeePublicView(req.tenantId);
+  res.json({
+    ok: true,
+    tenant: req.tenantId,
+    config: {
+      configured: view.configured,
+      enabled: view.enabled,
+      status: view.status,
+      appIdMasked: view.appIdMasked,
+      subIds: view.subIds,
+    },
+  });
+});
+
+app.post('/api/affiliate/auto-search/run', resolveTenant, async (req, res) => {
+  try {
+    const result = await runShopeeAutoSearch({
+      tenantId: req.tenantId,
+      store: affiliateStore,
+      criteria: (req.body && req.body.criteria) || req.body || {},
+    });
+    if (result.ok === false) {
+      return res.status(400).json({ ok: false, tenant: req.tenantId, ...result });
+    }
+    logInfo(
+      `busca Shopee executada (tenant=${req.tenantId}): consultados=${result.consulted} aprovados=${result.qualified} links=${result.shortLinksGenerated}`
+    );
+    res.json({ ok: true, tenant: req.tenantId, ...result });
+  } catch (err) {
+    logError(
+      `falha na busca Shopee (tenant=${req.tenantId}): ${String(
+        (err && err.message) || err
+      )}`
+    );
+    res.status(500).json({ ok: false, error: 'Falha na busca automática.' });
+  }
+});
+
+// ===== Automações da Busca Automática (config por tenant, sem envio) =====
+app.get('/api/affiliate/auto-search/automations', resolveTenant, (req, res) => {
+  const automations = automationsStore.list(req.tenantId);
+  res.json({ ok: true, tenant: req.tenantId, automations });
+});
+
+app.post('/api/affiliate/auto-search/automations', resolveTenant, (req, res) => {
+  try {
+    const automation = automationsStore.upsert(req.tenantId, req.body || {});
+    logInfo(`automação criada (tenant=${req.tenantId}, id=${automation.id})`);
+    res.json({ ok: true, tenant: req.tenantId, automation });
+  } catch (err) {
+    logError(
+      `falha ao criar automação (tenant=${req.tenantId}): ${String(
+        (err && err.message) || err
+      )}`
+    );
+    res.status(500).json({ ok: false, error: 'Falha ao salvar automação.' });
+  }
+});
+
+app.put(
+  '/api/affiliate/auto-search/automations/:id',
+  resolveTenant,
+  (req, res) => {
+    try {
+      const current = automationsStore.get(req.tenantId, req.params.id);
+      if (!current) {
+        return res
+          .status(404)
+          .json({ ok: false, error: 'Automação não encontrada.', tenant: req.tenantId });
+      }
+      const automation = automationsStore.upsert(req.tenantId, {
+        ...(req.body || {}),
+        id: req.params.id,
+      });
+      logInfo(`automação atualizada (tenant=${req.tenantId}, id=${automation.id})`);
+      res.json({ ok: true, tenant: req.tenantId, automation });
+    } catch (err) {
+      logError(
+        `falha ao atualizar automação (tenant=${req.tenantId}): ${String(
+          (err && err.message) || err
+        )}`
+      );
+      res.status(500).json({ ok: false, error: 'Falha ao atualizar automação.' });
+    }
+  }
+);
+
+app.delete(
+  '/api/affiliate/auto-search/automations/:id',
+  resolveTenant,
+  (req, res) => {
+    const removed = automationsStore.remove(req.tenantId, req.params.id);
+    if (!removed) {
+      return res
+        .status(404)
+        .json({ ok: false, error: 'Automação não encontrada.', tenant: req.tenantId });
+    }
+    logInfo(`automação removida (tenant=${req.tenantId}, id=${req.params.id})`);
+    res.json({ ok: true, tenant: req.tenantId, removed: true });
+  }
+);
+
+// ===== Envio manual real (1 produto, 1 grupo, conta salva na automação) =====
+// FLUXO: automação salva → busca real → validações → mensagem com template → WPPConnect.
+// Segurança: o produto/price/short link vêm da API (nunca do corpo da requisição);
+// grupo é validado contra os grupos REAIS da sessão E contra os salvos na automação.
+app.post(
+  '/api/affiliate/auto-search/automations/:id/send',
+  resolveTenant,
+  async (req, res) => {
+    const tenantId = req.tenantId;
+    try {
+      const automation = automationsStore.get(tenantId, req.params.id);
+      if (!automation) {
+        return res
+          .status(404)
+          .json({ ok: false, error: 'Automação não encontrada.', tenant: tenantId });
+      }
+
+      const raw = req.body || {};
+      const groupId = typeof raw.groupId === 'string' ? raw.groupId.trim() : '';
+      const itemId = Number(raw.itemId);
+      if (!groupId) {
+        return res.status(400).json({ ok: false, error: 'groupId e obrigatorio.' });
+      }
+      if (!Number.isFinite(itemId) || itemId < 0) {
+        return res.status(400).json({ ok: false, error: 'itemId e obrigatorio.' });
+      }
+
+      const sessionId = String(automation.destination.accountId || '').trim();
+      if (!sessionId) {
+        return res
+          .status(400)
+          .json({ ok: false, error: 'A automação não possui conta WhatsApp de destino.' });
+      }
+      if (!automation.destination.groupIds.includes(groupId)) {
+        return res.status(400).json({
+          ok: false,
+          error: 'O grupo selecionado não pertence aos grupos salvos na automação.',
+        });
+      }
+
+      const state = getSessionState(sessionId);
+      if (!state.client || state.connectionState !== 'connected') {
+        return res.status(409).json({
+          ok: false,
+          error: `Conta WhatsApp ${sessionId} não está conectada (status real: ${state.connectionState}).`,
+          status: state.connectionState,
+        });
+      }
+
+      let realGroups = [];
+      try {
+        realGroups = await listGroupsForClient(state.client);
+      } catch (err) {
+        logError(
+          `[auto-search] falha ao listar grupos reais para envio: ${sanitizeSendError(err)}`
+        );
+        return res
+          .status(500)
+          .json({ ok: false, error: 'Falha ao validar grupos reais da conta.' });
+      }
+      if (!Array.isArray(realGroups) || !realGroups.some((group) => group.id === groupId)) {
+        return res.status(400).json({
+          ok: false,
+          error: 'O grupo selecionado não pertence aos grupos reais da conta WhatsApp.',
+        });
+      }
+
+      // Re-executa a busca com os critérios reais da automação (fonte da verdade).
+      const result = await runShopeeAutoSearch({
+        tenantId,
+        store: affiliateStore,
+        criteria: {
+          maxResults: automation.maxResults,
+          priority: automation.priority,
+          categoryId: automation.categories.general ? null : automation.categories.categoryId,
+          filters: automation.filters,
+        },
+      });
+      if (!result.ok) {
+        return res
+          .status(400)
+          .json({ ok: false, error: result.error || 'Falha na busca automática.' });
+      }
+
+      const approved = (Array.isArray(result.products) ? result.products : []).filter(
+        (product) => product && product.status === 'qualified'
+      );
+      if (approved.length === 0) {
+        return res
+          .status(400)
+          .json({ ok: false, error: 'Nenhum produto aprovado com os filtros atuais.' });
+      }
+      const product = approved.find((candidate) => Number(candidate.itemId) === itemId);
+      if (!product) {
+        return res
+          .status(400)
+          .json({ ok: false, error: 'Produto aprovado não localizado na consulta atual.' });
+      }
+      if (!product.affiliateUrl) {
+        return res.status(400).json({
+          ok: false,
+          error: product.linkError
+            ? `Short link não gerado para este produto: ${product.linkError}`
+            : 'Short link não gerado para este produto.',
+        });
+      }
+
+      const message = buildMessageFromTemplate(automation.messageTemplate, product);
+      if (!message.trim()) {
+        return res.status(400).json({ ok: false, error: 'Template vazio — nada a enviar.' });
+      }
+      if (message.trim().length > 4096) {
+        return res
+          .status(400)
+          .json({ ok: false, error: 'Mensagem muito longa (max. 4096 caracteres).' });
+      }
+
+      const recordBase = {
+        tenantId,
+        automationId: automation.id,
+        sessionId,
+        groupId,
+        itemId,
+        marketplace: 'Shopee',
+        affiliateUrl: product.affiliateUrl,
+        productName: product.productName,
+      };
+
+      try {
+        const messageId = await sendViaClient(state.client, groupId, message);
+        const record = {
+          ...recordBase,
+          sentAt: new Date().toISOString(),
+          status: 'sent',
+          messageId,
+          error: null,
+        };
+        autoSearchSendsStore.record(tenantId, record);
+        logInfo(
+          `[auto-search] envio real OK (tenant=${tenantId}, automation=${automation.id}, session=${sessionId}, group=${groupId}, item=${itemId}, msg=${messageId})`
+        );
+        res.json({ ok: true, tenant: tenantId, send: record, message });
+      } catch (err) {
+        const reason = sanitizeSendError(err);
+        const record = {
+          ...recordBase,
+          sentAt: new Date().toISOString(),
+          status: 'failed',
+          messageId: null,
+          error: reason,
+        };
+        autoSearchSendsStore.record(tenantId, record);
+        logError(
+          `[auto-search] envio FALHOU (tenant=${tenantId}, automation=${automation.id}, group=${groupId}): ${reason}`
+        );
+        res
+          .status(500)
+          .json({
+            ok: false,
+            error: reason ? `Falha no envio: ${reason}` : 'Falha no envio WhatsApp.',
+            send: record,
+          });
+      }
+    } catch (err) {
+      logError(
+        `[auto-search] falha ao preparar envio manual (tenant=${tenantId}): ${sanitizeSendError(err)}`
+      );
+      res.status(500).json({ ok: false, error: 'Falha ao preparar o envio.' });
+    }
+  }
+);
+
+app.get('/api/affiliate/auto-search/sends', resolveTenant, (req, res) => {
+  res.json({ ok: true, tenant: req.tenantId, sends: autoSearchSendsStore.list(req.tenantId) });
+});
+
+// ===== Destinos reais (contas WhatsApp + grupos sincronizados) =====
+// Tenant-scoped no transporte, mas as contas WhatsApp deste backend são
+// compartilhadas; grupos NUNCA são fictícios: vêm do cliente conectado.
+app.get('/api/affiliate/auto-search/destinations', resolveTenant, async (req, res) => {
+  try {
+    const accounts = [];
+    for (const acc of buildAccountView()) {
+      const entry = {
+        id: acc.sessionId,
+        name: acc.name,
+        phone: acc.phone,
+        status: acc.status,
+        groups: [],
+      };
+      if (acc.status === 'connected') {
+        try {
+          const state = getSessionState(acc.sessionId);
+          if (state.client) {
+            entry.groups = await listGroupsForClient(state.client);
+          }
+        } catch (err) {
+          logError(
+            `[WhatsApp ${acc.sessionId}] falha ao listar grupos p/ destinos: ${String(
+              (err && err.message) || err
+            )}`
+          );
+        }
+      }
+      accounts.push(entry);
+    }
+    res.json({ ok: true, tenant: req.tenantId, accounts });
+  } catch (err) {
+    logError(
+      `falha ao listar destinos (tenant=${req.tenantId}): ${String(
+        (err && err.message) || err
+      )}`
+    );
+    res.status(500).json({ ok: false, error: 'Falha ao listar destinos.' });
+  }
 });
 
 app.use((err, req, res, next) => {

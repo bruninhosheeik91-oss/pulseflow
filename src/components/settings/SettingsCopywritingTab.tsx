@@ -36,7 +36,7 @@ export const SettingsCopywritingTab: React.FC<SettingsCopywritingTabProps> = ({
         <div className="flex items-center gap-2.5">
           <FileText className="w-4 h-4 text-[#00C2FF] shrink-0" />
           <span className="text-[#8E9BAE]">
-            Padronize a estrutura de texto, gatilhos de urgência e avisos legais que o DOMNEX DEALS aplica nas mensagens automáticas.
+            Padronize a estrutura de texto, gatilhos de urgência e avisos legais que o PULSE FLOW aplica nas mensagens automáticas.
           </span>
         </div>
       </div>

@@ -658,45 +658,6 @@ export interface TopCampaignAnalytics {
 // MÓDULO CONFIGURAÇÕES — Ajustes do Sistema
 // ----------------------------------------------------
 
-export interface MarketplaceCredentials {
-  amazon: {
-    associateTag: string;
-    accessKeyId: string;
-    secretAccessKey: string;
-    enabled: boolean;
-  };
-  shopee: {
-    appId: string;
-    secretKey: string;
-    affiliateDomain: string;
-    enabled: boolean;
-  };
-  mercadoLivre: {
-    appId: string;
-    clientSecret: string;
-    redirectUri: string;
-    enabled: boolean;
-  };
-  aliExpress: {
-    appKey: string;
-    secretKey: string;
-    trackingId: string;
-    enabled: boolean;
-  };
-  magalu: {
-    affiliateCode: string;
-    enabled: boolean;
-  };
-  tiktokShop: {
-    partnerId: string;
-    appSecret: string;
-    enabled: boolean;
-  };
-  globalUtmSource: string;
-  globalUtmMedium: string;
-  globalUtmCampaign: string;
-}
-
 export interface GatewaySettings {
   provider: 'Evolution API' | 'Z-API' | 'Baileys' | 'Webhooks';
   endpointUrl: string;

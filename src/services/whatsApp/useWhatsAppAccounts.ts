@@ -2,13 +2,26 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   WhatsAppAccount,
   WhatsAppGroup,
+  DOMNEX_DEFAULT_SESSION_ID,
 } from '../../types/whatsApp';
 import { getWhatsAppProvider } from './provider';
-import { setSyncedGroupsForSession } from './groupConfigStore';
+import {
+  setSyncedGroupsForSession,
+  clearGroupsForSession,
+} from './groupConfigStore';
 
 type ActionResult =
   | { ok: true; error?: undefined }
   | { ok: false; error: string };
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), ms)
+    ),
+  ]);
+}
 
 /**
  * Gerencia múltiplas contas WhatsApp independentes (backend multissessão).
@@ -51,8 +64,12 @@ export function useWhatsAppAccounts() {
     void refreshAccounts();
   }, [refreshAccounts]);
 
-  // Polling: mantém status real de todas as contas e busca o QR apenas das
+  // Polling: mantém o status real de todas as contas e busca o QR APENAS das
   // sessões que estão aguardando leitura / conectando.
+  //
+  // Isolamento: a lista é o valor mais importante (atualizado primeiro) e cada
+  // QR é buscado de forma independente com timeout próprio. Uma conta com QR
+  // lento/expirando NÃO bloqueia a atualização das demais nem congela a tela.
   useEffect(() => {
     let cancelled = false;
     const tick = async () => {
@@ -62,18 +79,37 @@ export function useWhatsAppAccounts() {
         const list = await provider.listAccounts();
         if (cancelled) return;
         setAccounts(list);
+        setError(null);
+
         const pending = list.filter(
-          (acc) => acc.status === 'awaiting_qr' || acc.status === 'connecting'
+          (acc) =>
+            acc.status === 'awaiting_qr' || acc.status === 'connecting'
         );
-        if (pending.length > 0) {
-          const patches: Record<string, string | null> = {};
-          for (const acc of pending) {
-            const qr = await provider.getQrCode(acc.sessionId);
-            patches[acc.sessionId] = qr ? qr.imageDataUrl : null;
+        if (pending.length === 0) return;
+
+        const results = await Promise.allSettled(
+          pending.map(async (acc) => {
+            const qrPayload = await withTimeout(
+              provider.getQrCode(acc.sessionId),
+              4000
+            );
+            return { sessionId: acc.sessionId, qr: qrPayload };
+          })
+        );
+        if (cancelled) return;
+
+        const patches: Record<string, string | null> = {};
+        for (const result of results) {
+          if (result.status === 'fulfilled' && result.value) {
+            patches[result.value.sessionId] = result.value.qr
+              ? result.value.qr.imageDataUrl
+              : null;
           }
-          if (!cancelled) {
-            setQrBySession((prev) => ({ ...prev, ...patches }));
-          }
+          // Rejeições (timeout/transitórias) são ignoradas: o QR anterior é
+          // mantido e a próxima execução do taxa tenta de novo.
+        }
+        if (Object.keys(patches).length > 0) {
+          setQrBySession((prev) => ({ ...prev, ...patches }));
         }
       } catch {
         // servidor indisponível; nova tentativa no próximo ciclo
@@ -128,6 +164,27 @@ export function useWhatsAppAccounts() {
     []
   );
 
+  const recoverAccount = useCallback(
+    async (sessionId: string): Promise<ActionResult> => {
+      const provider = getWhatsAppProvider();
+      if (!provider) {
+        return { ok: false, error: 'Provedor de conexão não configurado.' };
+      }
+      try {
+        await provider.recoverQr(sessionId);
+        setQrBySession((prev) => ({ ...prev, [sessionId]: null }));
+        return { ok: true };
+      } catch (err) {
+        return {
+          ok: false,
+          error:
+            err instanceof Error ? err.message : 'Falha ao gerar novo QR.',
+        };
+      }
+    },
+    []
+  );
+
   const disconnectAccount = useCallback(
     async (sessionId: string): Promise<ActionResult> => {
       const provider = getWhatsAppProvider();
@@ -148,6 +205,44 @@ export function useWhatsAppAccounts() {
       }
     },
     []
+  );
+
+  const removeAccount = useCallback(
+    async (sessionId: string): Promise<ActionResult> => {
+      const provider = getWhatsAppProvider();
+      if (!provider) {
+        return { ok: false, error: 'Provedor de conexão não configurado.' };
+      }
+      if (sessionId === DOMNEX_DEFAULT_SESSION_ID) {
+        return {
+          ok: false,
+          error: 'A conta principal (domnex-main) não pode ser removida.',
+        };
+      }
+      try {
+        await provider.removeAccount(sessionId);
+        clearGroupsForSession(sessionId);
+        setQrBySession((prev) => {
+          const next = { ...prev };
+          delete next[sessionId];
+          return next;
+        });
+        setGroupsBySession((prev) => {
+          const next = { ...prev };
+          delete next[sessionId];
+          return next;
+        });
+        await refreshAccounts();
+        return { ok: true };
+      } catch (err) {
+        return {
+          ok: false,
+          error:
+            err instanceof Error ? err.message : 'Falha ao remover a conta.',
+        };
+      }
+    },
+    [refreshAccounts]
   );
 
   const syncGroupsFor = useCallback(
@@ -186,6 +281,8 @@ export function useWhatsAppAccounts() {
     addAccount,
     connectAccount,
     disconnectAccount,
+    recoverAccount,
     syncGroupsFor,
+    removeAccount,
   };
 }

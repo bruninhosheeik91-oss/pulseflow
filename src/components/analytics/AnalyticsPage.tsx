@@ -64,7 +64,7 @@ export const AnalyticsPage: React.FC = () => {
     downloadAnchor.setAttribute('href', dataStr);
     downloadAnchor.setAttribute(
       'download',
-      `domnex_analytics_${timeframe}_${new Date().toISOString().slice(0, 10)}.json`
+      `pulse_flow_analytics_${timeframe}_${new Date().toISOString().slice(0, 10)}.json`
     );
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();

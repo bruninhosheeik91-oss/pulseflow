@@ -18,6 +18,7 @@ export const WhatsAppPage: React.FC = () => {
     groupsError,
     connect,
     reconnect,
+    recover,
     disconnect,
     syncGroups,
     sendMessage,
@@ -32,7 +33,7 @@ export const WhatsAppPage: React.FC = () => {
   };
 
   const handleRetry = () => {
-    void connect();
+    void recover();
   };
 
   return (
@@ -43,7 +44,7 @@ export const WhatsAppPage: React.FC = () => {
           WhatsApp
         </h1>
         <p className="text-xs text-[#8E9BAE] mt-1">
-          Conecte e gerencie a conta utilizada pelas automações do DOMNEX.
+          Conecte e gerencie a conta utilizada pelas automações do PULSE FLOW.
         </p>
       </div>
 

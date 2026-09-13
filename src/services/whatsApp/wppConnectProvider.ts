@@ -128,6 +128,13 @@ export class WppConnectProvider implements WhatsAppProvider {
     });
   }
 
+  async recoverQr(sessionId?: string): Promise<void> {
+    await apiFetch(this.baseUrl, sessionPath(sessionId, '/recover-qr'), {
+      method: 'POST',
+      body: JSON.stringify({}),
+    });
+  }
+
   async getConnectionStatus(sessionId?: string): Promise<WhatsAppConnectionStatus> {
     const data = await apiFetch<{ status: string; connected: boolean }>(
       this.baseUrl,
@@ -210,6 +217,14 @@ export class WppConnectProvider implements WhatsAppProvider {
       }
     );
     return normalizeAccount(data.account);
+  }
+
+  async removeAccount(sessionId: string): Promise<void> {
+    await apiFetch(
+      this.baseUrl,
+      `/api/whatsapp/${encodeURIComponent(sessionId)}/account`,
+      { method: 'DELETE' }
+    );
   }
 
   async sendMessage(to: string, text: string): Promise<void> {

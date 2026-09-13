@@ -16,13 +16,9 @@ import { AutoSearchPage } from './components/autoSearch/AutoSearchPage';
 import { LinkListPage } from './components/linkList/LinkListPage';
 import { MirrorPage } from './components/mirror/MirrorPage';
 import { MonitorGroupPage } from './components/monitorGroup/MonitorGroupPage';
+import { AffiliateProgramsPage } from './components/affiliatePrograms/AffiliateProgramsPage';
 import { WhatsAppPage } from './components/whatsApp/WhatsAppPage';
-import { KpiCards } from './components/dashboard/KpiCards';
-import { PerformanceSection } from './components/dashboard/PerformanceSection';
-import { BestDealsTable } from './components/dashboard/BestDealsTable';
-import { PublishingQueue } from './components/dashboard/PublishingQueue';
-import { EngineStatusCard } from './components/dashboard/EngineStatusCard';
-import { AutomationsSummaryCard } from './components/dashboard/AutomationsSummaryCard';
+import { GroupsDashboard } from './components/dashboard/GroupsDashboard';
 import { DealDetailModal } from './components/dashboard/DealDetailModal';
 import { PublishModal } from './components/dashboard/PublishModal';
 import { NewCampaignModal } from './components/dashboard/NewCampaignModal';
@@ -156,14 +152,14 @@ export default function App() {
       case 'WhatsApp':
         return {
           title: 'WhatsApp',
-          subtitle: 'Conecte e gerencie a conta utilizada pelas automações do DOMNEX.',
+          subtitle: 'Conecte e gerencie a conta utilizada pelas automações do PULSE FLOW.',
         };
       case 'Links de Redirecionamento':
         return { title: 'Links de Redirecionamento', subtitle: 'Configuração de links de redirecionamento para afiliados' };
       case 'Textos de Disparo':
         return { title: 'Textos de Disparo', subtitle: 'Templates e textos para mensagens automáticas' };
       case 'Programas de Afiliado':
-        return { title: 'Programas de Afiliado', subtitle: 'Gerenciamento de programas e parcerias de afiliados' };
+        return { title: 'Programas de Afiliados', subtitle: 'Gerenciamento de programas e parcerias de afiliados' };
       case 'Cupons':
         return { title: 'Cupons', subtitle: 'Criação e gestão de cupons de desconto' };
       case 'Analytics':
@@ -183,7 +179,7 @@ export default function App() {
       case 'Suporte':
         return { title: 'Suporte', subtitle: 'Central de ajuda e suporte técnico' };
       default:
-        return { title: 'Dashboard', subtitle: 'Visão geral da sua operação de afiliados' };
+        return { title: 'Dashboard', subtitle: 'Visão geral dos seus grupos e contas WhatsApp' };
     }
   };
 
@@ -248,38 +244,10 @@ export default function App() {
             <ProductsPage />
           ) : activeNav === 'Ofertas' ? (
             <OffersPage />
+          ) : activeNav === 'Programas de Afiliado' ? (
+            <AffiliateProgramsPage />
           ) : activeNav === 'Dashboard' ? (
-            <div className="space-y-6">
-              {/* Section 5: Operational KPI Cards */}
-              <KpiCards />
-
-              {/* Grid: Performance Chart (Left) + Motor de Ofertas & Fila (Right) */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-                {/* Left Col: Performance Chart */}
-                <div className="lg:col-span-7 xl:col-span-8 flex flex-col">
-                  <PerformanceSection />
-                </div>
-
-                {/* Right Col: Motor de Ofertas + Automações + Próximas Publicações */}
-                <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-5">
-                  <EngineStatusCard />
-                  <AutomationsSummaryCard onNavigate={handleSidebarNavigate} />
-                  <PublishingQueue
-                    onOpenFullQueue={() => changeView('Fila de Publicação')}
-                  />
-                </div>
-              </div>
-
-              {/* Section 8: Melhores Ofertas Encontradas */}
-              <BestDealsTable
-                offers={offers}
-                onViewOffer={(offer) => setSelectedOfferForDetail(offer)}
-                onApproveOffer={handleApproveOffer}
-                onRejectOffer={handleRejectOffer}
-                onPublishOffer={(offer) => setSelectedOfferForPublish(offer)}
-                searchFilter={searchQuery}
-              />
-            </div>
+            <GroupsDashboard />
           ) : (
             <PlaceholderPage title={pageInfo.title} />
           )}

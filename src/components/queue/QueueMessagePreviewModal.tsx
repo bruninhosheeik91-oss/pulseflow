@@ -170,7 +170,7 @@ export const QueueMessagePreviewModal: React.FC<QueueMessagePreviewModalProps> =
                     <p className="text-[10px] text-[#8E9BAE]">
                       {platformView === 'WhatsApp'
                         ? 'WhatsApp Business API • Criptografia ativa'
-                        : 'Canal Telegram • @domnex_bot'}
+                        : 'Canal Telegram • @pulseflow_bot'}
                     </p>
                   </div>
                 </div>

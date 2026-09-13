@@ -1,50 +1,10 @@
 import {
-  MarketplaceCredentials,
   GatewaySettings,
   AntiBanSettings,
   ScoringWeightsSettings,
   CopywritingSettings,
   SystemGeneralSettings,
 } from '../types';
-
-export const initialMarketplaceSettings: MarketplaceCredentials = {
-  amazon: {
-    associateTag: '',
-    accessKeyId: '',
-    secretAccessKey: '',
-    enabled: false,
-  },
-  shopee: {
-    appId: '',
-    secretKey: '',
-    affiliateDomain: '',
-    enabled: false,
-  },
-  mercadoLivre: {
-    appId: '',
-    clientSecret: '',
-    redirectUri: '',
-    enabled: false,
-  },
-  aliExpress: {
-    appKey: '',
-    secretKey: '',
-    trackingId: '',
-    enabled: false,
-  },
-  magalu: {
-    affiliateCode: '',
-    enabled: false,
-  },
-  tiktokShop: {
-    partnerId: '',
-    appSecret: '',
-    enabled: false,
-  },
-  globalUtmSource: '',
-  globalUtmMedium: '',
-  globalUtmCampaign: '',
-};
 
 export const initialGatewaySettings: GatewaySettings = {
   provider: 'Evolution API',

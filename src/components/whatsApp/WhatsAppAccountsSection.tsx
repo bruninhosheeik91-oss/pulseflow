@@ -7,6 +7,7 @@ import {
   Plus,
   QrCode,
   RefreshCw,
+  Trash2,
   Unplug,
   Users,
 } from 'lucide-react';
@@ -15,11 +16,10 @@ import {
   WhatsAppAccount,
   WHATSAPP_STATUS_LABELS,
   WhatsAppConnectionStatus,
+  DOMNEX_DEFAULT_SESSION_ID,
 } from '../../types/whatsApp';
 import { useWhatsAppAccounts } from '../../services/whatsApp/useWhatsAppAccounts';
 import { useWhatsAppGroupConfig } from '../../services/whatsApp/groupConfigStore';
-
-const MAX_ACCOUNTS_HINT = 'Suporte a 2 contas simultâneas nesta fase.';
 
 function StatusBadge({
   status,
@@ -53,7 +53,9 @@ export const WhatsAppAccountsSection: React.FC = () => {
     addAccount,
     connectAccount,
     disconnectAccount,
+    recoverAccount,
     syncGroupsFor,
+    removeAccount,
   } = useWhatsAppAccounts();
   const { groups } = useWhatsAppGroupConfig();
   const [busySession, setBusySession] = useState<string | null>(null);
@@ -84,13 +86,34 @@ export const WhatsAppAccountsSection: React.FC = () => {
     if (!result.ok) setFeedback(result.error);
   };
 
+  const handleRecover = async (account: WhatsAppAccount) => {
+    setFeedback(null);
+    setBusySession(account.sessionId);
+    const result = await recoverAccount(account.sessionId);
+    setBusySession(null);
+    if (!result.ok) setFeedback(result.error);
+  };
+
   const handleSync = async (account: WhatsAppAccount) => {
     setFeedback(null);
     const result = await syncGroupsFor(account.sessionId);
     if (!result.ok) setFeedback(result.error);
   };
 
-  const isMaxed = accounts.length >= 2;
+  const handleRemove = async (account: WhatsAppAccount) => {
+    setFeedback(null);
+    if (
+      !window.confirm(
+        `Remover a sessão "${account.name || account.sessionId}"?\nOs tokens e dados serão apagados permanentemente.`
+      )
+    ) {
+      return;
+    }
+    setBusySession(account.sessionId);
+    const result = await removeAccount(account.sessionId);
+    setBusySession(null);
+    if (!result.ok) setFeedback(result.error);
+  };
 
   return (
     <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl overflow-hidden">
@@ -99,13 +122,15 @@ export const WhatsAppAccountsSection: React.FC = () => {
           <h2 className="text-sm font-semibold text-[#E6E8EC] tracking-tight">
             Contas conectadas
           </h2>
-          <p className="text-xs text-[#8E9BAE] mt-0.5">{MAX_ACCOUNTS_HINT}</p>
+          <p className="text-xs text-[#8E9BAE] mt-0.5">
+            Múltiplas contas WhatsApp independentes — cada uma com QR, status e
+            grupos próprios.
+          </p>
         </div>
         <Button
           variant="secondary"
           size="sm"
           onClick={() => void handleAdd()}
-          disabled={isMaxed}
           loading={loading}
           leftIcon={<Plus className="w-3.5 h-3.5" />}
           className="text-xs shrink-0"
@@ -216,15 +241,42 @@ export const WhatsAppAccountsSection: React.FC = () => {
                           </Button>
                         </>
                       ) : (
+                        <div className="flex items-center gap-1.5 flex-wrap sm:justify-end">
+                          <Button
+                            variant={account.status === 'error' ? 'secondary' : 'primary'}
+                            size="xs"
+                            onClick={() =>
+                              account.status === 'error'
+                                ? void handleRecover(account)
+                                : void handleConnect(account)
+                            }
+                            loading={busy}
+                            leftIcon={
+                              account.status === 'error' ? (
+                                <RefreshCw className="w-3 h-3" />
+                              ) : (
+                                <QrCode className="w-3 h-3" />
+                              )
+                            }
+                            className="text-[11px]"
+                          >
+                            {account.status === 'error'
+                              ? 'Tentar novamente'
+                              : 'Conectar'}
+                          </Button>
+                        </div>
+                      )}
+
+                      {account.sessionId !== DOMNEX_DEFAULT_SESSION_ID && (
                         <Button
-                          variant="primary"
-                          size="xs"
-                          onClick={() => void handleConnect(account)}
-                          loading={busy}
-                          leftIcon={<QrCode className="w-3 h-3" />}
-                          className="text-[11px]"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => void handleRemove(account)}
+                          loading={busy && !syncing && connected}
+                          title="Remover sessão"
+                          className="text-red-400/70 hover:text-red-300 hover:bg-red-500/10"
                         >
-                          Conectar
+                          <Trash2 className="w-3.5 h-3.5" />
                         </Button>
                       )}
                     </div>
@@ -246,24 +298,31 @@ export const WhatsAppAccountsSection: React.FC = () => {
                           />
                         ) : (
                           <div className="flex flex-col items-center gap-1.5 text-[#64748B]">
-                            <QrCode className="w-8 h-8" />
-                            <span className="text-[10px]">Gerando QR Code...</span>
+                            <Loader2 className="w-8 h-8 animate-spin" />
+                            <span className="text-[10px]">Buscando QR Code...</span>
+                            <span className="text-[9px] text-[#56637A]">
+                              Se demorar, use Tentar novamente
+                            </span>
                           </div>
                         )}
                       </div>
+                    </div>
+                  )}
+
+                  {account.status === 'error' && (
+                    <div className="mt-3 flex items-start gap-2 px-3 py-2.5 rounded-lg bg-red-500/10 border border-red-500/25 text-[11px] text-red-300 leading-relaxed">
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                      <span>
+                        Falha na conexão: nenhum QR real foi gerado ou o WhatsApp
+                        não conectou. Use <b className="text-red-200">Tentar novamente</b>{' '}
+                        para reiniciar a sessão.
+                      </span>
                     </div>
                   )}
                 </li>
               );
             })}
           </ul>
-        )}
-
-        {isMaxed && (
-          <p className="text-[10px] text-[#64748B] pt-3 mt-2 border-t border-[#16233B]">
-            Limite de 2 contas atingido por enquanto. Remova uma sessão para
-            conectar outra.
-          </p>
         )}
       </div>
     </div>

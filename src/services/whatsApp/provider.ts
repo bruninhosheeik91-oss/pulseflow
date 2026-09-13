@@ -21,6 +21,8 @@ export interface WhatsAppProvider {
   readonly label: string;
   connect(sessionId?: string): Promise<void>;
   disconnect(sessionId?: string): Promise<void>;
+  /** Recupera sessão travada no QR: encerra a sessão órfã e gera um QR novo real. */
+  recoverQr(sessionId?: string): Promise<void>;
   getConnectionStatus(sessionId?: string): Promise<WhatsAppConnectionStatus>;
   getQrCode(sessionId?: string): Promise<WhatsAppQrPayload | null>;
   getAccount(sessionId?: string): Promise<WhatsAppAccount | null>;
@@ -30,6 +32,8 @@ export interface WhatsAppProvider {
   sendMessage(to: string, text: string): Promise<void>;
   listAccounts(): Promise<WhatsAppAccount[]>;
   createAccount(name?: string): Promise<WhatsAppAccount>;
+  /** Remove permanentemente uma sessão (conta + estado + tokens). */
+  removeAccount(sessionId: string): Promise<void>;
 }
 
 export class WhatsAppProviderNotConfiguredError extends Error {

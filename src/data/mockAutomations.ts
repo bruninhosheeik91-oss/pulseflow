@@ -39,7 +39,7 @@ export const initialAutomations: Automation[] = [
     type: 'LINK_LIST',
     name: 'Lista de Links',
     description:
-      'Organize suas ofertas e deixe o DOMNEX cuidar da programação e distribuição.',
+      'Organize suas ofertas e deixe o PULSE FLOW cuidar da programação e distribuição.',
     status: 'ACTIVE',
     marketplaces: [],
     metrics: {

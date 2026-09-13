@@ -115,7 +115,7 @@ export const AnalyticsHeatmap: React.FC<AnalyticsHeatmapProps> = ({ heatmapData 
         <div className="p-3 bg-[#0B1220] border border-[#16233B] rounded-xl flex items-center gap-2.5 text-xs text-[#8E9BAE]">
           <Sparkles className="w-4 h-4 text-[#00C2FF] shrink-0" />
           <span>
-            <strong className="text-white">Insight DOMNEX:</strong> Os dois maiores picos de conversão ocorrem entre às <strong className="text-[#00C2FF]">11h e 13h</strong> (pausa do almoço) e entre às <strong className="text-emerald-400">19h e 21h30</strong> (horário nobre noturno). Agende suas campanhas prioritárias nessas janelas para maximizar o ROI.
+            <strong className="text-white">Insight PULSE FLOW:</strong> Os dois maiores picos de conversão ocorrem entre às <strong className="text-[#00C2FF]">11h e 13h</strong> (pausa do almoço) e entre às <strong className="text-emerald-400">19h e 21h30</strong> (horário nobre noturno). Agende suas campanhas prioritárias nessas janelas para maximizar o ROI.
           </span>
         </div>
       ) : (

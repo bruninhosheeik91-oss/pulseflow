@@ -25,7 +25,7 @@ export const WhatsAppIntegrationHint: React.FC = () => {
         </div>
         <div className="min-w-0">
           <p className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">
-            Integração com o Domnex
+            Integração com o PULSE FLOW
           </p>
           <p className="text-xs text-[#8E9BAE] leading-relaxed mt-1">
             <span className="text-[#E6E8EC] font-semibold">WhatsApp</span> é a{' '}

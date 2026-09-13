@@ -123,7 +123,7 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={initialChannel ? 'Editar Canal' : 'Conectar Novo Canal ou Grupo'}
-      subtitle="Conecte grupos e canais do WhatsApp ou Telegram ao motor de distribuição da Domnex."
+      subtitle="Conecte grupos e canais do WhatsApp ou Telegram ao motor de distribuição da PULSE FLOW."
       maxWidth="lg"
     >
       <form
@@ -389,7 +389,7 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
                 <div className="p-2.5 rounded-lg bg-[#070C18] border border-[#182747] text-xs text-[#E6E8EC] flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Bot className="w-4 h-4 text-[#00C2FF]" />
-                    <span>Bot @DomnexDealsBot</span>
+                    <span>Bot @PulseFlowBot</span>
                   </div>
                   <span className="text-[10px] text-[#64748B] font-semibold">
                     —

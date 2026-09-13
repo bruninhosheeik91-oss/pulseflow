@@ -170,7 +170,7 @@ export const ProductDetailDrawer: React.FC<ProductDetailDrawerProps> = ({
               {showMappedTitles && (
                 <div className="p-3 pt-0 border-t border-[#131F38] space-y-2 mt-2">
                   <p className="text-[11px] text-[#8E9BAE]">
-                    O motor DOMNEX DEALS unificou os títulos abaixo em um único produto consolidado:
+                    O motor PULSE FLOW unificou os títulos abaixo em um único produto consolidado:
                   </p>
                   <div className="space-y-1.5">
                     {product.mappedTitles.map((item, idx) => (

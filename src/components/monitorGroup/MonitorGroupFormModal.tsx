@@ -66,7 +66,7 @@ export const MonitorGroupFormModal: React.FC<MonitorGroupFormModalProps> = ({
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ex: Domnex Ofertas Central"
+              placeholder="Ex: Pulse Flow Ofertas Central"
               className="w-full h-9 px-3 bg-[#070C18] border border-[#1A2C4E] rounded-lg text-xs text-[#E6E8EC] placeholder:text-[#64748B] focus:outline-none focus:border-[#1E5EFF]"
             />
           </div>
@@ -94,7 +94,7 @@ export const MonitorGroupFormModal: React.FC<MonitorGroupFormModalProps> = ({
                 type="text"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="Ex: @domnex_ofertas"
+                placeholder="Ex: @pulseflow_ofertas"
                 className="w-full h-9 px-3 bg-[#070C18] border border-[#1A2C4E] rounded-lg text-xs text-[#E6E8EC] placeholder:text-[#64748B] focus:outline-none focus:border-[#1E5EFF]"
               />
               <p className="text-[10px] text-[#64748B]">

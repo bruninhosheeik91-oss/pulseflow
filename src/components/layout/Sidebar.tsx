@@ -24,15 +24,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
         key={item.id}
         type="button"
         onClick={() => onNavigate?.(item.id)}
-        className={`w-full h-[26px] flex items-center gap-2.5 px-2.5 rounded-lg text-[11px] font-medium transition-all duration-150 border ${
+        className={`group w-full h-[26px] flex items-center gap-2.5 px-2.5 rounded-md text-[11px] font-medium transition-all duration-150 border ${
           isActive
-            ? 'bg-[#1E5EFF]/20 border-[#1E5EFF]/45 text-[#E6E8EC] shadow-[0_0_14px_rgba(30,94,255,0.28)]'
-            : 'border-transparent text-[#8E9BAE] hover:text-[#E6E8EC] hover:bg-[#0D162B]'
+            ? 'bg-[#1E5EFF] border-[#1E5EFF] text-white'
+            : 'border-transparent text-[#8E9BAE] hover:text-[#E6E8EC] hover:bg-[#111C33]/70'
         }`}
       >
         <Icon
           className={`w-4 h-4 shrink-0 transition-colors ${
-            isActive ? 'text-[#00C2FF]' : 'text-[#5A6470]'
+            isActive ? 'text-white' : 'text-[#5A6470] group-hover:text-[#8E9BAE]'
           }`}
         />
         <span className="truncate">{item.label}</span>
@@ -41,21 +41,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   return (
-    <aside className="w-40 shrink-0 bg-[#0A0F1C] border-r border-[#14203B]/50 flex flex-col h-screen sticky top-0 select-none z-30">
+    <aside className="w-40 shrink-0 bg-[#0A0F1C] border-r border-[#14203B]/60 flex flex-col h-screen sticky top-0 select-none z-30">
       {/* Brand */}
-      <div className="h-12 px-3 flex items-center border-b border-[#14203B]/50 shrink-0">
+      <div className="h-12 px-3 flex items-center border-b border-[#14203B]/60 shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-gradient-to-br from-[#1E5EFF] to-[#00C2FF] flex items-center justify-center shrink-0">
+          <div className="w-6 h-6 rounded-md bg-[#1E5EFF] flex items-center justify-center shrink-0">
             <span className="font-extrabold text-white text-[9px] tracking-wider">
-              DX
+              PF
             </span>
           </div>
           <div className="flex flex-col leading-none">
             <span className="font-bold tracking-widest text-[#E6E8EC] text-[11px]">
-              DOMNEX
+              PULSE
             </span>
             <span className="font-bold text-[9px] text-[#00C2FF] tracking-widest mt-0.5">
-              DEALS
+              FLOW
             </span>
           </div>
         </div>
@@ -67,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </nav>
 
       {/* Support pinned to bottom */}
-      <div className="shrink-0 p-2 border-t border-[#14203B]/50">
+      <div className="shrink-0 p-2 border-t border-[#14203B]/60">
         {supportItem && renderItem(supportItem)}
       </div>
     </aside>

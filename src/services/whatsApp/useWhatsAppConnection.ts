@@ -221,6 +221,53 @@ export function useWhatsAppConnection() {
     }
   }, [notConfigured, loadAccount]);
 
+  const recover = useCallback(async () => {
+    const provider = getWhatsAppProvider();
+
+    if (!provider) {
+      notConfigured();
+      return;
+    }
+
+    setStatus('connecting');
+    setQrData(null);
+    setErrorMessage(null);
+
+    try {
+      await provider.recoverQr();
+    } catch (err) {
+      if (!mountedRef.current) return;
+      setStatus('error');
+      setErrorMessage(
+        err instanceof Error ? err.message : 'Falha ao gerar novo QR.'
+      );
+      return;
+    }
+
+    try {
+      const next = await provider.getConnectionStatus();
+      if (!mountedRef.current) return;
+      if (next === 'connected') {
+        setStatus('connected');
+        setQrData(null);
+        void loadAccount();
+      } else if (
+        next === 'connecting' ||
+        next === 'awaiting_qr' ||
+        next === 'reconnecting'
+      ) {
+        setStatus(next);
+      } else {
+        setStatus('error');
+        setErrorMessage('Não foi possível gerar o novo QR.');
+      }
+    } catch {
+      if (!mountedRef.current) return;
+      setStatus('error');
+      setErrorMessage('Não foi possível gerar o novo QR.');
+    }
+  }, [notConfigured, loadAccount]);
+
   const disconnect = useCallback(async () => {
     const provider = getWhatsAppProvider();
 
@@ -301,6 +348,7 @@ export function useWhatsAppConnection() {
     groupsError,
     connect,
     reconnect,
+    recover,
     disconnect,
     syncGroups,
     sendMessage,

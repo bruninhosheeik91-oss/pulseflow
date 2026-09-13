@@ -225,6 +225,27 @@ export function clearGroupSelection() {
   });
 }
 
+// Remoção de uma conta: descarta grupos/mapeamentos daquela sessão, mantendo
+// intactos os dados das demais contas e da escolha de Grupo Mãe válida.
+export function clearGroupsForSession(sessionId: string) {
+  const remaining = state.groups.filter((g) => g.sessionId !== sessionId);
+  const ids = new Set(remaining.map((g) => g.id));
+  commit({
+    groups: remaining,
+    syncedAt: state.syncedAt,
+    parentGroupId:
+      state.parentGroupId && ids.has(state.parentGroupId)
+        ? state.parentGroupId
+        : null,
+    parentSessionId:
+      state.parentSessionId &&
+      remaining.some((g) => g.sessionId === state.parentSessionId)
+        ? state.parentSessionId
+        : null,
+    childGroupIds: state.childGroupIds.filter((id) => ids.has(id)),
+  });
+}
+
 export function subscribeGroupConfig(listener: () => void): () => void {
   listeners.add(listener);
   return () => {

@@ -133,7 +133,7 @@ export const QueueNewItemModal: React.FC<QueueNewItemModalProps> = ({
       category = selectedOffer.category;
     }
 
-    const copy = `🚨 *OFERTA RECOMENDADA DOMNEX!* 🚨
+    const copy = `🚨 *OFERTA RECOMENDADA PULSE FLOW!* 🚨
 *${name}*
 ${originalPrice ? `De ~R$ ${originalPrice.toFixed(2).replace('.', ',')}~ por ` : ''}*R$ ${price.toFixed(2).replace('.', ',')}* (${discount}% OFF)!
 

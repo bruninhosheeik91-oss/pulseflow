@@ -1,17 +1,14 @@
 import React, { useState } from 'react';
 import {
   Settings,
-  Store,
   Server,
   ShieldAlert,
   Sparkles,
   FileText,
   Sliders,
   CheckCircle2,
-  AlertTriangle,
 } from 'lucide-react';
 import {
-  initialMarketplaceSettings,
   initialGatewaySettings,
   initialAntiBanSettings,
   initialScoringWeightsSettings,
@@ -19,14 +16,12 @@ import {
   initialSystemGeneralSettings,
 } from '../../data/mockSettings';
 import {
-  MarketplaceCredentials,
   GatewaySettings,
   AntiBanSettings,
   ScoringWeightsSettings,
   CopywritingSettings,
   SystemGeneralSettings,
 } from '../../types';
-import { SettingsMarketplacesTab } from './SettingsMarketplacesTab';
 import { SettingsGatewaysTab } from './SettingsGatewaysTab';
 import { SettingsAntiBanTab } from './SettingsAntiBanTab';
 import { SettingsScoringTab } from './SettingsScoringTab';
@@ -34,7 +29,6 @@ import { SettingsCopywritingTab } from './SettingsCopywritingTab';
 import { SettingsGeneralTab } from './SettingsGeneralTab';
 
 type SettingsTab =
-  | 'marketplaces'
   | 'gateways'
   | 'antiban'
   | 'scoring'
@@ -42,12 +36,9 @@ type SettingsTab =
   | 'general';
 
 export const SettingsPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<SettingsTab>('marketplaces');
+  const [activeTab, setActiveTab] = useState<SettingsTab>('gateways');
 
   // State for all setting groups
-  const [marketplaces, setMarketplaces] = useState<MarketplaceCredentials>(
-    initialMarketplaceSettings
-  );
   const [gateways, setGateways] =
     useState<GatewaySettings>(initialGatewaySettings);
   const [antiBan, setAntiBan] =
@@ -67,11 +58,6 @@ export const SettingsPage: React.FC = () => {
   const showToast = (text: string) => {
     setToast(text);
     setTimeout(() => setToast(null), 3500);
-  };
-
-  const handleSaveMarketplaces = (newData: MarketplaceCredentials) => {
-    setMarketplaces(newData);
-    showToast('Credenciais e tags de afiliados atualizadas com sucesso!');
   };
 
   const handleSaveGateways = (newData: GatewaySettings) => {
@@ -100,7 +86,6 @@ export const SettingsPage: React.FC = () => {
   };
 
   const handleResetFactory = () => {
-    setMarketplaces(initialMarketplaceSettings);
     setGateways(initialGatewaySettings);
     setAntiBan(initialAntiBanSettings);
     setScoring(initialScoringWeightsSettings);
@@ -115,7 +100,6 @@ export const SettingsPage: React.FC = () => {
     icon: React.ElementType;
     badge?: string;
   }[] = [
-    { id: 'marketplaces', label: 'Marketplaces & Afiliados', icon: Store },
     { id: 'gateways', label: 'Gateways & Disparo', icon: Server },
     { id: 'antiban', label: 'Proteção Anti-Ban', icon: ShieldAlert },
     { id: 'scoring', label: 'Scoring & Algoritmo', icon: Sparkles },
@@ -169,12 +153,6 @@ export const SettingsPage: React.FC = () => {
 
       {/* 3. Tab Content */}
       <div className="min-h-[420px]">
-        {activeTab === 'marketplaces' && (
-          <SettingsMarketplacesTab
-            settings={marketplaces}
-            onSave={handleSaveMarketplaces}
-          />
-        )}
         {activeTab === 'gateways' && (
           <SettingsGatewaysTab
             settings={gateways}
