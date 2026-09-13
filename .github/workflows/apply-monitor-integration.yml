@@ -1,0 +1,46 @@
+name: Apply monitor integration
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'server/apply-monitor-integration.js'
+      - '.github/workflows/apply-monitor-integration.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Apply deterministic integration
+        run: node server/apply-monitor-integration.js
+
+      - name: Validate server syntax
+        run: node --check server/server.js
+
+      - name: Validate dynamic message engine
+        run: node server/monitorOfferMessage.test.js
+
+      - name: Commit generated integration
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add server/server.js
+          git commit -m "feat: integrate canonical monitor pipeline and dynamic offers"
+          git push
