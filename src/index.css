@@ -4,10 +4,10 @@
   :root {
     --bg-main: #F4F7FB;
     --bg-card: #FFFFFF;
-    --bg-card-hover: #F8FBFF;
+    --bg-card-hover: #FFF7F7;
     --bg-secondary: #F8FAFC;
     --border-subtle: #E2E8F0;
-    --border-highlight: #BFDBFE;
+    --border-highlight: #FECACA;
     --blue-royal: #2563EB;
     --blue-neon: #3B82F6;
     --text-primary: #172033;
@@ -50,14 +50,16 @@
 
 .dashboard-card:hover {
   transform: translateY(-4px);
-  border-color: #93C5FD;
-  background: linear-gradient(145deg, #FFFFFF 0%, #F7FAFF 100%);
-  box-shadow: 0 14px 32px rgba(37, 99, 235, 0.10), 0 4px 12px rgba(15, 23, 42, 0.06);
+  border-color: #FECACA;
+  background: linear-gradient(145deg, #FFFFFF 0%, #FFF7F7 100%);
+  box-shadow: 0 14px 32px rgba(239, 68, 68, 0.10), 0 4px 12px rgba(15, 23, 42, 0.06);
 }
 
 .dashboard-card:active {
   transform: translateY(-1px) scale(0.99);
-  box-shadow: 0 5px 14px rgba(37, 99, 235, 0.08);
+  border-color: #FCA5A5;
+  background: #FFF1F2;
+  box-shadow: 0 5px 14px rgba(239, 68, 68, 0.12);
 }
 
 .dashboard-card svg {
