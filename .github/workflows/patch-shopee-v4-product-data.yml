@@ -1,0 +1,33 @@
+name: Patch Shopee v4 product data
+
+on:
+  push:
+    branches:
+      - fix/shopee-v4-product-data
+    paths:
+      - '.github/workflows/patch-shopee-v4-product-data.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/shopee-v4-product-data
+      - name: Patch Shopee v4 product resolver
+        run: python -c "import base64; exec(base64.b64decode('CmZyb20gcGF0aGxpYiBpbXBvcnQgUGF0aApwID0gUGF0aCgic2VydmVyL3NlcnZlci5qcyIpCnMgPSBwLnJlYWRfdGV4dChlbmNvZGluZz0idXRmLTgiKQoKb2xkX2VuZHBvaW50ID0gIiIiICAgIGNvbnN0IGVuZHBvaW50ID0KICAgICAgYGh0dHBzOi8vc2hvcGVlLmNvbS5ici9hcGkvdjIvaXRlbS9nZXQ/aXRlbWlkPSR7ZW5jb2RlVVJJQ29tcG9uZW50KGl0ZW1JZCl9YCArCiAgICAgIGAmc2hvcGlkPSR7ZW5jb2RlVVJJQ29tcG9uZW50KHNob3BJZCl9YDsiIiIKbmV3X2VuZHBvaW50ID0gIiIiICAgIGNvbnN0IGVuZHBvaW50ID0KICAgICAgYGh0dHBzOi8vc2hvcGVlLmNvbS5ici9hcGkvdjQvaXRlbS9nZXQ/aXRlbWlkPSR7ZW5jb2RlVVJJQ29tcG9uZW50KGl0ZW1JZCl9YCArCiAgICAgIGAmc2hvcGlkPSR7ZW5jb2RlVVJJQ29tcG9uZW50KHNob3BJZCl9YDsiIiIKaWYgb2xkX2VuZHBvaW50IG5vdCBpbiBzOgogICAgcmFpc2UgU3lzdGVtRXhpdCgiZW5kcG9pbnQgYWx2byBuYW8gZW5jb250cmFkbyIpCnMgPSBzLnJlcGxhY2Uob2xkX2VuZHBvaW50LCBuZXdfZW5kcG9pbnQsIDEpCgpvbGRfaXRlbSA9ICIiIiAgICBjb25zdCBpdGVtID0KICAgICAgKGpzb24gJiYganNvbi5pdGVtKSB8fAogICAgICAoanNvbiAmJiBqc29uLmRhdGEgJiYganNvbi5kYXRhLml0ZW0pIHx8CiAgICAgIG51bGw7IiIiCm5ld19pdGVtID0gIiIiICAgIGNvbnN0IGl0ZW0gPQogICAgICAoanNvbiAmJiBqc29uLmRhdGEgJiYgdHlwZW9mIGpzb24uZGF0YSA9PT0gJ29iamVjdCcgPyBqc29uLmRhdGEgOiBudWxsKSB8fAogICAgICAoanNvbiAmJiBqc29uLml0ZW0pIHx8CiAgICAgIChqc29uICYmIGpzb24uZGF0YSAmJiBqc29uLmRhdGEuaXRlbSkgfHwKICAgICAgbnVsbDsiIiIKaWYgb2xkX2l0ZW0gbm90IGluIHM6CiAgICByYWlzZSBTeXN0ZW1FeGl0KCJwYXJzZXIgYWx2byBuYW8gZW5jb250cmFkbyIpCnMgPSBzLnJlcGxhY2Uob2xkX2l0ZW0sIG5ld19pdGVtLCAxKQoKcC53cml0ZV90ZXh0KHMsIGVuY29kaW5nPSJ1dGYtOCIpCg==').decode())"
+      - name: Validate
+        run: |
+          node --check server/server.js
+          npm run test:monitor --prefix server
+          npm run test:api --prefix server
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add server/server.js
+          git commit -m "fix: use Shopee v4 product endpoint and payload"
+          git push origin HEAD:fix/shopee-v4-product-data
