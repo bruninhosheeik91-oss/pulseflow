@@ -390,6 +390,8 @@ const DEFAULT_MONITOR_CONFIG = {
   enabled: false,
   parentGroupId: null,
   childGroupIds: [],
+  childGroupDelays: {},
+  childLastSendAt: {},
   template: null,
   messageMode: 'dynamic',
   tenantId: null,
@@ -785,8 +787,34 @@ async function handleMonitorAffiliateLink(sessionId, cfg, sourceUrl, msgId) {
 
   monitorLog(sessionId, `enviando para ${children.length} grupos filhos`);
   const sentIds = [];
+  if (!cfg.childLastSendAt || typeof cfg.childLastSendAt !== 'object') {
+    cfg.childLastSendAt = {};
+  }
   for (const child of children) {
     try {
+      const delaySeconds = Math.min(
+        3600,
+        Math.max(
+          0,
+          Number(
+            cfg.childGroupDelays && cfg.childGroupDelays[child] != null
+              ? cfg.childGroupDelays[child]
+              : 30
+          ) || 0
+        )
+      );
+      const previousSend = Date.parse(cfg.childLastSendAt[child] || '');
+      if (delaySeconds > 0 && Number.isFinite(previousSend)) {
+        const remainingMs = delaySeconds * 1000 - (Date.now() - previousSend);
+        if (remainingMs > 0) {
+          monitorLog(
+            sessionId,
+            `anti-flood aguardando ${Math.ceil(remainingMs / 1000)}s para ${child}`
+          );
+          await sleep(remainingMs);
+        }
+      }
+
       const result = offer.imageUrl
         ? await sendProductWithMedia(st.client, child, message, offer.imageUrl)
         : await st.client.sendText(child, message);
@@ -796,6 +824,7 @@ async function handleMonitorAffiliateLink(sessionId, cfg, sourceUrl, msgId) {
         null;
       if (sentId) sentIds.push(sentId);
       else if (result) sentIds.push('sent-without-id');
+      if (result) cfg.childLastSendAt[child] = new Date().toISOString();
     } catch (err) {
       cfg.lastError = String((err && err.message) || err);
       monitorErrorLog(sessionId, `erro no envio para ${child}: ${cfg.lastError}`);
@@ -2137,8 +2166,16 @@ app.get('/api/monitor/status', (req, res) => {
 });
 
 app.post('/api/monitor', (req, res) => {
-  const { enabled, parentGroupId, childGroupIds, sessionId, template, messageMode, tenantId } =
-    req.body || {};
+  const {
+    enabled,
+    parentGroupId,
+    childGroupIds,
+    childGroupDelays,
+    sessionId,
+    template,
+    messageMode,
+    tenantId,
+  } = req.body || {};
   const sid =
     typeof sessionId === 'string' && sessionId.trim()
       ? sessionId.trim()
@@ -2180,6 +2217,22 @@ app.post('/api/monitor', (req, res) => {
       return true;
     });
     cfg.childGroupIds = valid;
+  }
+
+  if (childGroupDelays !== undefined) {
+    const source =
+      childGroupDelays && typeof childGroupDelays === 'object'
+        ? childGroupDelays
+        : {};
+    const allowed = new Set(cfg.childGroupIds || []);
+    const next = {};
+    for (const [groupId, rawDelay] of Object.entries(source)) {
+      if (!allowed.has(groupId)) continue;
+      const delay = Number(rawDelay);
+      if (!Number.isFinite(delay)) continue;
+      next[groupId] = Math.min(3600, Math.max(0, Math.round(delay)));
+    }
+    cfg.childGroupDelays = next;
   }
 
   if (template !== undefined) {
