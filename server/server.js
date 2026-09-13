@@ -850,28 +850,37 @@ async function handleMonitorReplication(sessionId, message) {
       monitorLog(sessionId, 'não foi possível confirmar admins - autor não autorizado');
       return;
     }
-    // Compara autor e admins por aliases PN/LID, sem depender de fromMe.
+    // Compara autor e admins por aliases PN/LID. Alguns payloads reais do
+    // onAnyMessage entregam `author` apenas como número (sem @lid/@c.us).
     const actorAliases = new Set();
     const actorId = canonical.authorId;
-    const directActor = canonicalNumber(actorId);
+    const actorText = actorId ? String(actorId).trim() : '';
+    const directActor = canonicalNumber(actorText);
     if (directActor) actorAliases.add(directActor);
 
-    if (
-      actorId &&
-      /@(c\.us|lid)$/i.test(String(actorId)) &&
-      typeof monClient.getPnLidEntry === 'function'
-    ) {
-      try {
-        const mapping = await monClient.getPnLidEntry(String(actorId));
-        for (const wid of [mapping && mapping.phoneNumber, mapping && mapping.lid]) {
-          const alias =
-            (wid && wid._serialized) ||
-            (wid && wid.user && wid.server ? `${wid.user}@${wid.server}` : null);
-          const aliasNumber = canonicalNumber(alias);
-          if (aliasNumber) actorAliases.add(aliasNumber);
+    const actorLookupIds = [];
+    if (actorText) {
+      actorLookupIds.push(actorText);
+      if (!actorText.includes('@') && /^\d+$/.test(actorText)) {
+        actorLookupIds.push(`${actorText}@lid`, `${actorText}@c.us`);
+      }
+    }
+
+    if (typeof monClient.getPnLidEntry === 'function') {
+      for (const lookupId of actorLookupIds) {
+        if (!/@(c\.us|lid)$/i.test(lookupId)) continue;
+        try {
+          const mapping = await monClient.getPnLidEntry(lookupId);
+          for (const wid of [mapping && mapping.phoneNumber, mapping && mapping.lid]) {
+            const alias =
+              (wid && wid._serialized) ||
+              (wid && wid.user && wid.server ? `${wid.user}@${wid.server}` : null);
+            const aliasNumber = canonicalNumber(alias);
+            if (aliasNumber) actorAliases.add(aliasNumber);
+          }
+        } catch {
+          // Tenta o próximo formato equivalente sem autorizar por aproximação.
         }
-      } catch {
-        // Sem alias, mantém a identidade direta.
       }
     }
 
