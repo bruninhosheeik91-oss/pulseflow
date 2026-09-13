@@ -16,6 +16,7 @@ const {
   normalizeShopeeNode,
 } = require('./linkConversion/shopeeAutoSearch.js');
 const { createShopeeApiClient } = require('./linkConversion/shopeeApiClient.js');
+const { buildDynamicMonitorOfferMessage } = require('./monitorOfferMessage.js');
 const {
   normalizeMonitorMessage,
   resolveMonitorRoute,
@@ -390,6 +391,7 @@ const DEFAULT_MONITOR_CONFIG = {
   parentGroupId: null,
   childGroupIds: [],
   template: null,
+  messageMode: 'dynamic',
   tenantId: null,
   lastMessageAt: null,
   lastMessageId: null,
@@ -588,21 +590,31 @@ async function handleMonitorAffiliateLink(sessionId, cfg, sourceUrl, msgId) {
   const offer = { affiliateUrl };
   const product = await resolveMonitorProduct(client, sourceUrl);
   if (product) {
+    offer.itemId = product.itemId;
     offer.productName = product.productName;
     offer.price = product.price;
     offer.originalPrice = product.originalPrice;
     offer.discountPercentage = product.discountPercentage;
+    offer.rating = product.rating;
+    offer.sales = product.sales;
+    offer.shopName = product.shopName;
+    offer.commissionAmount = product.commissionAmount;
     offer.imageUrl = product.imageUrl;
     monitorLog(sessionId, 'produto resolvido');
   } else {
     monitorLog(sessionId, 'produto não resolvido pela API (apenas link)');
   }
 
-  const message = buildMonitorOfferMessage(cfg.template, offer);
+  const messageMode = cfg.messageMode === 'custom' ? 'custom' : 'dynamic';
+  const message =
+    messageMode === 'custom'
+      ? buildMonitorOfferMessage(cfg.template, offer)
+      : buildDynamicMonitorOfferMessage(offer, { seed: offer.itemId || msgId });
+  monitorLog(sessionId, `mensagem de oferta montada (modo=${messageMode})`);
   if (!message) {
     cfg.lastMessageAt = new Date().toISOString();
     cfg.lastMessageId = msgId;
-    cfg.lastError = 'Template do monitor gerou mensagem vazia.';
+    cfg.lastError = 'Não foi possível montar a mensagem da oferta.';
     saveMonitorConfig();
     monitorLog(sessionId, `processamento falhou: ${cfg.lastError}`);
     return;
@@ -763,89 +775,54 @@ async function handleMonitorReplication(sessionId, message) {
       monitorLog(sessionId, 'mensagem recebida (monitor desativado - ignorada)');
       return;
     }
-    monitorLog(sessionId, 'mensagem recebida');
 
-    const parentId = cfg.parentGroupId;
-    const chatId = message.chatId || message.from || null;
-    if (!chatId) return;
-
-    if (!/^[^\s@]+@g\.us$/i.test(chatId)) {
-      monitorLog(sessionId, `origem ignorada: não é grupo (${chatId})`);
-      return;
-    }
-    if (/@broadcast|@newsletter/i.test(chatId)) {
-      monitorLog(sessionId, `origem ignorada: broadcast/newsletter (${chatId})`);
-      return;
-    }
-    if (chatId !== parentId) {
-      monitorLog(sessionId, `origem ignorada: ${chatId} != grupo mãe ${parentId}`);
+    const canonical = normalizeMonitorMessage(message);
+    if (!canonical) {
+      monitorLog(sessionId, 'evento auxiliar/incompleto ignorado');
       return;
     }
 
-    const msgId = rawMessageId(message);
-    if (!msgId) {
-      monitorLog(sessionId, 'origem validada mas sem messageId identificável');
-      monitorLog(
-        sessionId,
-        `diagnóstico messageId (só nomes/tipos): ${describeMessageIdShape(message)}`
-      );
+    const parentId = cfg.parentGroupId;
+    if (canonical.chatId !== parentId) {
+      monitorLog(sessionId, 'origem ignorada: não é o grupo mãe configurado');
       return;
     }
-    if (processedMessageIds.has(msgId)) {
-      monitorLog(sessionId, `mensagem já processada (messageId=${msgId}) - ignorada`);
-      return;
-    }
-    processedMessageIds.add(msgId);
 
-    // Somente ADMINISTRADORES do Grupo Mãe distribuem. A própria conta (fromMe)
-    // é aceita também, desde que seja admin do Grupo Mãe.
+    const msgId = canonical.messageId;
+    if (monitorDeduper.isDuplicate(msgId)) {
+      monitorLog(sessionId, 'mensagem duplicada ignorada');
+      return;
+    }
+    // Reserva antes de qualquer await: o mesmo messageId nunca atravessa o
+    // pipeline simultaneamente em duas entregas do listener.
+    monitorDeduper.remember(msgId);
+    monitorLog(sessionId, 'mensagem canônica recebida');
+    monitorLog(sessionId, 'grupo mãe validado');
+
     const monClient = getSessionState(sessionId).client;
     if (!monClient || typeof monClient.getGroupAdmins !== 'function') {
       monitorLog(sessionId, 'cliente indisponível - autor não autorizado (falha segura)');
       return;
     }
-    const authorId = rawMessageAuthorId(message);
-    monitorLog(sessionId, `autor = ${authorId || '?'} (fromMe=${!!message.fromMe})`);
+
     const adminNumbers = await ensureGroupAdminNumbers(monClient, sessionId, parentId);
     if (!adminNumbers) {
       monitorLog(sessionId, 'não foi possível confirmar admins - autor não autorizado');
       return;
     }
-    const authorNumber = canonicalNumber(authorId);
+    const authorNumber = canonicalNumber(canonical.authorId);
     if (!authorNumber || !adminNumbers.has(authorNumber)) {
       monitorLog(sessionId, 'autor não autorizado');
-      monitorLog(sessionId, `messageId = ${msgId}`);
       return;
     }
     monitorLog(sessionId, 'autor validado (admin do grupo mãe)');
 
-    const body = typeof message.body === 'string' ? message.body : null;
-    if (!body || !body.trim()) {
-      monitorLog(
-        sessionId,
-        `mensagem não-texto ignorada (messageId=${msgId}, type=${message.type || 'desconhecido'})`
-      );
+    const route = resolveMonitorRoute(canonical.body);
+    if (route.route === 'shopee' && route.url) {
+      monitorLog(sessionId, 'link Shopee detectado');
+      await handleMonitorAffiliateLink(sessionId, cfg, route.url, msgId);
       return;
     }
-    const text = body.trim();
-
-    // Mensagem do Grupo Mãe contendo SOMENTE UMA única URL Shopee (sem texto
-    // ao redor) vira oferta afiliada. Qualquer outro formato (texto extra,
-    // múltiplas URLs, link não-Shopee) segue o fluxo atual de replicação.
-    const urls = extractUrls(text);
-    const shopeeUrl =
-      urls.length === 1 &&
-      isShopeeUrl(urls[0].url) &&
-      (text === urls[0].url || text === urls[0].raw)
-        ? urls[0].url
-        : null;
-    if (shopeeUrl) {
-      await handleMonitorAffiliateLink(sessionId, cfg, shopeeUrl, msgId);
-      return;
-    }
-
-    monitorLog(sessionId, `origem validada (grupo mãe ${parentId})`);
-    monitorLog(sessionId, `messageId = ${msgId}`);
 
     const children = Array.isArray(cfg.childGroupIds)
       ? cfg.childGroupIds.filter((id) => id && id !== parentId)
@@ -859,10 +836,8 @@ async function handleMonitorReplication(sessionId, message) {
       return;
     }
 
-    // Escopo da etapa: exatamente 1 destino real da mesma conta.
+    // Replicação comum preserva o comportamento existente: primeiro filho.
     const target = children[0];
-    monitorLog(sessionId, `enviando para grupo filho ${target}`);
-
     const st = getSessionState(sessionId);
     if (!st.client || typeof st.client.sendText !== 'function') {
       cfg.lastMessageAt = new Date().toISOString();
@@ -875,7 +850,7 @@ async function handleMonitorReplication(sessionId, message) {
 
     let sent = null;
     try {
-      sent = await st.client.sendText(target, text);
+      sent = await st.client.sendText(target, canonical.body);
     } catch (err) {
       cfg.lastMessageAt = new Date().toISOString();
       cfg.lastMessageId = msgId;
@@ -894,10 +869,7 @@ async function handleMonitorReplication(sessionId, message) {
     cfg.lastSendMessageId = sentId;
     cfg.lastError = null;
     saveMonitorConfig();
-    monitorLog(
-      sessionId,
-      `enviado com sucesso (groupId=${target}, messageId=${sentId || 'n/a'})`
-    );
+    monitorLog(sessionId, 'replicação concluída com sucesso');
   } catch (err) {
     monitorErrorLog(
       sessionId,
@@ -1938,12 +1910,13 @@ app.get('/api/monitor/status', (req, res) => {
     lastSendMessageId: cfg.lastSendMessageId,
     lastError: cfg.lastError,
     template: cfg.template ?? DEFAULT_MONITOR_TEMPLATE,
+    messageMode: cfg.messageMode === 'custom' ? 'custom' : 'dynamic',
     tenantId: cfg.tenantId ?? null,
   });
 });
 
 app.post('/api/monitor', (req, res) => {
-  const { enabled, parentGroupId, childGroupIds, sessionId, template, tenantId } =
+  const { enabled, parentGroupId, childGroupIds, sessionId, template, messageMode, tenantId } =
     req.body || {};
   const sid =
     typeof sessionId === 'string' && sessionId.trim()
@@ -1998,6 +1971,14 @@ app.post('/api/monitor', (req, res) => {
     }
   }
 
+  if (messageMode !== undefined) {
+    if (messageMode === 'dynamic' || messageMode === 'custom') {
+      cfg.messageMode = messageMode;
+    } else {
+      return res.status(400).json({ ok: false, error: 'messageMode invalido.' });
+    }
+  }
+
   if (tenantId !== undefined) {
     if (tenantId === null || tenantId === '') {
       cfg.tenantId = null;
@@ -2025,6 +2006,7 @@ app.post('/api/monitor', (req, res) => {
     parentGroupId: cfg.parentGroupId,
     childGroupIds: cfg.childGroupIds,
     template: cfg.template ?? DEFAULT_MONITOR_TEMPLATE,
+    messageMode: cfg.messageMode === 'custom' ? 'custom' : 'dynamic',
     tenantId: cfg.tenantId ?? null,
   });
 });
