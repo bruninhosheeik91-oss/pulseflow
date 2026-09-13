@@ -1,0 +1,114 @@
+name: Patch WPP browser cleanup race
+on:
+  push:
+    branches:
+      - fix/wpp-browser-cleanup-race
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply scoped patch
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('server/server.js')
+          text = p.read_text(encoding='utf-8')
+          old = '''function killSessionBrowser(sessionId) {
+  const profilePath = path.join(SESSION_DIR, sessionId);
+  const ps = `
+& {
+  $profile = $args[0]
+  if (-not (Test-Path -LiteralPath $profile)) { return }
+  Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" | Where-Object {
+    $cmd = $_.CommandLine
+    if (-not $cmd) { return $false }
+    if ($cmd -like '*--type=*') { return $false }
+    $cmd.ToLower().Contains($profile.ToLower())
+  } | ForEach-Object {
+    try { Stop-Process -Id $_.ProcessId -Force -ErrorAction Stop | Out-Null } catch { }
+  }
+}`;
+  const proc = spawn(
+    'powershell',
+    ['-NoProfile', '-NonInteractive', '-Command', ps, profilePath],
+    { windowsHide: true }
+  );
+  proc.on('error', () => {});
+  proc.unref();
+  logWhatsApp(
+    `[${sessionId}] encerramento best-effort do browser órfão da sessão (tokens preservados)`
+  );
+}'''
+          new = '''async function killSessionBrowser(sessionId) {
+  const profilePath = path.join(SESSION_DIR, sessionId);
+  const ps = `
+& {
+  $profile = $args[0]
+  if (-not (Test-Path -LiteralPath $profile)) { exit 0 }
+  $deadline = (Get-Date).AddSeconds(8)
+  do {
+    $matches = @(Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" | Where-Object {
+      $cmd = $_.CommandLine
+      $cmd -and $cmd.ToLower().Contains($profile.ToLower())
+    })
+    foreach ($item in $matches) {
+      try { Stop-Process -Id $item.ProcessId -Force -ErrorAction Stop | Out-Null } catch { }
+    }
+    if ($matches.Count -eq 0) { break }
+    Start-Sleep -Milliseconds 250
+  } while ((Get-Date) -lt $deadline)
+}`;
+
+  await new Promise((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      resolve();
+    };
+    let proc;
+    try {
+      proc = spawn(
+        'powershell',
+        ['-NoProfile', '-NonInteractive', '-Command', ps, profilePath],
+        { windowsHide: true }
+      );
+    } catch {
+      finish();
+      return;
+    }
+    proc.once('error', finish);
+    proc.once('close', finish);
+    setTimeout(finish, 10_000);
+  });
+
+  logWhatsApp(
+    `[${sessionId}] browser da sessão encerrado e lock liberado (tokens preservados)`
+  );
+}'''
+          if old not in text:
+              raise SystemExit('killSessionBrowser pattern not found')
+          text = text.replace(old, new, 1)
+          text = text.replace('    killSessionBrowser(state.sessionId);\n    logError(', '    await killSessionBrowser(state.sessionId);\n    logError(', 1)
+          text = text.replace('  killSessionBrowser(state.sessionId);\n  await sleep(1500);', '  await killSessionBrowser(state.sessionId);\n  await sleep(500);', 1)
+          text = text.replace('  killSessionBrowser(sessionId);\n  await sleep(1500);', '  await killSessionBrowser(sessionId);\n  await sleep(500);', 1)
+          p.write_text(text, encoding='utf-8')
+          PY
+      - name: Validate server syntax and monitor tests
+        run: |
+          node --check server/server.js
+          cd server
+          npm ci
+          npm run test:monitor
+      - name: Commit patch if changed
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add server/server.js
+          git commit -m "fix: wait for WPP browser cleanup before retry"
+          git push
