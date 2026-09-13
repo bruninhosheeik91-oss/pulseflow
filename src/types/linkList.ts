@@ -23,6 +23,9 @@ export interface LinkListItem {
   url: string;
   marketplace: Marketplace | null;
   productName: string | null;
+  affiliateUrl?: string | null;
+  processError?: string | null;
+  processedAt?: string | null;
   status: LinkListLinkStatus;
   campaignId: string | null;
   campaignName: string | null;

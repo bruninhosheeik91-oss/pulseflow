@@ -35,6 +35,9 @@ function normalizeItem(input = {}, previous = null) {
     url: str(input.url, previous?.url).slice(0, 2048),
     marketplace: input.marketplace ?? previous?.marketplace ?? null,
     productName: input.productName ?? previous?.productName ?? null,
+    affiliateUrl: input.affiliateUrl ?? previous?.affiliateUrl ?? null,
+    processError: input.processError ?? previous?.processError ?? null,
+    processedAt: input.processedAt ?? previous?.processedAt ?? null,
     status: str(input.status, previous?.status || 'Pendente'),
     campaignId: input.campaignId ?? previous?.campaignId ?? null,
     campaignName: input.campaignName ?? previous?.campaignName ?? null,
@@ -88,6 +91,7 @@ function createTenantLinkListsStore(options = {}) {
     return true;
   };
   const list = (tenantId) => readAll(tenantId).sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+  const get = (tenantId, id) => readAll(tenantId).find((item) => item.id === id) || null;
   const upsert = (tenantId, input) => {
     const records = readAll(tenantId);
     const id = str(input?.id);
@@ -127,6 +131,20 @@ function createTenantLinkListsStore(options = {}) {
     writeAll(tenantId, records);
     return records[index];
   };
-  return { list, upsert, remove, addLinks, removeLink };
+  const updateLink = (tenantId, id, linkId, patch) => {
+    const records = readAll(tenantId);
+    const listIndex = records.findIndex((item) => item.id === id);
+    if (listIndex < 0) return null;
+    const linkIndex = records[listIndex].links.findIndex((item) => item.id === linkId);
+    if (linkIndex < 0) return false;
+    records[listIndex].links[linkIndex] = normalizeItem(
+      { ...records[listIndex].links[linkIndex], ...(patch || {}) },
+      records[listIndex].links[linkIndex]
+    );
+    records[listIndex].updatedAt = new Date().toISOString();
+    writeAll(tenantId, records);
+    return records[listIndex].links[linkIndex];
+  };
+  return { list, get, upsert, remove, addLinks, removeLink, updateLink };
 }
 module.exports = { createTenantLinkListsStore, normalizeList };

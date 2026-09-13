@@ -58,3 +58,11 @@ export async function removeLinkFromList(listId: string, linkId: string): Promis
   );
   return result.list;
 }
+
+export async function processLinkList(id: string): Promise<LinkList> {
+  const result = await apiFetch<{ list: LinkList }>(
+    `/api/affiliate/link-lists/${encodeURIComponent(id)}/process`,
+    { method: 'POST', body: JSON.stringify({}) }
+  );
+  return result.list;
+}
