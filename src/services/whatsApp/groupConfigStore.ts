@@ -6,6 +6,7 @@ import {
 import { updateMonitorServerConfig } from './monitorService';
 
 const STORAGE_KEY = 'domnex.whatsapp.groups.v1';
+export const DEFAULT_CHANNEL_ANTIFLOOD_SECONDS = 30;
 
 export interface WhatsAppGroupConfig {
   groups: WhatsAppGroup[];
@@ -13,6 +14,7 @@ export interface WhatsAppGroupConfig {
   parentGroupId: string | null;
   parentSessionId: string | null;
   childGroupIds: string[];
+  childGroupDelays: Record<string, number>;
 }
 
 const EMPTY_CONFIG: WhatsAppGroupConfig = {
@@ -21,7 +23,14 @@ const EMPTY_CONFIG: WhatsAppGroupConfig = {
   parentGroupId: null,
   parentSessionId: null,
   childGroupIds: [],
+  childGroupDelays: {},
 };
+
+function normalizeDelay(value: unknown): number {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return DEFAULT_CHANNEL_ANTIFLOOD_SECONDS;
+  return Math.min(3600, Math.max(0, Math.round(number)));
+}
 
 function isWhatsAppGroup(value: unknown): value is WhatsAppGroup {
   if (!value || typeof value !== 'object') return false;
@@ -62,17 +71,28 @@ function readFromStorage(): WhatsAppGroupConfig {
             typeof id === 'string' &&
             ids.has(id) &&
             id !== parentGroupId &&
-            !parentSessionId
+            (!parentSessionId
               ? Boolean(groups.find((g) => g.id === id)?.sessionId === null)
-              : groups.find((g) => g.id === id)?.sessionId === parentSessionId
+              : groups.find((g) => g.id === id)?.sessionId === parentSessionId)
         )
       : [];
+
+    const storedDelays =
+      parsed.childGroupDelays && typeof parsed.childGroupDelays === 'object'
+        ? (parsed.childGroupDelays as Record<string, unknown>)
+        : {};
+    const childGroupDelays: Record<string, number> = {};
+    for (const group of groups) {
+      childGroupDelays[group.id] = normalizeDelay(storedDelays[group.id]);
+    }
+
     return {
       groups,
       syncedAt: typeof parsed.syncedAt === 'string' ? parsed.syncedAt : null,
       parentGroupId,
       parentSessionId,
       childGroupIds,
+      childGroupDelays,
     };
   } catch {
     return EMPTY_CONFIG;
@@ -99,15 +119,22 @@ function commit(next: WhatsAppGroupConfig) {
   void syncMonitorServerConfig();
 }
 
-// Espelha a seleção Grupo Mãe / destinos no backend para o listener real da
-// conta correta. Nunca é bloqueante: se o backend estiver offline, a próxima
-// alteração retenta.
+function activeChildDelays(): Record<string, number> {
+  const result: Record<string, number> = {};
+  for (const id of state.childGroupIds) {
+    result[id] = normalizeDelay(state.childGroupDelays[id]);
+  }
+  return result;
+}
+
+// Espelha Grupo Mãe, destinos e anti-flood no backend real do monitor.
 function syncMonitorServerConfig() {
   try {
     void updateMonitorServerConfig({
       sessionId: state.parentSessionId ?? DOMNEX_DEFAULT_SESSION_ID,
       parentGroupId: state.parentGroupId,
       childGroupIds: state.childGroupIds,
+      childGroupDelays: activeChildDelays(),
     }).catch(() => {
       // backend indisponível; sincronização refeita na próxima alteração
     });
@@ -118,6 +145,21 @@ function syncMonitorServerConfig() {
 
 export function getGroupConfig(): WhatsAppGroupConfig {
   return state;
+}
+
+export function getChildGroupDelay(id: string): number {
+  return normalizeDelay(state.childGroupDelays[id]);
+}
+
+export function setChildGroupDelay(id: string, seconds: number) {
+  if (!state.groups.some((group) => group.id === id)) return;
+  commit({
+    ...state,
+    childGroupDelays: {
+      ...state.childGroupDelays,
+      [id]: normalizeDelay(seconds),
+    },
+  });
 }
 
 function tagGroupsWithSession(
@@ -133,8 +175,6 @@ function tagGroupsWithSession(
     }));
 }
 
-// Sincroniza os grupos de UMA conta específica, preservando os grupos das
-// demais contas no armazenamento local.
 export function setSyncedGroupsForSession(
   groups: WhatsAppGroup[],
   sessionId: string,
@@ -156,12 +196,17 @@ export function setSyncedGroupsForSession(
       id !== parentGroupId &&
       nextGroups.find((g) => g.id === id)?.sessionId === parentSessionId
   );
+  const childGroupDelays: Record<string, number> = {};
+  for (const group of nextGroups) {
+    childGroupDelays[group.id] = normalizeDelay(state.childGroupDelays[group.id]);
+  }
   commit({
     groups: nextGroups,
     syncedAt,
     parentGroupId,
     parentSessionId,
     childGroupIds,
+    childGroupDelays,
   });
 }
 
@@ -185,7 +230,9 @@ export function setParentGroup(id: string | null) {
     parentGroupId: id,
     parentSessionId: sessionId,
     childGroupIds: state.childGroupIds.filter(
-      (child) => child !== id && state.groups.find((g) => g.id === child)?.sessionId === sessionId
+      (child) =>
+        child !== id &&
+        state.groups.find((g) => g.id === child)?.sessionId === sessionId
     ),
   });
 }
@@ -194,16 +241,23 @@ export function addChildGroup(id: string) {
   const group = state.groups.find((g) => g.id === id);
   if (!group) return;
   if (id === state.parentGroupId) return;
-  // Nunca misturar grupos de contas diferentes.
-  if (!state.parentSessionId || group.sessionId !== state.parentSessionId) {
-    return;
-  }
+  if (!state.parentSessionId || group.sessionId !== state.parentSessionId) return;
   if (state.childGroupIds.includes(id)) return;
-  commit({ ...state, childGroupIds: [...state.childGroupIds, id] });
+  commit({
+    ...state,
+    childGroupIds: [...state.childGroupIds, id],
+    childGroupDelays: {
+      ...state.childGroupDelays,
+      [id]: normalizeDelay(state.childGroupDelays[id]),
+    },
+  });
 }
 
 export function removeChildGroup(id: string) {
-  commit({ ...state, childGroupIds: state.childGroupIds.filter((child) => child !== id) });
+  commit({
+    ...state,
+    childGroupIds: state.childGroupIds.filter((child) => child !== id),
+  });
 }
 
 export function replaceChildGroups(ids: string[]) {
@@ -211,7 +265,9 @@ export function replaceChildGroups(ids: string[]) {
   const valid = unique.filter(
     (id) =>
       id !== state.parentGroupId &&
-      state.groups.some((g) => g.id === id && g.sessionId === state.parentSessionId)
+      state.groups.some(
+        (g) => g.id === id && g.sessionId === state.parentSessionId
+      )
   );
   commit({ ...state, childGroupIds: valid });
 }
@@ -225,11 +281,15 @@ export function clearGroupSelection() {
   });
 }
 
-// Remoção de uma conta: descarta grupos/mapeamentos daquela sessão, mantendo
-// intactos os dados das demais contas e da escolha de Grupo Mãe válida.
 export function clearGroupsForSession(sessionId: string) {
+  const removedIds = new Set(
+    state.groups.filter((g) => g.sessionId === sessionId).map((g) => g.id)
+  );
   const remaining = state.groups.filter((g) => g.sessionId !== sessionId);
   const ids = new Set(remaining.map((g) => g.id));
+  const childGroupDelays = Object.fromEntries(
+    Object.entries(state.childGroupDelays).filter(([id]) => !removedIds.has(id))
+  );
   commit({
     groups: remaining,
     syncedAt: state.syncedAt,
@@ -243,6 +303,7 @@ export function clearGroupsForSession(sessionId: string) {
         ? state.parentSessionId
         : null,
     childGroupIds: state.childGroupIds.filter((id) => ids.has(id)),
+    childGroupDelays,
   });
 }
 
