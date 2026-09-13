@@ -56,18 +56,21 @@ try {
 }
 
 const PORT = Number(process.env.PORT || 3001);
-const HOST = '127.0.0.1';
+const HOST = String(process.env.HOST || '127.0.0.1').trim();
 const DOMNEX_DEFAULT_SESSION = 'domnex-main';
 // Limite técnico de contas, opcional e configurável por ambiente.
 // 0 (padrão) = ilimitado. Caso um plano comercial limite a quantidade no
 // futuro, basta definir MAX_WHATSAPP_ACCOUNTS no ambiente do servidor.
 const MAX_ACCOUNTS = Number(process.env.MAX_WHATSAPP_ACCOUNTS || 0);
-const SESSION_DIR = path.join(__dirname, 'tokens');
-const DATA_DIR = path.join(__dirname, 'data');
+const STATE_DIR = String(process.env.PULSEFLOW_STATE_DIR || __dirname).trim();
+const SESSION_DIR = path.join(STATE_DIR, 'tokens');
+const DATA_DIR = path.join(STATE_DIR, 'data');
 const ACCOUNTS_FILE = path.join(DATA_DIR, 'accounts.json');
 const CHROME_PATH =
   process.env.WPP_CHROME_PATH ||
-  'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+  (process.platform === 'win32'
+    ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+    : '/usr/bin/chromium');
 const RECENT_LIMIT = 200;
 
 const SESSION_ID_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9-]*$/;
@@ -189,6 +192,15 @@ function enterAwaitingQr(state) {
 // válida. Best-effort: nunca derruba o fluxo em caso de falha.
 function killSessionBrowser(sessionId) {
   const profilePath = path.join(SESSION_DIR, sessionId);
+  if (process.platform !== 'win32') {
+    const proc = spawn('pkill', ['-f', profilePath], { stdio: 'ignore' });
+    proc.on('error', () => {});
+    proc.unref();
+    logWhatsApp(
+      `[${sessionId}] encerramento best-effort do Chromium órfão da sessão (tokens preservados)`
+    );
+    return;
+  }
   const ps = `
 & {
   $profile = $args[0]
@@ -1337,6 +1349,14 @@ async function createSession(sessionId) {
       puppeteerOptions: {
         executablePath: CHROME_PATH,
         headless: true,
+        args:
+          process.platform === 'win32'
+            ? []
+            : [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+              ],
       },
       // Mantem a sessao viva em segundo plano mesmo sem QR escaneado.
       autoClose: 0,
