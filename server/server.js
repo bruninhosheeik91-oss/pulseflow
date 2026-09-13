@@ -10,7 +10,17 @@ const {
   createAffiliateCredentialsStore,
   EncryptionKeyMissingError,
 } = require('./linkConversion/affiliateCredentialsStore.js');
-const { runSearch: runShopeeAutoSearch, buildMessageFromTemplate } = require('./linkConversion/shopeeAutoSearch.js');
+const {
+  runSearch: runShopeeAutoSearch,
+  buildMessageFromTemplate,
+  normalizeShopeeNode,
+} = require('./linkConversion/shopeeAutoSearch.js');
+const { createShopeeApiClient } = require('./linkConversion/shopeeApiClient.js');
+const {
+  normalizeMonitorMessage,
+  resolveMonitorRoute,
+  createMonitorDeduper,
+} = require('./monitorPipeline.js');
 const {
   createTenantAutomationsStore,
 } = require('./linkConversion/tenantAutomationsStore.js');
@@ -363,10 +373,24 @@ function registerMessage(state, message) {
 // Escopo inicial: apenas mensagens de TEXTO novas no Grupo Mãe, replicadas
 // para o primeiro grupo filho configurado da MESMA conta.
 const MONITOR_CONFIG_PATH = path.join(DATA_DIR, 'monitor-config.json');
+// Template padrão do monitor: linhas com variáveis sem dado REAL são removidas
+// pelo renderer (nada é inventado; {{link}} sempre presente após a conversão).
+const DEFAULT_MONITOR_TEMPLATE = [
+  'Oferta encontrada',
+  '',
+  '{{produto}}',
+  'De {{preco_original}} por apenas {{preco}}',
+  'Desconto: {{desconto}}%',
+  '',
+  '{{link}}',
+].join('\n');
+
 const DEFAULT_MONITOR_CONFIG = {
   enabled: false,
   parentGroupId: null,
   childGroupIds: [],
+  template: null,
+  tenantId: null,
   lastMessageAt: null,
   lastMessageId: null,
   lastSendAt: null,
@@ -390,6 +414,235 @@ function getAccountMonitor(sessionId) {
     monitorBySession[sessionId] = { ...DEFAULT_MONITOR_CONFIG };
   }
   return monitorBySession[sessionId];
+}
+
+function formatMonitorPrice(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '';
+  return `R$ ${n.toFixed(2).replace('.', ',')}`;
+}
+
+// Renderiza o template do monitor preenchendo SOMENTE variáveis com dado REAL.
+// Linhas sem nenhuma variável preenchida são removidas (nada é inventado).
+function buildMonitorOfferMessage(template, offer = {}) {
+  const source =
+    typeof template === 'string' && template.trim()
+      ? template
+      : DEFAULT_MONITOR_TEMPLATE;
+  const values = {
+    produto:
+      typeof offer.productName === 'string' && offer.productName
+        ? offer.productName
+        : '',
+    preco: offer.price != null ? formatMonitorPrice(offer.price) : '',
+    preco_original:
+      offer.originalPrice != null ? formatMonitorPrice(offer.originalPrice) : '',
+    desconto:
+      offer.discountPercentage != null && offer.discountPercentage > 0
+        ? String(offer.discountPercentage)
+        : '',
+    link: typeof offer.affiliateUrl === 'string' ? offer.affiliateUrl : '',
+  };
+  const out = [];
+  for (const raw of source.split(/\r?\n/)) {
+    let hasToken = false;
+    let hasData = false;
+    const rendered = raw.replace(/\{\{\s*(\w+)\s*\}\}/g, (match, key) => {
+      hasToken = true;
+      const value = Object.prototype.hasOwnProperty.call(values, key)
+        ? values[key]
+        : '';
+      if (value) hasData = true;
+      return value;
+    });
+    const line = rendered.replace(/[ \t]+/g, ' ').trim();
+    if (hasToken && !hasData) continue;
+    if (line) out.push(line);
+  }
+  return out.join('\n').trim();
+}
+
+// Extrai de uma URL de produto Shopee os ids do item (formato -i.<n>.<n>) e o
+// slug real do título. Retorna null quando não é um link de produto.
+function extractShopeeUrlProductRef(rawUrl) {
+  let parsed;
+  try {
+    parsed = new URL(rawUrl);
+  } catch {
+    return null;
+  }
+  const match = parsed.pathname.match(/-i\.(\d+)\.(\d+)/);
+  if (!match) return null;
+  const itemTokens = new Set([Number(match[1]), Number(match[2])]);
+  let slug = parsed.pathname
+    .replace(/-i\.\d+\.\d+.*$/, '')
+    .replace(/^\/+|\/+$/g, '');
+  try {
+    slug = decodeURIComponent(slug);
+  } catch {
+    // mantém o slug cru (URL já decodificada)
+  }
+  slug = slug.replace(/[-_]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!slug) return null;
+  return { itemTokens, slug: slug.slice(0, 60) };
+}
+
+// Resolve dados REAIS do produto pela Affiliate Open API. Busca pelo slug do
+// título e confirma pelo itemId presente na URL (itemId única por produto).
+// Se a API não devolver o produto, retorna null (seguro, nada é inventado).
+async function resolveMonitorProduct(shopeeClient, rawUrl) {
+  const ref = extractShopeeUrlProductRef(rawUrl);
+  if (!ref) return null;
+  let nodes = [];
+  try {
+    const result = await shopeeClient.productOfferV2({
+      keyword: ref.slug,
+      limit: 10,
+    });
+    nodes = Array.isArray(result.nodes) ? result.nodes : [];
+  } catch {
+    return null;
+  }
+  for (const node of nodes) {
+    const product = normalizeShopeeNode(node);
+    if (!product || product.itemId === null || product.itemId === undefined) {
+      continue;
+    }
+    if (ref.itemTokens.has(Number(product.itemId))) return product;
+  }
+  return null;
+}
+
+// Converte UMA única URL Shopee do Grupo Mãe em oferta afiliada do tenant do
+// monitor e envia a TODOS os Grupos Filhos. Nunca encaminha o link cru.
+async function handleMonitorAffiliateLink(sessionId, cfg, sourceUrl, msgId) {
+  const tenantId =
+    typeof cfg.tenantId === 'string' && cfg.tenantId.trim()
+      ? cfg.tenantId.trim()
+      : '';
+  if (!tenantId) {
+    cfg.lastMessageAt = new Date().toISOString();
+    cfg.lastMessageId = msgId;
+    cfg.lastError = 'Monitor sem tenantId configurado.';
+    saveMonitorConfig();
+    monitorLog(sessionId, `processamento ignorado: ${cfg.lastError}`);
+    return;
+  }
+  const credentials = affiliateStore.getShopeeApiCredentials(tenantId);
+  if (!credentials) {
+    cfg.lastMessageAt = new Date().toISOString();
+    cfg.lastMessageId = msgId;
+    cfg.lastError = `Sem credenciais Shopee válidas para o tenant ${tenantId}.`;
+    saveMonitorConfig();
+    monitorLog(sessionId, `processamento ignorado: ${cfg.lastError}`);
+    return;
+  }
+
+  monitorLog(sessionId, 'link Shopee detectado');
+  monitorLog(sessionId, `conversão afiliada iniciada (tenant=${tenantId})`);
+
+  const client = createShopeeApiClient({
+    credentials: {
+      appId: credentials.appId,
+      secret: credentials.secret,
+      apiUrl: credentials.apiUrl,
+    },
+  });
+  const view = affiliateStore.getShopeePublicView(tenantId) || {};
+  const subIds = Array.isArray(view.subIds) ? view.subIds : [];
+
+  let affiliateUrl = null;
+  try {
+    const result = await client.generateShortLink({ sourceUrl, subIds });
+    affiliateUrl = result && result.affiliateUrl ? result.affiliateUrl : null;
+  } catch (err) {
+    cfg.lastMessageAt = new Date().toISOString();
+    cfg.lastMessageId = msgId;
+    cfg.lastError = `Falha na conversão do link: ${sanitizeSendError(err)}`;
+    saveMonitorConfig();
+    monitorLog(sessionId, `processamento falhou: ${cfg.lastError}`);
+    return;
+  }
+  if (!affiliateUrl) {
+    cfg.lastMessageAt = new Date().toISOString();
+    cfg.lastMessageId = msgId;
+    cfg.lastError = 'Conversão não retornou link afiliado.';
+    saveMonitorConfig();
+    monitorLog(sessionId, `processamento falhou: ${cfg.lastError}`);
+    return;
+  }
+  monitorLog(sessionId, 'link afiliado gerado');
+
+  const children = Array.isArray(cfg.childGroupIds)
+    ? cfg.childGroupIds.filter((id) => id && id !== cfg.parentGroupId)
+    : [];
+  if (!children.length) {
+    cfg.lastMessageAt = new Date().toISOString();
+    cfg.lastMessageId = msgId;
+    cfg.lastError = 'Nenhum grupo filho configurado.';
+    saveMonitorConfig();
+    monitorLog(sessionId, `processamento falhou: ${cfg.lastError}`);
+    return;
+  }
+
+  const offer = { affiliateUrl };
+  const product = await resolveMonitorProduct(client, sourceUrl);
+  if (product) {
+    offer.productName = product.productName;
+    offer.price = product.price;
+    offer.originalPrice = product.originalPrice;
+    offer.discountPercentage = product.discountPercentage;
+    offer.imageUrl = product.imageUrl;
+    monitorLog(sessionId, 'produto resolvido');
+  } else {
+    monitorLog(sessionId, 'produto não resolvido pela API (apenas link)');
+  }
+
+  const message = buildMonitorOfferMessage(cfg.template, offer);
+  if (!message) {
+    cfg.lastMessageAt = new Date().toISOString();
+    cfg.lastMessageId = msgId;
+    cfg.lastError = 'Template do monitor gerou mensagem vazia.';
+    saveMonitorConfig();
+    monitorLog(sessionId, `processamento falhou: ${cfg.lastError}`);
+    return;
+  }
+
+  const st = getSessionState(sessionId);
+  if (!st.client || typeof st.client.sendText !== 'function') {
+    cfg.lastMessageAt = new Date().toISOString();
+    cfg.lastMessageId = msgId;
+    cfg.lastError = 'Cliente WhatsApp indisponível.';
+    saveMonitorConfig();
+    monitorErrorLog(sessionId, `erro no envio: ${cfg.lastError}`);
+    return;
+  }
+
+  monitorLog(sessionId, `enviando para ${children.length} grupos filhos`);
+  const sentIds = [];
+  for (const child of children) {
+    try {
+      const result = offer.imageUrl
+        ? await sendProductWithMedia(st.client, child, message, offer.imageUrl)
+        : await st.client.sendText(child, message);
+      if (result && result.messageId) sentIds.push(result.messageId);
+    } catch (err) {
+      cfg.lastError = String((err && err.message) || err);
+      monitorErrorLog(sessionId, `erro no envio para ${child}: ${cfg.lastError}`);
+    }
+  }
+
+  const now = new Date().toISOString();
+  cfg.lastMessageAt = now;
+  cfg.lastMessageId = msgId;
+  cfg.lastSendAt = now;
+  cfg.lastSendMessageId = sentIds[0] || null;
+  cfg.lastError = null;
+  saveMonitorConfig();
+  monitorLog(
+    sessionId,
+    `envio concluído (${sentIds.length}/${children.length} grupos filhos)`
+  );
 }
 
 function loadMonitorConfig() {
@@ -446,16 +699,9 @@ function isMonitorActive(cfg) {
   return Boolean(cfg.enabled && cfg.parentGroupId);
 }
 
-// Normaliza o id da mensagem da API real ({ id, _serialized } ou string).
-function rawMessageId(message) {
-  if (!message || !message.id) return null;
-  const id = message.id;
-  if (typeof id === 'string') return id;
-  return id._serialized || id.id || null;
-}
-
-// Deduplicação em memória (por mensagem) — permitida nesta fase.
-const processedMessageIds = new Set();
+// Deduplicação em memória — opera SOMENTE sobre messageId real/canônico
+// (garantido pelo normalizeMonitorMessage em monitorPipeline.js).
+const monitorDeduper = createMonitorDeduper();
 
 // Cache de admins do Grupo Mãe em memória (evita consultar o grupo a cada
 // mensagem). Refrescado a cada poucos minutos.
@@ -468,21 +714,6 @@ function canonicalNumber(id) {
     .split('@')[0]
     .replace(/\D/g, '');
   return num || null;
-}
-
-// Autor real da mensagem no grupo. Para mensagens de outros membros o WPP
-// expõe `author`; para fromMe usamos o contato serializado (a própria conta).
-function rawMessageAuthorId(message) {
-  if (!message) return null;
-  if (message.author) return message.author;
-  const sender = message.sender || null;
-  if (sender) {
-    if (sender.id && typeof sender.id === 'object' && sender.id._serialized) {
-      return sender.id._serialized;
-    }
-    if (typeof sender.id === 'string') return sender.id;
-  }
-  return message.from || null;
 }
 
 // Retorna o conjunto de números (formato canônico) dos administradores do
@@ -554,6 +785,10 @@ async function handleMonitorReplication(sessionId, message) {
     const msgId = rawMessageId(message);
     if (!msgId) {
       monitorLog(sessionId, 'origem validada mas sem messageId identificável');
+      monitorLog(
+        sessionId,
+        `diagnóstico messageId (só nomes/tipos): ${describeMessageIdShape(message)}`
+      );
       return;
     }
     if (processedMessageIds.has(msgId)) {
@@ -593,6 +828,21 @@ async function handleMonitorReplication(sessionId, message) {
       return;
     }
     const text = body.trim();
+
+    // Mensagem do Grupo Mãe contendo SOMENTE UMA única URL Shopee (sem texto
+    // ao redor) vira oferta afiliada. Qualquer outro formato (texto extra,
+    // múltiplas URLs, link não-Shopee) segue o fluxo atual de replicação.
+    const urls = extractUrls(text);
+    const shopeeUrl =
+      urls.length === 1 &&
+      isShopeeUrl(urls[0].url) &&
+      (text === urls[0].url || text === urls[0].raw)
+        ? urls[0].url
+        : null;
+    if (shopeeUrl) {
+      await handleMonitorAffiliateLink(sessionId, cfg, shopeeUrl, msgId);
+      return;
+    }
 
     monitorLog(sessionId, `origem validada (grupo mãe ${parentId})`);
     monitorLog(sessionId, `messageId = ${msgId}`);
@@ -1687,11 +1937,14 @@ app.get('/api/monitor/status', (req, res) => {
     lastSendAt: cfg.lastSendAt,
     lastSendMessageId: cfg.lastSendMessageId,
     lastError: cfg.lastError,
+    template: cfg.template ?? DEFAULT_MONITOR_TEMPLATE,
+    tenantId: cfg.tenantId ?? null,
   });
 });
 
 app.post('/api/monitor', (req, res) => {
-  const { enabled, parentGroupId, childGroupIds, sessionId } = req.body || {};
+  const { enabled, parentGroupId, childGroupIds, sessionId, template, tenantId } =
+    req.body || {};
   const sid =
     typeof sessionId === 'string' && sessionId.trim()
       ? sessionId.trim()
@@ -1735,11 +1988,35 @@ app.post('/api/monitor', (req, res) => {
     cfg.childGroupIds = valid;
   }
 
+  if (template !== undefined) {
+    if (template === null || template === '') {
+      cfg.template = null;
+    } else if (typeof template === 'string' && template.length <= 4000) {
+      cfg.template = template;
+    } else {
+      return res.status(400).json({ ok: false, error: 'template invalido.' });
+    }
+  }
+
+  if (tenantId !== undefined) {
+    if (tenantId === null || tenantId === '') {
+      cfg.tenantId = null;
+    } else if (
+      typeof tenantId === 'string' &&
+      SESSION_ID_PATTERN.test(tenantId) &&
+      affiliateStore.tenantExists(tenantId)
+    ) {
+      cfg.tenantId = tenantId;
+    } else {
+      return res.status(400).json({ ok: false, error: 'tenantId invalido.' });
+    }
+  }
+
   saveMonitorConfig();
   logInfo(
     `monitor atualizado (${sid}): enabled=${cfg.enabled} mãe=${
       cfg.parentGroupId || '—'
-    } filho(s)=${cfg.childGroupIds.length}`
+    } filho(s)=${cfg.childGroupIds.length} tenant=${cfg.tenantId || '—'}`
   );
   res.json({
     ok: true,
@@ -1747,6 +2024,8 @@ app.post('/api/monitor', (req, res) => {
     enabled: Boolean(cfg.enabled),
     parentGroupId: cfg.parentGroupId,
     childGroupIds: cfg.childGroupIds,
+    template: cfg.template ?? DEFAULT_MONITOR_TEMPLATE,
+    tenantId: cfg.tenantId ?? null,
   });
 });
 
