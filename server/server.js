@@ -534,7 +534,7 @@ async function fetchShopeePublicProduct(ref) {
 
   try {
     const endpoint =
-      `https://shopee.com.br/api/v2/item/get?itemid=${encodeURIComponent(itemId)}` +
+      `https://shopee.com.br/api/v4/item/get?itemid=${encodeURIComponent(itemId)}` +
       `&shopid=${encodeURIComponent(shopId)}`;
     const response = await fetch(endpoint, {
       method: 'GET',
@@ -550,6 +550,7 @@ async function fetchShopeePublicProduct(ref) {
 
     const json = await response.json();
     const item =
+      (json && json.data && typeof json.data === 'object' ? json.data : null) ||
       (json && json.item) ||
       (json && json.data && json.data.item) ||
       null;
