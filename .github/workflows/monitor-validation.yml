@@ -10,6 +10,8 @@ on:
       - 'server/monitorPipeline.test.js'
       - 'server/monitorOfferMessage.js'
       - 'server/monitorOfferMessage.test.js'
+      - 'server/linkConversion/shopeeApiClient.js'
+      - 'server/linkConversion/tests/shopeeApiClient.test.js'
       - 'server/package.json'
       - '.github/workflows/monitor-validation.yml'
   pull_request:
@@ -19,6 +21,8 @@ on:
       - 'server/monitorPipeline.test.js'
       - 'server/monitorOfferMessage.js'
       - 'server/monitorOfferMessage.test.js'
+      - 'server/linkConversion/shopeeApiClient.js'
+      - 'server/linkConversion/tests/shopeeApiClient.test.js'
       - 'server/package.json'
       - '.github/workflows/monitor-validation.yml'
 
@@ -42,3 +46,6 @@ jobs:
 
       - name: Run monitor regression tests
         run: npm run test:monitor --prefix server
+
+      - name: Run Shopee API regression tests
+        run: npm run test:api --prefix server
