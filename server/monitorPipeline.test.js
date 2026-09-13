@@ -135,44 +135,26 @@ const nestedUrl = normalizeMonitorMessage({
 assert(nestedUrl);
 assert.strictEqual(nestedUrl.body, 'https://s.shopee.com.br/9pNested789');
 
-// WPPConnect v2.3.3 expõe clientUrl em mensagens de URL. Esse era o caso
-// crônico que chegava no onAnyMessage sem body/caption e era descartado.
 const clientUrlMessage = normalizeMonitorMessage({
-  id: {
-    _serialized: `true_${parent}_3EB0CLIENTURL001`,
-    id: '3EB0CLIENTURL001',
-    fromMe: true,
-    remote: { _serialized: parent },
-  },
-  chatId: { _serialized: parent },
-  from: '5511111111111@c.us',
-  to: parent,
+  id: { _serialized: `${parent}_CLIENTURL001_true` },
   fromMe: true,
-  clientUrl: 'https://s.shopee.com.br/9fKrjhoA8f',
+  clientUrl: 'https://s.shopee.com.br/9pClientUrl',
   type: 'url',
 });
 assert(clientUrlMessage);
-assert.strictEqual(clientUrlMessage.body, 'https://s.shopee.com.br/9fKrjhoA8f');
 assert.strictEqual(clientUrlMessage.chatId, parent);
+assert.strictEqual(clientUrlMessage.body, 'https://s.shopee.com.br/9pClientUrl');
 
-// Se o evento vier sem chatId/to/from, o grupo real pode ser recuperado do
-// próprio message id serializado, sem criar identificador artificial.
-const chatFromMessageId = normalizeMonitorMessage({
-  id: `true_${parent}_3EB0ONLYID001`,
-  fromMe: true,
-  clientUrl: 'https://s.shopee.com.br/9fOnlyId',
+const diagnostic = diagnoseMonitorMessage({
   type: 'url',
+  clientUrl: 'https://s.shopee.com.br/nao-logar-conteudo',
 });
-assert(chatFromMessageId);
-assert.strictEqual(chatFromMessageId.chatId, parent);
-
-const missingBodyDiagnosis = diagnoseMonitorMessage({
-  id: `true_${parent}_3EB0DIAG001`,
-  chatId: parent,
-  type: 'url',
-});
-assert.deepStrictEqual(missingBodyDiagnosis.missing, ['conteudo']);
-assert(missingBodyDiagnosis.keys.includes('chatId'));
+assert.strictEqual(diagnostic.hasId, false);
+assert.strictEqual(diagnostic.hasGroup, false);
+assert.strictEqual(diagnostic.hasBody, true);
+assert.strictEqual(diagnostic.reason, 'faltando:messageId,groupChatId');
+assert(diagnostic.keys.includes('clientUrl'));
+assert(!JSON.stringify(diagnostic).includes('nao-logar-conteudo'));
 
 assert.strictEqual(
   normalizeMonitorMessage({
