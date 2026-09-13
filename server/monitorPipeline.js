@@ -7,7 +7,7 @@
 // Regra: um evento só é processável se tiver os campos de uma mensagem REAL:
 //   - identificador estável real da mensagem (messageId);
 //   - origem válida (chatId de grupo, sem broadcast/newsletter);
-//   - conteúdo textual real (body/caption/content).
+//   - conteúdo textual real (body/caption/content/clientUrl).
 // NENHUM id é inventado (sem timestamp, sem hash do texto, sem aleatório).
 
 const { extractUrls } = require('./linkConversion/affiliateLinkConverter.js');
@@ -122,6 +122,15 @@ function rawMonitorChatId(message) {
     if (normalized && isMonitorGroupChatId(normalized)) return normalized;
   }
 
+  // WPPConnect serializa ids de mensagens como true_<chatId>_<id> / false_<chatId>_<id>.
+  // Se chatId/to/from não vierem no evento, recuperamos SOMENTE o grupo real já
+  // presente no próprio id da mensagem; nada é inventado.
+  const messageId = rawMessageId(message);
+  if (messageId) {
+    const match = messageId.match(/(?:^|_)([^_\s]+@g\.us)(?:_|$)/i);
+    if (match && isMonitorGroupChatId(match[1])) return match[1];
+  }
+
   return null;
 }
 
@@ -137,6 +146,8 @@ function rawMessageBody(message) {
     message.content,
     message.text,
     message.url,
+    // Campo oficial do Message do WPPConnect usado por mensagens de URL/link.
+    message.clientUrl,
     extended && extended.text,
   ];
   for (const candidate of candidates) {
@@ -171,12 +182,8 @@ function normalizeOneMonitorMessage(raw) {
   };
 }
 
-// WPPConnect pode entregar o mesmo evento com os campos úteis em wrappers
-// internos (_data/data/message). Tentamos o envelope e combinações rasas com
-// esses wrappers sem fabricar nenhum id ou conteúdo.
-function normalizeMonitorMessage(raw) {
-  if (!raw || typeof raw !== 'object') return null;
-
+function monitorCandidates(raw) {
+  if (!raw || typeof raw !== 'object') return [];
   const nested = [raw._data, raw.data, raw.message].filter(
     (value) => value && typeof value === 'object' && !Array.isArray(value)
   );
@@ -184,13 +191,49 @@ function normalizeMonitorMessage(raw) {
   for (const value of nested) {
     candidates.push(value, { ...raw, ...value }, { ...value, ...raw });
   }
+  return candidates;
+}
 
-  for (const candidate of candidates) {
+// WPPConnect pode entregar o mesmo evento com os campos úteis em wrappers
+// internos (_data/data/message). Tentamos o envelope e combinações rasas com
+// esses wrappers sem fabricar nenhum id ou conteúdo.
+function normalizeMonitorMessage(raw) {
+  for (const candidate of monitorCandidates(raw)) {
     const normalized = normalizeOneMonitorMessage(candidate);
     if (normalized) return normalized;
   }
-
   return null;
+}
+
+// Diagnóstico seguro para o terminal: informa exatamente QUAL requisito faltou
+// sem registrar corpo da mensagem, URL, credenciais ou conteúdo privado.
+function diagnoseMonitorMessage(raw) {
+  const candidates = monitorCandidates(raw);
+  let hasMessageId = false;
+  let hasChatId = false;
+  let hasBody = false;
+  const types = new Set();
+  const keyNames = new Set();
+
+  for (const candidate of candidates) {
+    if (!candidate || typeof candidate !== 'object') continue;
+    if (rawMessageId(candidate)) hasMessageId = true;
+    if (rawMonitorChatId(candidate)) hasChatId = true;
+    if (rawMessageBody(candidate)) hasBody = true;
+    if (typeof candidate.type === 'string' && candidate.type) types.add(candidate.type);
+    Object.keys(candidate).slice(0, 40).forEach((key) => keyNames.add(key));
+  }
+
+  const missing = [];
+  if (!hasMessageId) missing.push('messageId');
+  if (!hasChatId) missing.push('chatIdGrupo');
+  if (!hasBody) missing.push('conteudo');
+
+  return {
+    missing,
+    types: [...types].slice(0, 5),
+    keys: [...keyNames].sort().slice(0, 40),
+  };
 }
 
 function createMonitorDeduper() {
@@ -227,6 +270,7 @@ module.exports = {
   isMonitorGroupChatId,
   isParentMonitorChat,
   normalizeMonitorMessage,
+  diagnoseMonitorMessage,
   createMonitorDeduper,
   resolveMonitorRoute,
 };
