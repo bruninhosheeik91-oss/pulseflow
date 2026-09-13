@@ -4,6 +4,7 @@ const assert = require('assert');
 const {
   normalizeMonitorMessage,
   diagnoseMonitorMessage,
+  fallbackMessageId,
   createMonitorDeduper,
   resolveMonitorRoute,
   isParentMonitorChat,
@@ -144,6 +145,36 @@ const clientUrlMessage = normalizeMonitorMessage({
 assert(clientUrlMessage);
 assert.strictEqual(clientUrlMessage.chatId, parent);
 assert.strictEqual(clientUrlMessage.body, 'https://s.shopee.com.br/9pClientUrl');
+
+// Payload observado no runtime real: WPPConnect entregou grupo + corpo + tempo,
+// porém sem `id`. O fallback precisa ser determinístico e deduplicável.
+const realPayloadWithoutId = {
+  from: parent,
+  to: parent,
+  author: '5511990000000@lid',
+  body: 'https://s.shopee.com.br/9pRealPayload',
+  type: 'chat',
+  t: 1789312860,
+  clientReceivedTsMillis: 1789312860123,
+  serverStoreTimeMicros: '1789312860123456',
+};
+const fallbackA = fallbackMessageId(realPayloadWithoutId);
+const fallbackB = fallbackMessageId({ ...realPayloadWithoutId });
+assert(fallbackA);
+assert(fallbackA.startsWith('pf-fallback:'));
+assert.strictEqual(fallbackA, fallbackB);
+
+const noIdNormalized = normalizeMonitorMessage(realPayloadWithoutId);
+assert(noIdNormalized);
+assert.strictEqual(noIdNormalized.messageId, fallbackA);
+assert.strictEqual(noIdNormalized.chatId, parent);
+assert.strictEqual(noIdNormalized.body, realPayloadWithoutId.body);
+
+const changedTimeFallback = fallbackMessageId({
+  ...realPayloadWithoutId,
+  clientReceivedTsMillis: 1789312860999,
+});
+assert.notStrictEqual(changedTimeFallback, fallbackA);
 
 const diagnostic = diagnoseMonitorMessage({
   type: 'url',
