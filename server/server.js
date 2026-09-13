@@ -746,6 +746,7 @@ async function ensureGroupAdminNumbers(client, sessionId, groupId) {
     return null;
   }
 
+  // Mantém aliases equivalentes de identidade para cada admin (PN e LID).
   const numbers = new Set();
   for (const participant of participants || []) {
     const raw =
@@ -753,15 +754,43 @@ async function ensureGroupAdminNumbers(client, sessionId, groupId) {
       (participant && participant.id && participant.id._serialized) ||
       (participant && participant.id) ||
       participant;
-    const number = canonicalNumber(raw);
-    if (number) numbers.add(number);
+    const serialized =
+      typeof raw === 'string'
+        ? raw
+        : raw && raw._serialized
+        ? raw._serialized
+        : raw && raw.user && raw.server
+        ? `${raw.user}@${raw.server}`
+        : null;
+
+    const direct = canonicalNumber(serialized || raw);
+    if (direct) numbers.add(direct);
+
+    if (
+      serialized &&
+      /@(c\.us|lid)$/i.test(serialized) &&
+      typeof client.getPnLidEntry === 'function'
+    ) {
+      try {
+        const mapping = await client.getPnLidEntry(serialized);
+        for (const wid of [mapping && mapping.phoneNumber, mapping && mapping.lid]) {
+          const alias =
+            (wid && wid._serialized) ||
+            (wid && wid.user && wid.server ? `${wid.user}@${wid.server}` : null);
+          const aliasNumber = canonicalNumber(alias);
+          if (aliasNumber) numbers.add(aliasNumber);
+        }
+      } catch {
+        // Alias opcional; identidade direta continua válida.
+      }
+    }
   }
 
   groupAdminsCache.set(key, {
     numbers,
     expiresAt: Date.now() + ADMIN_CACHE_TTL_MS,
   });
-  monitorLog(sessionId, `admins do grupo mãe ${groupId} carregados (${numbers.size})`);
+  monitorLog(sessionId, `admins do grupo mãe ${groupId} carregados (${participants?.length || 0}; aliases=${numbers.size})`);
   return numbers;
 }
 
@@ -810,45 +839,34 @@ async function handleMonitorReplication(sessionId, message) {
       monitorLog(sessionId, 'não foi possível confirmar admins - autor não autorizado');
       return;
     }
-    // WhatsApp Multi-Device pode identificar participantes como @lid no
-    // onAnyMessage, enquanto getGroupAdmins() retorna o número telefônico.
-    // Primeiro tenta a identidade do próprio evento; se for LID, resolve pelo
-    // mapeamento oficial PN/LID do WPPConnect. Para mensagens explicitamente
-    // fromMe, ainda há fallback para o telefone real da conta conectada.
-    let actorId = canonical.authorId;
-    let authorNumber = canonicalNumber(actorId);
+    // Compara autor e admins por aliases PN/LID, sem depender de fromMe.
+    const actorAliases = new Set();
+    const actorId = canonical.authorId;
+    const directActor = canonicalNumber(actorId);
+    if (directActor) actorAliases.add(directActor);
 
     if (
       actorId &&
-      /@lid$/i.test(String(actorId)) &&
+      /@(c\.us|lid)$/i.test(String(actorId)) &&
       typeof monClient.getPnLidEntry === 'function'
     ) {
       try {
         const mapping = await monClient.getPnLidEntry(String(actorId));
-        const phoneWid = mapping && mapping.phoneNumber;
-        const mappedPhone =
-          (phoneWid && phoneWid._serialized) ||
-          (phoneWid && phoneWid.user && phoneWid.server
-            ? `${phoneWid.user}@${phoneWid.server}`
-            : null);
-        const mappedNumber = canonicalNumber(mappedPhone);
-        if (mappedNumber) authorNumber = mappedNumber;
+        for (const wid of [mapping && mapping.phoneNumber, mapping && mapping.lid]) {
+          const alias =
+            (wid && wid._serialized) ||
+            (wid && wid.user && wid.server ? `${wid.user}@${wid.server}` : null);
+          const aliasNumber = canonicalNumber(alias);
+          if (aliasNumber) actorAliases.add(aliasNumber);
+        }
       } catch {
-        // Falha de cache PN/LID não autoriza ninguém; segue para fallback seguro.
+        // Sem alias, mantém a identidade direta.
       }
     }
 
-    if (canonical.fromMe === true && !adminNumbers.has(authorNumber)) {
-      const sessionState = getSessionState(sessionId);
-      if (!sessionState.devicePhone && typeof monClient.getHostDevice === 'function') {
-        await refreshHostDevice(sessionState);
-      }
-      const ownNumber = canonicalNumber(sessionState.devicePhone);
-      if (ownNumber) authorNumber = ownNumber;
-    }
-
-    if (!authorNumber || !adminNumbers.has(authorNumber)) {
-      monitorLog(sessionId, 'autor não autorizado');
+    const authorized = [...actorAliases].some((id) => adminNumbers.has(id));
+    if (!authorized) {
+      monitorLog(sessionId, `autor não autorizado (aliases=${actorAliases.size}, admins=${adminNumbers.size})`);
       return;
     }
     monitorLog(sessionId, 'autor validado (admin do grupo mãe)');
