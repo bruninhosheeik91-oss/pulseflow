@@ -227,8 +227,8 @@ export class WppConnectProvider implements WhatsAppProvider {
     );
   }
 
-  async sendMessage(to: string, text: string): Promise<void> {
-    await apiFetch(this.baseUrl, '/api/whatsapp/send', {
+  async sendMessage(to: string, text: string, sessionId?: string): Promise<void> {
+    await apiFetch(this.baseUrl, sessionPath(sessionId, '/send'), {
       method: 'POST',
       body: JSON.stringify({ groupId: to, message: text }),
     });

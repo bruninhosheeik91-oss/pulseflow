@@ -29,7 +29,8 @@ export interface WhatsAppProvider {
   getGroups(sessionId?: string): Promise<WhatsAppGroup[]>;
   /** Grupos de uma conta específica, já etiquetados com a sessão de origem. */
   getGroupsForSession(sessionId: string): Promise<WhatsAppGroup[]>;
-  sendMessage(to: string, text: string): Promise<void>;
+  /** Envia por uma sessão específica quando informada; sem sessionId usa a principal. */
+  sendMessage(to: string, text: string, sessionId?: string): Promise<void>;
   listAccounts(): Promise<WhatsAppAccount[]>;
   createAccount(name?: string): Promise<WhatsAppAccount>;
   /** Remove permanentemente uma sessão (conta + estado + tokens). */
