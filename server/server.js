@@ -473,20 +473,46 @@ function extractShopeeUrlProductRef(rawUrl) {
   } catch {
     return null;
   }
-  const match = parsed.pathname.match(/-i\.(\d+)\.(\d+)/);
-  if (!match) return null;
-  const itemTokens = new Set([Number(match[1]), Number(match[2])]);
-  let slug = parsed.pathname
-    .replace(/-i\.\d+\.\d+.*$/, '')
-    .replace(/^\/+|\/+$/g, '');
-  try {
-    slug = decodeURIComponent(slug);
-  } catch {
-    // mantém o slug cru (URL já decodificada)
+
+  let shopId = null;
+  let itemId = null;
+  let slug = '';
+
+  const slugMatch = parsed.pathname.match(/-i\.(\d+)\.(\d+)/i);
+  if (slugMatch) {
+    shopId = Number(slugMatch[1]);
+    itemId = Number(slugMatch[2]);
+    slug = parsed.pathname.replace(/-i\.\d+\.\d+.*$/i, '');
+  } else {
+    const productMatch = parsed.pathname.match(/\/product\/(\d+)\/(\d+)(?:\/|$)/i);
+    if (productMatch) {
+      shopId = Number(productMatch[1]);
+      itemId = Number(productMatch[2]);
+      slug = String(itemId);
+    }
   }
-  slug = slug.replace(/[-_]/g, ' ').replace(/\s+/g, ' ').trim();
-  if (!slug) return null;
-  return { itemTokens, slug: slug.slice(0, 60) };
+
+  if (!Number.isFinite(itemId)) return null;
+
+  const itemTokens = new Set([itemId]);
+  if (Number.isFinite(shopId)) itemTokens.add(shopId);
+
+  if (slug && slug !== String(itemId)) {
+    slug = slug.replace(/^\/+|\/+$/g, '');
+    try {
+      slug = decodeURIComponent(slug);
+    } catch {
+      // keep raw slug
+    }
+    slug = slug.replace(/[-_]/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
+  return {
+    itemTokens,
+    itemId,
+    shopId,
+    slug: (slug || String(itemId)).slice(0, 60),
+  };
 }
 
 // Resolve dados REAIS do produto pela Affiliate Open API. Busca pelo slug do
