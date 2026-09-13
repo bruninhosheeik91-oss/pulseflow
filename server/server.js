@@ -810,12 +810,28 @@ async function handleMonitorReplication(sessionId, message) {
       monitorLog(sessionId, 'não foi possível confirmar admins - autor não autorizado');
       return;
     }
-    const authorNumber = canonicalNumber(canonical.authorId);
+    // Mensagens enviadas pela própria conta podem chegar no onAnyMessage
+    // com `author` em formato LID, diferente do número retornado por
+    // getGroupAdmins(). Para fromMe, a identidade confiável é a própria
+    // conta conectada (devicePhone), obtida via getHostDevice().
+    if (canonical.fromMe === true && !monClient.devicePhone && typeof monClient.getHostDevice === 'function') {
+      await refreshHostDevice(getSessionState(sessionId));
+    }
+    const sessionState = getSessionState(sessionId);
+    const actorId = canonical.fromMe === true
+      ? sessionState.devicePhone
+      : canonical.authorId;
+    const authorNumber = canonicalNumber(actorId);
     if (!authorNumber || !adminNumbers.has(authorNumber)) {
       monitorLog(sessionId, 'autor não autorizado');
       return;
     }
-    monitorLog(sessionId, 'autor validado (admin do grupo mãe)');
+    monitorLog(
+      sessionId,
+      canonical.fromMe === true
+        ? 'autor validado (conta conectada é admin do grupo mãe)'
+        : 'autor validado (admin do grupo mãe)'
+    );
 
     const route = resolveMonitorRoute(canonical.body);
     if (route.route === 'shopee' && route.url) {
