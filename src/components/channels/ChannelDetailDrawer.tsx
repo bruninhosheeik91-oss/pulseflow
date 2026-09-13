@@ -184,7 +184,7 @@ export const ChannelDetailDrawer: React.FC<ChannelDetailDrawerProps> = ({
                 : 'border-transparent text-[#64748B] hover:text-[#172033]'
             }`}
           >
-            <span>Campanhas Vinculadas</span>
+            <span>Automações Vinculadas</span>
             <span className="font-mono-numeric text-[10px] px-1.5 py-0.2 rounded bg-[#F1F5F9] text-[#2563EB]">
               {channel.linkedCampaigns.length}
             </span>
@@ -388,12 +388,12 @@ export const ChannelDetailDrawer: React.FC<ChannelDetailDrawerProps> = ({
             </div>
           )}
 
-          {/* TAB 2: Campanhas Vinculadas */}
+          {/* TAB 2: Automações Vinculadas */}
           {activeTab === 'campaigns' && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-[#64748B] uppercase tracking-wider">
-                  Campanhas Alimentando Este Canal
+                  Automações Alimentando Este Canal
                 </span>
                 <span className="text-[11px] text-[#64748B]">
                   {channel.linkedCampaigns.length} ativas
@@ -404,7 +404,7 @@ export const ChannelDetailDrawer: React.FC<ChannelDetailDrawerProps> = ({
                 <div className="p-8 text-center bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl">
                   <Layers className="w-8 h-8 text-[#64748B] mx-auto mb-2" />
                   <p className="text-xs text-[#64748B]">
-                    Nenhuma campanha vinculada a este canal no momento.
+                    Nenhuma automação vinculada a este canal no momento.
                   </p>
                 </div>
               ) : (

@@ -19,6 +19,10 @@ import {
   setChildGroupDelay,
   setSyncedGroupsForSession,
 } from '../../services/whatsApp/groupConfigStore';
+import {
+  getCurrentTenantId,
+  listAutoSearchAutomations,
+} from '../../services/affiliatePrograms/affiliateProgramsService';
 import { ChannelsHeader } from './ChannelsHeader';
 import { ChannelsMetricsBar } from './ChannelsMetricsBar';
 import {
@@ -47,7 +51,8 @@ function accountStatusToInstanceStatus(
 
 function channelFromRealGroup(
   account: WhatsAppAccount,
-  group: WhatsAppGroup
+  group: WhatsAppGroup,
+  linkedAutomationNames: string[] = []
 ): DistributionChannel {
   const config = getGroupConfig();
   const sessionStatus = accountStatusToChannelStatus(account);
@@ -76,7 +81,7 @@ function channelFromRealGroup(
     instanceName: account.name || account.sessionId,
     instanceStatus: accountStatusToInstanceStatus(account),
     instanceBattery: 0,
-    linkedCampaigns: [],
+    linkedCampaigns: linkedAutomationNames,
     antiFloodDelay: getChildGroupDelay(group.id),
     stats: {
       messagesToday: 0,
@@ -129,6 +134,11 @@ export const ChannelsPage: React.FC = () => {
     const provider = getWhatsAppProvider();
     if (!provider) throw new Error('Provedor WhatsApp não configurado.');
 
+    const tenantId = getCurrentTenantId();
+    const linkedAutomations = tenantId
+      ? await listAutoSearchAutomations(tenantId).catch(() => [])
+      : [];
+
     const accounts = await provider.listAccounts();
     const connectedAccounts = accounts.filter(
       (account) => account.status === 'connected'
@@ -139,7 +149,16 @@ export const ChannelsPage: React.FC = () => {
         try {
           const groups = await provider.getGroupsForSession(account.sessionId);
           setSyncedGroupsForSession(groups, account.sessionId);
-          return groups.map((group) => channelFromRealGroup(account, group));
+          return groups.map((group) => {
+            const linkedAutomationNames = linkedAutomations
+              .filter(
+                (automation) =>
+                  automation.destination.accountId === account.sessionId &&
+                  automation.destination.groupIds.includes(group.id)
+              )
+              .map((automation) => automation.name);
+            return channelFromRealGroup(account, group, linkedAutomationNames);
+          });
         } catch {
           return [] as DistributionChannel[];
         }
