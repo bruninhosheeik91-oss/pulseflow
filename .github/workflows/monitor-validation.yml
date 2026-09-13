@@ -1,0 +1,44 @@
+name: Monitor validation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'server/server.js'
+      - 'server/monitorPipeline.js'
+      - 'server/monitorPipeline.test.js'
+      - 'server/monitorOfferMessage.js'
+      - 'server/monitorOfferMessage.test.js'
+      - 'server/package.json'
+      - '.github/workflows/monitor-validation.yml'
+  pull_request:
+    paths:
+      - 'server/server.js'
+      - 'server/monitorPipeline.js'
+      - 'server/monitorPipeline.test.js'
+      - 'server/monitorOfferMessage.js'
+      - 'server/monitorOfferMessage.test.js'
+      - 'server/package.json'
+      - '.github/workflows/monitor-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Validate server syntax
+        run: node --check server/server.js
+
+      - name: Run monitor regression tests
+        run: npm run test:monitor --prefix server
