@@ -267,7 +267,7 @@ export const WhatsAppGroupsSection: React.FC<
                         }`}
                       >
                         {isDestination ? (
-                          <CheckSquare className="w-3 h-3 text-white" />
+                          <CheckSquare className="w-3 h-3 text-[#172033]" />
                         ) : null}
                       </button>
 

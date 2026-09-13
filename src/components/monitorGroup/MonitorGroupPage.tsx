@@ -290,7 +290,7 @@ export const MonitorGroupPage: React.FC = () => {
       className="w-full flex items-start justify-between gap-3 py-2 text-left cursor-pointer group"
     >
       <div className="min-w-0">
-        <span className="text-xs font-medium text-[#172033] block group-hover:text-white">
+        <span className="text-xs font-medium text-[#172033] block group-hover:text-[#2563EB]">
           {label}
         </span>
         {description && (

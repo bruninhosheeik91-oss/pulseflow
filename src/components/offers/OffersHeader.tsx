@@ -70,7 +70,7 @@ export const OffersHeader: React.FC<OffersHeaderProps> = ({
             isScanning ? (
               <RefreshCw className="w-3.5 h-3.5 animate-spin" />
             ) : (
-              <Sparkles className="w-3.5 h-3.5 text-white" />
+              <Sparkles className="w-3.5 h-3.5 text-[#172033]" />
             )
           }
           className="text-xs font-semibold shadow-sm shadow-[#2563EB]/30"

@@ -269,7 +269,7 @@ export const MirrorPage: React.FC = () => {
                             type="button"
                             onClick={() => setDrawerId(source.id)}
                             title="Abrir fonte"
-                            className="w-7 h-7 rounded-md flex items-center justify-center text-[#64748B] hover:bg-[#E2E8F0] hover:text-white transition-colors cursor-pointer"
+                            className="w-7 h-7 rounded-md flex items-center justify-center text-[#64748B] hover:bg-[#E2E8F0] hover:text-[#2563EB] transition-colors cursor-pointer"
                           >
                             <Eye className="w-3.5 h-3.5" />
                           </button>
@@ -281,7 +281,7 @@ export const MirrorPage: React.FC = () => {
                                 ? 'Retomar fonte'
                                 : 'Pausar fonte'
                             }
-                            className="w-7 h-7 rounded-md flex items-center justify-center text-[#64748B] hover:bg-[#E2E8F0] hover:text-white transition-colors cursor-pointer"
+                            className="w-7 h-7 rounded-md flex items-center justify-center text-[#64748B] hover:bg-[#E2E8F0] hover:text-[#2563EB] transition-colors cursor-pointer"
                           >
                             {source.status === 'paused' ? (
                               <Play className="w-3.5 h-3.5" />

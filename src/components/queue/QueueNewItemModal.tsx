@@ -264,7 +264,7 @@ ${affiliateUrl}`;
                       <div className="flex items-center gap-2 text-[11px] text-[#64748B]">
                         <span className="text-[#2563EB]">{off.marketplace}</span>
                         <span>&bull;</span>
-                        <span className="font-semibold text-white">
+                        <span className="font-semibold text-[#172033]">
                           R$ {off.price.toFixed(2).replace('.', ',')}
                         </span>
                         {off.discountPercentage && (
@@ -413,7 +413,7 @@ ${affiliateUrl}`;
               onClick={() => setScheduleType('auto_next')}
               className={`p-2.5 rounded-lg border text-left transition-all ${
                 scheduleType === 'auto_next'
-                  ? 'bg-[#E2E8F0] border-[#2563EB] text-white'
+                  ? 'bg-[#E2E8F0] border-[#2563EB] text-[#172033]'
                   : 'bg-[#F8FAFC] border-[#DCE3EC] text-[#94A3B8] hover:text-[#172033]'
               }`}
             >
@@ -431,7 +431,7 @@ ${affiliateUrl}`;
               onClick={() => setScheduleType('immediate')}
               className={`p-2.5 rounded-lg border text-left transition-all ${
                 scheduleType === 'immediate'
-                  ? 'bg-[#E2E8F0] border-[#2563EB] text-white'
+                  ? 'bg-[#E2E8F0] border-[#2563EB] text-[#172033]'
                   : 'bg-[#F8FAFC] border-[#DCE3EC] text-[#94A3B8] hover:text-[#172033]'
               }`}
             >
@@ -449,7 +449,7 @@ ${affiliateUrl}`;
               onClick={() => setScheduleType('specific')}
               className={`p-2.5 rounded-lg border text-left transition-all ${
                 scheduleType === 'specific'
-                  ? 'bg-[#E2E8F0] border-[#2563EB] text-white'
+                  ? 'bg-[#E2E8F0] border-[#2563EB] text-[#172033]'
                   : 'bg-[#F8FAFC] border-[#DCE3EC] text-[#94A3B8] hover:text-[#172033]'
               }`}
             >

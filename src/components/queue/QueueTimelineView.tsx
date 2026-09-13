@@ -171,7 +171,7 @@ export const QueueTimelineView: React.FC<QueueTimelineViewProps> = ({
           <div className="flex-1 min-w-0 space-y-2">
             {/* Title & Category */}
             <div>
-              <h4 className="text-sm font-semibold text-[#172033] group-hover:text-white transition-colors line-clamp-1">
+              <h4 className="text-sm font-semibold text-[#172033] group-hover:text-[#2563EB] transition-colors line-clamp-1">
                 {item.productName}
               </h4>
               <div className="flex items-center gap-2 text-xs text-[#94A3B8] mt-1 flex-wrap">
@@ -298,7 +298,7 @@ export const QueueTimelineView: React.FC<QueueTimelineViewProps> = ({
               <button
                 type="button"
                 onClick={() => onMoveToTop(item)}
-                className="p-1.5 text-[#94A3B8] hover:text-white bg-[#F1F5F9] border border-[#DCE3EC] rounded-lg transition-colors"
+                className="p-1.5 text-[#94A3B8] hover:text-[#2563EB] bg-[#F1F5F9] border border-[#DCE3EC] rounded-lg transition-colors"
                 title="Priorizar / Mover para o topo da fila"
               >
                 <ArrowUp className="w-3.5 h-3.5" />

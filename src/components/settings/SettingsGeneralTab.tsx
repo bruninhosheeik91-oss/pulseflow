@@ -39,7 +39,7 @@ export const SettingsGeneralTab: React.FC<SettingsGeneralTabProps> = ({
         <div className="p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-3.5">
           <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-2.5">
             <Globe className="w-4 h-4 text-[#2563EB]" />
-            <h4 className="font-bold text-white text-xs">
+            <h4 className="font-bold text-[#172033] text-xs">
               Identificação do Sistema & Localização
             </h4>
           </div>
@@ -55,7 +55,7 @@ export const SettingsGeneralTab: React.FC<SettingsGeneralTabProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, workspaceName: e.target.value })
                 }
-                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#2563EB]"
+                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB]"
               />
             </div>
 
@@ -69,7 +69,7 @@ export const SettingsGeneralTab: React.FC<SettingsGeneralTabProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, adminEmail: e.target.value })
                 }
-                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#2563EB]"
+                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB]"
               />
             </div>
 
@@ -83,7 +83,7 @@ export const SettingsGeneralTab: React.FC<SettingsGeneralTabProps> = ({
                   onChange={(e) =>
                     setFormData({ ...formData, timezone: e.target.value })
                   }
-                  className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#2563EB]"
+                  className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-2.5 py-1.5 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB]"
                 >
                   <option value="America/Sao_Paulo (UTC-03:00)">São Paulo (UTC-03:00)</option>
                   <option value="America/Manaus (UTC-04:00)">Manaus (UTC-04:00)</option>
@@ -110,7 +110,7 @@ export const SettingsGeneralTab: React.FC<SettingsGeneralTabProps> = ({
         <div className="p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-3.5">
           <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-2.5">
             <Bell className="w-4 h-4 text-indigo-400" />
-            <h4 className="font-bold text-white text-xs">
+            <h4 className="font-bold text-[#172033] text-xs">
               Notificações do Painel & Retenção
             </h4>
           </div>
@@ -120,7 +120,7 @@ export const SettingsGeneralTab: React.FC<SettingsGeneralTabProps> = ({
               <div className="flex items-center gap-2.5">
                 <Bell className="w-4 h-4 text-[#2563EB]" />
                 <div>
-                  <span className="text-white font-medium block">
+                  <span className="text-[#172033] font-medium block">
                     Notificações do Navegador
                   </span>
                   <span className="text-[11px] text-[#64748B]">
@@ -145,7 +145,7 @@ export const SettingsGeneralTab: React.FC<SettingsGeneralTabProps> = ({
               <div className="flex items-center gap-2.5">
                 <Volume2 className="w-4 h-4 text-emerald-700" />
                 <div>
-                  <span className="text-white font-medium block">
+                  <span className="text-[#172033] font-medium block">
                     Sons de Confirmação de Disparo
                   </span>
                   <span className="text-[11px] text-[#64748B]">
@@ -178,7 +178,7 @@ export const SettingsGeneralTab: React.FC<SettingsGeneralTabProps> = ({
                     autoCleanHistoryDays: parseInt(e.target.value),
                   })
                 }
-                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#2563EB]"
+                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB]"
               >
                 <option value="30">Limpar logs mais antigos que 30 dias</option>
                 <option value="90">Limpar logs mais antigos que 90 dias (Padrão)</option>

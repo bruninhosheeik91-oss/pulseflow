@@ -40,7 +40,7 @@ export const ProductsEmptyState: React.FC<ProductsEmptyStateProps> = ({
           variant="primary"
           size="sm"
           onClick={onRefreshCatalog}
-          leftIcon={<RefreshCw className="w-3.5 h-3.5 text-white" />}
+          leftIcon={<RefreshCw className="w-3.5 h-3.5 text-[#172033]" />}
           className="text-xs font-semibold px-4"
         >
           Atualizar catálogo

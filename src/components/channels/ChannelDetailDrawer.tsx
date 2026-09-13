@@ -526,7 +526,7 @@ export const ChannelDetailDrawer: React.FC<ChannelDetailDrawerProps> = ({
                   <p className="font-bold text-[#FACC15]">
                     🚨 TESTE DE DISPARO
                   </p>
-                  <p className="font-semibold text-white">
+                  <p className="font-semibold text-[#172033]">
                     {'{produto}'}
                   </p>
                   <p className="text-[#64748B]">

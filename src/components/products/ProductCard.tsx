@@ -79,7 +79,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               {renderPerformanceBadge(product.performance)}
             </div>
 
-            <h4 className="text-xs font-semibold text-[#172033] line-clamp-2 leading-snug group-hover:text-white">
+            <h4 className="text-xs font-semibold text-[#172033] line-clamp-2 leading-snug group-hover:text-[#2563EB]">
               {product.name}
             </h4>
 

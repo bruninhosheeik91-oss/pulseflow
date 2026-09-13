@@ -153,7 +153,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
                         />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-[#172033] text-xs leading-snug group-hover:text-white line-clamp-1">
+                        <p className="font-semibold text-[#172033] text-xs leading-snug group-hover:text-[#2563EB] line-clamp-1">
                           {product.name}
                         </p>
                         <div className="flex items-center gap-1.5 mt-0.5 text-[#64748B] text-[11px]">

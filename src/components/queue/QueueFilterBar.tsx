@@ -109,7 +109,7 @@ export const QueueFilterBar: React.FC<QueueFilterBarProps> = ({
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded font-mono-numeric ${
                     isActive
-                      ? 'bg-white/20 text-white'
+                      ? 'bg-white/20 text-[#172033]'
                       : 'bg-[#F8FAFC] text-[#64748B] border border-[#E2E8F0]'
                   }`}
                 >
@@ -127,7 +127,7 @@ export const QueueFilterBar: React.FC<QueueFilterBarProps> = ({
             onClick={() => onViewModeChange('timeline')}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs transition-colors ${
               viewMode === 'timeline'
-                ? 'bg-[#DCE3EC] text-white font-medium shadow-xs'
+                ? 'bg-[#DCE3EC] text-[#172033] font-medium shadow-xs'
                 : 'text-[#94A3B8] hover:text-[#172033]'
             }`}
             title="Visualização em Linha do Tempo e Cards"
@@ -140,7 +140,7 @@ export const QueueFilterBar: React.FC<QueueFilterBarProps> = ({
             onClick={() => onViewModeChange('table')}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs transition-colors ${
               viewMode === 'table'
-                ? 'bg-[#DCE3EC] text-white font-medium shadow-xs'
+                ? 'bg-[#DCE3EC] text-[#172033] font-medium shadow-xs'
                 : 'text-[#94A3B8] hover:text-[#172033]'
             }`}
             title="Visualização em Tabela Densa"
@@ -167,7 +167,7 @@ export const QueueFilterBar: React.FC<QueueFilterBarProps> = ({
             <button
               type="button"
               onClick={() => onSearchChange('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#64748B] hover:text-white"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#64748B] hover:text-[#2563EB]"
             >
               <X className="w-3.5 h-3.5" />
             </button>

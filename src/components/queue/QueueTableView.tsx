@@ -182,7 +182,7 @@ export const QueueTableView: React.FC<QueueTableViewProps> = ({
                           referrerPolicy="no-referrer"
                         />
                         <div className="min-w-0">
-                          <p className="font-medium text-[#172033] truncate hover:text-white transition-colors" title={item.productName}>
+                          <p className="font-medium text-[#172033] truncate hover:text-[#2563EB] transition-colors" title={item.productName}>
                             {item.productName}
                           </p>
                           <span className="text-[11px] text-[#64748B]">
@@ -293,7 +293,7 @@ export const QueueTableView: React.FC<QueueTableViewProps> = ({
                         <button
                           type="button"
                           onClick={() => onPreviewMessage(item)}
-                          className="p-1.5 text-[#2563EB] hover:text-white hover:bg-[#2563EB]/20 rounded-md transition-colors"
+                          className="p-1.5 text-[#2563EB] hover:text-[#2563EB] hover:bg-[#2563EB]/20 rounded-md transition-colors"
                           title="Ver / Editar copy da mensagem"
                         >
                           <MessageSquare className="w-3.5 h-3.5" />
@@ -318,7 +318,7 @@ export const QueueTableView: React.FC<QueueTableViewProps> = ({
                             <button
                               type="button"
                               onClick={() => onDispatchNow(item)}
-                              className="p-1.5 text-emerald-700 hover:text-white hover:bg-emerald-500/20 rounded-md transition-colors"
+                              className="p-1.5 text-emerald-700 hover:text-[#2563EB] hover:bg-emerald-500/20 rounded-md transition-colors"
                               title="Disparar agora"
                             >
                               <Send className="w-3.5 h-3.5" />

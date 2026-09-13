@@ -81,7 +81,7 @@ export const LinkedGroupsModal: React.FC<LinkedGroupsModalProps> = ({
                     }`}
                   >
                     {checked && (
-                      <span className="text-[9px] text-white font-bold">✓</span>
+                      <span className="text-[9px] text-[#172033] font-bold">✓</span>
                     )}
                   </span>
                   <div className="min-w-0 flex-1">

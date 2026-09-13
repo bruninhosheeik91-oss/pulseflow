@@ -98,7 +98,7 @@ export const EngineStatusCard: React.FC = () => {
           type="button"
           onClick={handleSyncNow}
           disabled={syncing}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#2563EB] hover:text-white px-2.5 py-1 rounded-md hover:bg-[#DBEAFE] active:bg-[#F1F5F9] border border-transparent hover:border-[#BFDBFE] transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#2563EB] hover:text-[#2563EB] px-2.5 py-1 rounded-md hover:bg-[#DBEAFE] active:bg-[#F1F5F9] border border-transparent hover:border-[#BFDBFE] transition-colors disabled:opacity-50"
           title="Forçar ciclo de varredura"
         >
           <RefreshCw

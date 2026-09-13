@@ -26,7 +26,7 @@ export const HistoryMetricsBar: React.FC<HistoryMetricsBarProps> = ({ historyIte
           <Send className="w-3.5 h-3.5 text-[#2563EB]" />
         </div>
         <div className="mt-2">
-          <span className="text-xl font-bold text-white font-mono-numeric">
+          <span className="text-xl font-bold text-[#172033] font-mono-numeric">
             {totalDispatches}
           </span>
           <p className="text-[11px] text-[#64748B] mt-0.5">no período selecionado</p>
@@ -58,7 +58,7 @@ export const HistoryMetricsBar: React.FC<HistoryMetricsBarProps> = ({ historyIte
           <MousePointerClick className="w-3.5 h-3.5 text-[#2563EB]" />
         </div>
         <div className="mt-2">
-          <span className="text-xl font-bold text-white font-mono-numeric">
+          <span className="text-xl font-bold text-[#172033] font-mono-numeric">
             {totalClicks.toLocaleString()}
           </span>
           <p className="text-[11px] text-[#64748B] mt-0.5">tráfego qualificado</p>
@@ -72,7 +72,7 @@ export const HistoryMetricsBar: React.FC<HistoryMetricsBarProps> = ({ historyIte
           <ShoppingCart className="w-3.5 h-3.5 text-indigo-400" />
         </div>
         <div className="mt-2">
-          <span className="text-xl font-bold text-white font-mono-numeric">
+          <span className="text-xl font-bold text-[#172033] font-mono-numeric">
             {totalOrders}
           </span>
           <p className="text-[11px] text-[#64748B] mt-0.5">

@@ -33,7 +33,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
     return (
       <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-8 text-center">
         <Clock className="w-8 h-8 text-[#64748B] mx-auto mb-3 opacity-60" />
-        <h3 className="text-sm font-semibold text-white">Nenhum registro encontrado</h3>
+        <h3 className="text-sm font-semibold text-[#172033]">Nenhum registro encontrado</h3>
         <p className="text-xs text-[#64748B] mt-1 max-w-sm mx-auto">
           Não foram encontrados disparos com os filtros selecionados. Tente ajustar os parâmetros de busca ou período.
         </p>
@@ -88,7 +88,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
                   {/* 1. Disparo & Canal */}
                   <td className="py-3 px-3.5 whitespace-nowrap">
                     <div className="flex flex-col gap-0.5">
-                      <div className="flex items-center gap-1.5 font-mono text-[11px] text-white">
+                      <div className="flex items-center gap-1.5 font-mono text-[11px] text-[#172033]">
                         <Clock className="w-3 h-3 text-[#2563EB]" />
                         <span>{item.dispatchedAt}</span>
                       </div>
@@ -117,11 +117,11 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
                         referrerPolicy="no-referrer"
                       />
                       <div className="min-w-0">
-                        <p className="font-semibold text-white truncate group-hover:text-[#2563EB] transition-colors" title={item.productName}>
+                        <p className="font-semibold text-[#172033] truncate group-hover:text-[#2563EB] transition-colors" title={item.productName}>
                           {item.productName}
                         </p>
                         <div className="flex items-center gap-2 text-[11px] mt-0.5">
-                          <span className="font-mono-numeric font-bold text-white">
+                          <span className="font-mono-numeric font-bold text-[#172033]">
                             R$ {item.price.toFixed(2).replace('.', ',')}
                           </span>
                           {item.discountPercentage && (
@@ -176,9 +176,9 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
                   </td>
 
                   {/* 5. Cliques */}
-                  <td className="py-3 px-3 text-right whitespace-nowrap font-mono-numeric font-medium text-white">
+                  <td className="py-3 px-3 text-right whitespace-nowrap font-mono-numeric font-medium text-[#172033]">
                     {item.clicks > 0 ? (
-                      <span className="text-white font-semibold">{item.clicks.toLocaleString()}</span>
+                      <span className="text-[#172033] font-semibold">{item.clicks.toLocaleString()}</span>
                     ) : (
                       <span className="text-[#64748B]">—</span>
                     )}
@@ -209,7 +209,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
                       <button
                         type="button"
                         onClick={() => onInspect(item)}
-                        className="p-1.5 rounded-lg text-[#94A3B8] hover:text-white hover:bg-[#E2E8F0] transition-colors"
+                        className="p-1.5 rounded-lg text-[#94A3B8] hover:text-[#2563EB] hover:bg-[#E2E8F0] transition-colors"
                         title="Inspecionar mensagem e telemetria"
                       >
                         <Eye className="w-3.5 h-3.5" />
@@ -233,7 +233,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
                       <button
                         type="button"
                         onClick={() => onCopyLink(item.affiliateUrl)}
-                        className="p-1.5 rounded-lg text-[#94A3B8] hover:text-white hover:bg-[#E2E8F0] transition-colors"
+                        className="p-1.5 rounded-lg text-[#94A3B8] hover:text-[#2563EB] hover:bg-[#E2E8F0] transition-colors"
                         title="Copiar link de afiliado oficial"
                       >
                         <Copy className="w-3.5 h-3.5" />

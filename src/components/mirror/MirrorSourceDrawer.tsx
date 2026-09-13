@@ -67,7 +67,7 @@ const ToggleRow: React.FC<ToggleRowProps> = ({
     className="w-full flex items-start justify-between gap-3 py-2 text-left cursor-pointer group"
   >
     <div className="min-w-0">
-      <span className="text-xs font-medium text-[#172033] block group-hover:text-white">
+      <span className="text-xs font-medium text-[#172033] block group-hover:text-[#2563EB]">
         {label}
       </span>
       {description && (
@@ -236,7 +236,7 @@ export const MirrorSourceDrawer: React.FC<MirrorSourceDrawerProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-[#64748B] hover:bg-[#E2E8F0] hover:text-white transition-colors shrink-0 cursor-pointer"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-[#64748B] hover:bg-[#E2E8F0] hover:text-[#2563EB] transition-colors shrink-0 cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>

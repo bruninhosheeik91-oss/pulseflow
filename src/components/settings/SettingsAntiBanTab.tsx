@@ -46,7 +46,7 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
         <div className="p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-3.5">
           <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-2.5">
             <Clock className="w-4 h-4 text-[#2563EB]" />
-            <h4 className="font-bold text-white text-xs">
+            <h4 className="font-bold text-[#172033] text-xs">
               Cadência e Espaçamento Inteligente
             </h4>
           </div>
@@ -57,7 +57,7 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
                 <label className="text-[#64748B] text-[11px]">
                   Intervalo Mínimo Entre Disparos (no mesmo canal):
                 </label>
-                <span className="font-mono text-white font-bold">
+                <span className="font-mono text-[#172033] font-bold">
                   {formData.minIntervalMinutes} minutos
                 </span>
               </div>
@@ -123,7 +123,7 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
                     maxDailyMessagesPerChannel: parseInt(e.target.value) || 24,
                   })
                 }
-                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#2563EB]"
+                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
@@ -133,7 +133,7 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
         <div className="p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-3.5">
           <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-2.5">
             <Moon className="w-4 h-4 text-indigo-400" />
-            <h4 className="font-bold text-white text-xs">
+            <h4 className="font-bold text-[#172033] text-xs">
               Horário de Silêncio Noturno (Quiet Hours)
             </h4>
           </div>
@@ -141,7 +141,7 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
           <div className="space-y-3 text-xs">
             <div className="flex items-center justify-between p-2.5 bg-[#F8FAFC] rounded-lg border border-[#E2E8F0]">
               <div>
-                <span className="text-white font-medium block">
+                <span className="text-[#172033] font-medium block">
                   Pausar Disparos na Madrugada
                 </span>
                 <span className="text-[11px] text-[#64748B]">
@@ -179,7 +179,7 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
                     })
                   }
                   disabled={!formData.quietHoursEnabled}
-                  className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#2563EB] disabled:opacity-50"
+                  className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB] disabled:opacity-50"
                 />
               </div>
 
@@ -197,7 +197,7 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
                     })
                   }
                   disabled={!formData.quietHoursEnabled}
-                  className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#2563EB] disabled:opacity-50"
+                  className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB] disabled:opacity-50"
                 />
               </div>
             </div>
@@ -234,14 +234,14 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
       <div className="p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-3">
         <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-2.5">
           <ZapOff className="w-4 h-4 text-amber-700" />
-          <h4 className="font-bold text-white text-xs">
+          <h4 className="font-bold text-[#172033] text-xs">
             Disjuntor de Emergência (Circuit Breaker)
           </h4>
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div>
-            <span className="text-white font-medium block">
+            <span className="text-[#172033] font-medium block">
               Pausar fila de disparos automaticamente se houver falhas consecutivas
             </span>
             <span className="text-[11px] text-[#64748B]">
@@ -259,7 +259,7 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
                   maxConsecutiveFails: parseInt(e.target.value),
                 })
               }
-              className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none"
+              className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-2.5 py-1 text-xs text-[#172033] focus:outline-none"
             >
               <option value="2">2 falhas</option>
               <option value="3">3 falhas (Padrão)</option>

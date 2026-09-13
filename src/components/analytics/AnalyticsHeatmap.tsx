@@ -24,7 +24,7 @@ export const AnalyticsHeatmap: React.FC<AnalyticsHeatmapProps> = ({ heatmapData 
         <div>
           <div className="flex items-center gap-2">
             <Flame className="w-4 h-4 text-[#FF3366]" />
-            <h3 className="font-semibold text-white text-sm">
+            <h3 className="font-semibold text-[#172033] text-sm">
               Mapa de Calor: Melhores Horários de Conversão
             </h3>
           </div>
@@ -93,7 +93,7 @@ export const AnalyticsHeatmap: React.FC<AnalyticsHeatmapProps> = ({ heatmapData 
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-[#2563EB]" />
             <div>
-              <span className="font-semibold text-white">
+              <span className="font-semibold text-[#172033]">
                 Faixa de {selectedHour.label} ({selectedHour.hour}:00 às {selectedHour.hour}:59):
               </span>
               <p className="text-[11px] text-[#93C5FD]">
@@ -115,7 +115,7 @@ export const AnalyticsHeatmap: React.FC<AnalyticsHeatmapProps> = ({ heatmapData 
         <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl flex items-center gap-2.5 text-xs text-[#64748B]">
           <Sparkles className="w-4 h-4 text-[#2563EB] shrink-0" />
           <span>
-            <strong className="text-white">Insight PULSE FLOW:</strong> Os dois maiores picos de conversão ocorrem entre às <strong className="text-[#2563EB]">11h e 13h</strong> (pausa do almoço) e entre às <strong className="text-emerald-700">19h e 21h30</strong> (horário nobre noturno). Agende suas campanhas prioritárias nessas janelas para maximizar o ROI.
+            <strong className="text-[#172033]">Insight PULSE FLOW:</strong> Os dois maiores picos de conversão ocorrem entre às <strong className="text-[#2563EB]">11h e 13h</strong> (pausa do almoço) e entre às <strong className="text-emerald-700">19h e 21h30</strong> (horário nobre noturno). Agende suas campanhas prioritárias nessas janelas para maximizar o ROI.
           </span>
         </div>
       ) : (

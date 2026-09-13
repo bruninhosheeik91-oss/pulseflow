@@ -204,7 +204,7 @@ export const ShopeeConfigPanel: React.FC<ShopeeConfigPanelProps> = ({
             <Store className="w-5 h-5 text-orange-400" />
           </div>
           <div>
-            <h4 className="font-bold text-white text-sm">Shopee</h4>
+            <h4 className="font-bold text-[#172033] text-sm">Shopee</h4>
             <p className="text-[10px] text-[#64748B] mt-0.5">
               Programa de Afiliados · Open Platform
             </p>
@@ -258,7 +258,7 @@ export const ShopeeConfigPanel: React.FC<ShopeeConfigPanelProps> = ({
                 setForm((prev) => ({ ...prev, appId: e.target.value }))
               }
               placeholder={view?.appIdMasked ?? 'ex.: 10012345'}
-              className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white font-mono placeholder:text-[#64748B] focus:outline-none focus:border-[#2563EB] disabled:opacity-45 disabled:pointer-events-none"
+              className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] font-mono placeholder:text-[#64748B] focus:outline-none focus:border-[#2563EB] disabled:opacity-45 disabled:pointer-events-none"
             />
             {view?.appIdMasked && form.appId === '' && (
               <p className="text-[10px] text-[#64748B] mt-1">
@@ -284,7 +284,7 @@ export const ShopeeConfigPanel: React.FC<ShopeeConfigPanelProps> = ({
                 placeholder={
                   view?.configured ? '••••••••' : 'Secret da Open Platform'
                 }
-                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white font-mono placeholder:text-[#64748B] focus:outline-none focus:border-[#2563EB] disabled:opacity-45 disabled:pointer-events-none pr-9"
+                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] font-mono placeholder:text-[#64748B] focus:outline-none focus:border-[#2563EB] disabled:opacity-45 disabled:pointer-events-none pr-9"
               />
               <button
                 type="button"
@@ -343,7 +343,7 @@ export const ShopeeConfigPanel: React.FC<ShopeeConfigPanelProps> = ({
                 disabled={inputLocked}
                 onChange={(e) => updateSubId(index, e.target.value)}
                 placeholder={`Sub ID ${index + 1}`}
-                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white font-mono placeholder:text-[#64748B] focus:outline-none focus:border-[#2563EB] disabled:opacity-45 disabled:pointer-events-none"
+                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] font-mono placeholder:text-[#64748B] focus:outline-none focus:border-[#2563EB] disabled:opacity-45 disabled:pointer-events-none"
               />
               {form.subIds.length > 1 && (
                 <button
@@ -373,7 +373,7 @@ export const ShopeeConfigPanel: React.FC<ShopeeConfigPanelProps> = ({
           className="w-full flex items-center justify-between gap-3 py-1.5 text-left cursor-pointer group disabled:cursor-not-allowed"
         >
           <div className="min-w-0">
-            <span className="text-xs font-medium text-[#172033] block group-hover:text-white">
+            <span className="text-xs font-medium text-[#172033] block group-hover:text-[#2563EB]">
               Gerar links automaticamente
             </span>
             <span className="text-[10px] text-[#64748B] mt-0.5 block leading-relaxed">

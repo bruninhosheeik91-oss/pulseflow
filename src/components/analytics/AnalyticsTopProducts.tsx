@@ -18,7 +18,7 @@ export const AnalyticsTopProducts: React.FC<AnalyticsTopProductsProps> = ({
         <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
           <div className="flex items-center gap-2">
             <Package className="w-4 h-4 text-[#2563EB]" />
-            <h3 className="font-semibold text-white text-sm">
+            <h3 className="font-semibold text-[#172033] text-sm">
               Top Produtos em Comissão
             </h3>
           </div>
@@ -53,7 +53,7 @@ export const AnalyticsTopProducts: React.FC<AnalyticsTopProductsProps> = ({
                   referrerPolicy="no-referrer"
                 />
                 <div className="min-w-0">
-                  <p className="font-semibold text-white text-xs truncate max-w-[220px]">
+                  <p className="font-semibold text-[#172033] text-xs truncate max-w-[220px]">
                     {p.name}
                   </p>
                   <div className="flex items-center gap-2 text-[11px] text-[#64748B] mt-0.5">
@@ -84,7 +84,7 @@ export const AnalyticsTopProducts: React.FC<AnalyticsTopProductsProps> = ({
         <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
           <div className="flex items-center gap-2">
             <Megaphone className="w-4 h-4 text-indigo-400" />
-            <h3 className="font-semibold text-white text-sm">
+            <h3 className="font-semibold text-[#172033] text-sm">
               Top Campanhas Automatizadas
             </h3>
           </div>
@@ -113,7 +113,7 @@ export const AnalyticsTopProducts: React.FC<AnalyticsTopProductsProps> = ({
                   <span className="w-5 font-mono text-xs font-bold text-indigo-400">
                     #{idx + 1}
                   </span>
-                  <p className="font-semibold text-white text-xs truncate max-w-[200px]">
+                  <p className="font-semibold text-[#172033] text-xs truncate max-w-[200px]">
                     {c.name}
                   </p>
                 </div>
@@ -127,13 +127,13 @@ export const AnalyticsTopProducts: React.FC<AnalyticsTopProductsProps> = ({
               <div className="grid grid-cols-4 gap-2 text-[11px] text-[#64748B] border-t border-[#F1F5F9] pt-2">
                 <div>
                   <span>Disparos:</span>
-                  <p className="font-mono-numeric font-semibold text-white">
+                  <p className="font-mono-numeric font-semibold text-[#172033]">
                     {c.dispatches}
                   </p>
                 </div>
                 <div>
                   <span>Cliques:</span>
-                  <p className="font-mono-numeric font-semibold text-white">
+                  <p className="font-mono-numeric font-semibold text-[#172033]">
                     {c.clicks.toLocaleString()}
                   </p>
                 </div>

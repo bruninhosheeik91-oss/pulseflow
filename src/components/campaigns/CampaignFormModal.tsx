@@ -260,7 +260,7 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
                 onClick={() => setExecutionMode('Automático')}
                 className={`p-2.5 rounded-lg border text-left transition-colors cursor-pointer ${
                   executionMode === 'Automático'
-                    ? 'bg-[#EFF6FF] border-[#2563EB] text-white'
+                    ? 'bg-[#EFF6FF] border-[#2563EB] text-[#172033]'
                     : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B] hover:border-[#BFDBFE]'
                 }`}
               >
@@ -280,7 +280,7 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
                 onClick={() => setExecutionMode('Revisão Manual')}
                 className={`p-2.5 rounded-lg border text-left transition-colors cursor-pointer ${
                   executionMode === 'Revisão Manual'
-                    ? 'bg-[#EFF6FF] border-[#2563EB] text-white'
+                    ? 'bg-[#EFF6FF] border-[#2563EB] text-[#172033]'
                     : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B] hover:border-[#BFDBFE]'
                 }`}
               >
@@ -319,7 +319,7 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
                   onClick={() => toggleAutomation(auto.id)}
                   className={`p-2.5 rounded-lg border text-left transition-colors cursor-pointer ${
                     active
-                      ? 'bg-[#DBEAFE] border-[#2563EB] text-white'
+                      ? 'bg-[#DBEAFE] border-[#2563EB] text-[#172033]'
                       : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B] hover:border-[#BFDBFE]'
                   }`}
                 >
@@ -509,7 +509,7 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
                     onClick={() => toggleChannel(ch)}
                     className={`w-full p-2.5 rounded-lg border text-left flex items-center justify-between text-xs transition-colors cursor-pointer ${
                       active
-                        ? 'bg-[#DBEAFE] border-[#2563EB] text-white'
+                        ? 'bg-[#DBEAFE] border-[#2563EB] text-[#172033]'
                         : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B] hover:border-[#BFDBFE]'
                     }`}
                   >

@@ -99,7 +99,7 @@ export const OfferScoreBadge: React.FC<OfferScoreBadgeProps> = ({
       className={`p-3.5 rounded-xl border flex items-center justify-between ${theme.bg} ${theme.border}`}
     >
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-lg bg-[#F8FAFC] border border-[#BFDBFE] flex items-center justify-center font-mono-numeric font-bold text-xl text-white">
+        <div className="w-12 h-12 rounded-lg bg-[#F8FAFC] border border-[#BFDBFE] flex items-center justify-center font-mono-numeric font-bold text-xl text-[#172033]">
           <span className={theme.text}>{total}</span>
         </div>
         <div>

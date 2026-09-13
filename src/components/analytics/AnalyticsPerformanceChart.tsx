@@ -25,7 +25,7 @@ export const AnalyticsPerformanceChart: React.FC<AnalyticsPerformanceChartProps>
         <div>
           <div className="flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-[#2563EB]" />
-            <h3 className="font-semibold text-white text-sm">
+            <h3 className="font-semibold text-[#172033] text-sm">
               Evolução Temporal de Performance
             </h3>
           </div>
@@ -82,7 +82,7 @@ export const AnalyticsPerformanceChart: React.FC<AnalyticsPerformanceChartProps>
         {/* Dynamic Tooltip on Hover */}
         {hoveredIndex !== null && (
           <div className="absolute top-0 right-4 bg-[#F1F5F9] border border-[#93C5FD] px-3 py-1.5 rounded-lg text-xs shadow-xl animate-in fade-in duration-150 z-10 flex items-center gap-3">
-            <span className="font-semibold text-white font-mono">
+            <span className="font-semibold text-[#172033] font-mono">
               {timeline[hoveredIndex].label}:
             </span>
             <span className="text-emerald-700 font-bold font-mono">
@@ -122,7 +122,7 @@ export const AnalyticsPerformanceChart: React.FC<AnalyticsPerformanceChartProps>
                 <div
                   className={`text-[10px] font-mono-numeric mb-1.5 transition-all text-center ${
                     isHovered
-                      ? 'text-white font-bold scale-105'
+                      ? 'text-[#172033] font-bold scale-105'
                       : 'text-[#64748B]'
                   }`}
                 >

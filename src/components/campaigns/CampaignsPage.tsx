@@ -254,7 +254,7 @@ export const CampaignsPage: React.FC = () => {
     <div className="space-y-5">
       {/* Toast Feedback */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-[#EFF6FF] border border-[#2563EB]/50 text-white px-4 py-3 rounded-xl shadow-2xl animate-in slide-in-from-bottom-3 duration-200">
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-[#EFF6FF] border border-[#2563EB]/50 text-[#172033] px-4 py-3 rounded-xl shadow-2xl animate-in slide-in-from-bottom-3 duration-200">
           <CheckCircle2 className="w-4 h-4 text-[#2563EB] shrink-0" />
           <span className="text-xs font-semibold">{toast.text}</span>
         </div>

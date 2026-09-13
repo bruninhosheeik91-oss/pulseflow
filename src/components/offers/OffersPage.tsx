@@ -518,7 +518,7 @@ export const OffersPage: React.FC = () => {
               onClick={() =>
                 setToasts((prev) => prev.filter((t) => t.id !== toast.id))
               }
-              className="text-slate-400 hover:text-white p-0.5 rounded"
+              className="text-slate-400 hover:text-[#2563EB] p-0.5 rounded"
             >
               <X className="w-3.5 h-3.5" />
             </button>

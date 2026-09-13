@@ -134,7 +134,7 @@ export const ProductDetailDrawer: React.FC<ProductDetailDrawerProps> = ({
             </span>
             <button
               onClick={() => setActionNotice(null)}
-              className="text-[#64748B] hover:text-white"
+              className="text-[#64748B] hover:text-[#2563EB]"
             >
               <X className="w-3 h-3" />
             </button>
@@ -402,7 +402,7 @@ export const ProductDetailDrawer: React.FC<ProductDetailDrawerProps> = ({
                   `Oferta selecionada (${bestOffer.marketplace}) enviada para publicação!`
                 );
               }}
-              leftIcon={<Send className="w-3.5 h-3.5 text-white" />}
+              leftIcon={<Send className="w-3.5 h-3.5 text-[#172033]" />}
               className="text-xs font-semibold px-4"
             >
               Publicar melhor oferta

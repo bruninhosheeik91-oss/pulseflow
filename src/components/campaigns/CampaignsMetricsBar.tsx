@@ -94,7 +94,7 @@ export const CampaignsMetricsBar: React.FC<CampaignsMetricsBarProps> = ({
               onClick={() => onSelectFilter(item.id)}
               className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border shrink-0 cursor-pointer ${
                 isSelected
-                  ? 'bg-[#DBEAFE] border-[#2563EB] text-white shadow-xs'
+                  ? 'bg-[#DBEAFE] border-[#2563EB] text-[#172033] shadow-xs'
                   : 'bg-[#F1F5F9] border-[#E2E8F0] text-[#64748B] hover:text-[#172033] hover:border-[#E2E8F0]'
               }`}
             >

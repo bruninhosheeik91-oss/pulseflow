@@ -71,7 +71,7 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
                   isWhatsApp ? 'bg-emerald-400' : 'bg-sky-400'
                 }`}
               />
-              <span className="font-semibold text-white truncate">
+              <span className="font-semibold text-[#172033] truncate">
                 {item.channel}
               </span>
             </div>
@@ -108,7 +108,7 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
 
           <div>
             <span className="text-[#64748B] text-[11px]">Deal Score:</span>
-            <p className="font-mono-numeric font-bold text-white mt-0.5">
+            <p className="font-mono-numeric font-bold text-[#172033] mt-0.5">
               {item.dealScore}/100 pts
             </p>
           </div>
@@ -167,8 +167,8 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
               <div
                 className={`rounded-xl p-3 border shadow-md ${
                   isWhatsApp
-                    ? 'bg-[#F1F5F9] border-[#E2E8F0] text-[#E9EDEF]'
-                    : 'bg-[#E2E8F0] border-[#E2E8F0] text-[#E4ECF2]'
+                    ? 'bg-[#F1F5F9] border-[#E2E8F0] text-[#334155]'
+                    : 'bg-[#E2E8F0] border-[#E2E8F0] text-[#475569]'
                 }`}
               >
                 {/* Product Image */}
@@ -192,7 +192,7 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
                 </div>
 
                 {/* Simulated timestamp inside balloon */}
-                <div className="flex items-center justify-end gap-1 mt-1.5 text-[10px] text-white/50">
+                <div className="flex items-center justify-end gap-1 mt-1.5 text-[10px] text-[#64748B]">
                   <span>{item.timeStr}</span>
                   {item.status === 'Entregue' && (
                     <span className="text-[#53BDEB] font-bold">✓✓</span>
@@ -206,14 +206,14 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
           <div className="md:col-span-5 space-y-3">
             {/* Conversion card */}
             <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-3 space-y-2.5">
-              <span className="font-semibold text-white block">
+              <span className="font-semibold text-[#172033] block">
                 Resultados Financeiros
               </span>
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="p-2 bg-[#FFFFFF] rounded-lg border border-[#DCE3EC]">
                   <span className="text-[#64748B] text-[10px]">Cliques:</span>
-                  <p className="font-mono-numeric font-bold text-white text-base mt-0.5">
+                  <p className="font-mono-numeric font-bold text-[#172033] text-base mt-0.5">
                     {item.clicks.toLocaleString()}
                   </p>
                 </div>
@@ -235,7 +235,7 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
 
             {/* Technical Telemetry Card */}
             <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-3 space-y-2">
-              <div className="flex items-center gap-1.5 text-white font-semibold">
+              <div className="flex items-center gap-1.5 text-[#172033] font-semibold">
                 <Cpu className="w-3.5 h-3.5 text-[#2563EB]" />
                 <span>Telemetria do Gateway</span>
               </div>
@@ -243,7 +243,7 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
               <div className="space-y-1.5 text-[11px] text-[#94A3B8]">
                 <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-1">
                   <span>Instância:</span>
-                  <span className="text-white font-mono">{item.instanceName || '—'}</span>
+                  <span className="text-[#172033] font-mono">{item.instanceName || '—'}</span>
                 </div>
                 <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-1">
                   <span>Latência HTTP:</span>
@@ -251,11 +251,11 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
                 </div>
                 <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-1">
                   <span>Espaçamento Anti-Flood:</span>
-                  <span className="text-white font-mono">—</span>
+                  <span className="text-[#172033] font-mono">—</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>ID do Canal:</span>
-                  <span className="text-white font-mono">{item.channelId}</span>
+                  <span className="text-[#172033] font-mono">{item.channelId}</span>
                 </div>
               </div>
             </div>

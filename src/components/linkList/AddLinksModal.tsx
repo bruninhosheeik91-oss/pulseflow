@@ -89,7 +89,7 @@ export const AddLinksModal: React.FC<AddLinksModalProps> = ({
             onClick={() => setMode('add')}
             className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
               mode === 'add'
-                ? 'bg-[#E2E8F0] text-white border border-[#2563EB]'
+                ? 'bg-[#E2E8F0] text-[#172033] border border-[#2563EB]'
                 : 'text-[#64748B] hover:text-[#172033] border border-transparent'
             }`}
           >
@@ -101,7 +101,7 @@ export const AddLinksModal: React.FC<AddLinksModalProps> = ({
             onClick={() => setMode('import')}
             className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
               mode === 'import'
-                ? 'bg-[#E2E8F0] text-white border border-[#2563EB]'
+                ? 'bg-[#E2E8F0] text-[#172033] border border-[#2563EB]'
                 : 'text-[#64748B] hover:text-[#172033] border border-transparent'
             }`}
           >

@@ -106,7 +106,7 @@ export const SettingsGatewaysTab: React.FC<SettingsGatewaysTabProps> = ({
           <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2.5">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#475569]" />
-              <h4 className="font-bold text-white text-xs">
+              <h4 className="font-bold text-[#172033] text-xs">
                 Gateway WhatsApp (Evolution API)
               </h4>
             </div>
@@ -128,7 +128,7 @@ export const SettingsGatewaysTab: React.FC<SettingsGatewaysTabProps> = ({
                     provider: e.target.value as any,
                   })
                 }
-                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#2563EB]"
+                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB]"
               >
                 <option value="Evolution API">Evolution API v2.1 (Recomendado)</option>
                 <option value="Z-API">Z-API Cloud</option>
@@ -147,7 +147,7 @@ export const SettingsGatewaysTab: React.FC<SettingsGatewaysTabProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, endpointUrl: e.target.value })
                 }
-                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-[#2563EB]"
+                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] font-mono focus:outline-none focus:border-[#2563EB]"
               />
             </div>
 
@@ -161,7 +161,7 @@ export const SettingsGatewaysTab: React.FC<SettingsGatewaysTabProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, globalApiKey: e.target.value })
                 }
-                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-[#2563EB]"
+                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] font-mono focus:outline-none focus:border-[#2563EB]"
               />
             </div>
 
@@ -178,7 +178,7 @@ export const SettingsGatewaysTab: React.FC<SettingsGatewaysTabProps> = ({
                     webhookDeliveryUrl: e.target.value,
                   })
                 }
-                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-[#2563EB]"
+                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] font-mono focus:outline-none focus:border-[#2563EB]"
               />
             </div>
 
@@ -207,7 +207,7 @@ export const SettingsGatewaysTab: React.FC<SettingsGatewaysTabProps> = ({
           <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2.5">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#475569]" />
-              <h4 className="font-bold text-white text-xs">
+              <h4 className="font-bold text-[#172033] text-xs">
                 Gateway Telegram Bot (BotFather)
               </h4>
             </div>
@@ -227,7 +227,7 @@ export const SettingsGatewaysTab: React.FC<SettingsGatewaysTabProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, telegramBotToken: e.target.value })
                 }
-                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-[#2563EB]"
+                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] font-mono focus:outline-none focus:border-[#2563EB]"
               />
             </div>
 
@@ -244,7 +244,7 @@ export const SettingsGatewaysTab: React.FC<SettingsGatewaysTabProps> = ({
                     telegramBotUsername: e.target.value,
                   })
                 }
-                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#2563EB]"
+                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB]"
               />
             </div>
 
@@ -263,7 +263,7 @@ export const SettingsGatewaysTab: React.FC<SettingsGatewaysTabProps> = ({
                     requestTimeoutSeconds: parseInt(e.target.value) || 20,
                   })
                 }
-                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#2563EB]"
+                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB]"
               />
             </div>
 

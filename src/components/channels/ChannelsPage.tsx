@@ -267,7 +267,7 @@ export const ChannelsPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setToastMessage(null)}
-            className="text-[#64748B] hover:text-white cursor-pointer ml-4 shrink-0"
+            className="text-[#64748B] hover:text-[#2563EB] cursor-pointer ml-4 shrink-0"
           >
             <X className="w-4 h-4" />
           </button>

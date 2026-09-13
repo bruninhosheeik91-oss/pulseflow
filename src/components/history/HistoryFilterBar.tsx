@@ -99,7 +99,7 @@ export const HistoryFilterBar: React.FC<HistoryFilterBarProps> = ({
                 onClick={() => onStatusChange(tab.id)}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   isActive
-                    ? 'bg-[#E2E8F0] text-white border border-[#2563EB] shadow-xs'
+                    ? 'bg-[#E2E8F0] text-[#172033] border border-[#2563EB] shadow-xs'
                     : 'text-[#64748B] hover:text-[#172033] hover:bg-[#F1F5F9] border border-transparent'
                 }`}
               >

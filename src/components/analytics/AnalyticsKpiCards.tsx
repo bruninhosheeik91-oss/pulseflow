@@ -56,7 +56,7 @@ export const AnalyticsKpiCards: React.FC<AnalyticsKpiCardsProps> = ({ timeline }
           </div>
         </div>
         <div className="mt-2.5">
-          <span className="text-xl font-bold text-white font-mono-numeric tracking-tight">
+          <span className="text-xl font-bold text-[#172033] font-mono-numeric tracking-tight">
             R$ {totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
           </span>
           <div className="flex items-center gap-1 text-[11px] text-[#2563EB] mt-0.5">
@@ -76,11 +76,11 @@ export const AnalyticsKpiCards: React.FC<AnalyticsKpiCardsProps> = ({ timeline }
           </div>
         </div>
         <div className="mt-2.5">
-          <span className="text-xl font-bold text-white font-mono-numeric">
+          <span className="text-xl font-bold text-[#172033] font-mono-numeric">
             {totalOrders.toLocaleString()}
           </span>
           <p className="text-[11px] text-[#64748B] mt-0.5">
-            Ticket médio: <strong className="text-white font-mono">R$ {avgTicket.toFixed(2).replace('.', ',')}</strong>
+            Ticket médio: <strong className="text-[#172033] font-mono">R$ {avgTicket.toFixed(2).replace('.', ',')}</strong>
           </p>
         </div>
       </div>
@@ -94,7 +94,7 @@ export const AnalyticsKpiCards: React.FC<AnalyticsKpiCardsProps> = ({ timeline }
           </div>
         </div>
         <div className="mt-2.5">
-          <span className="text-xl font-bold text-white font-mono-numeric">
+          <span className="text-xl font-bold text-[#172033] font-mono-numeric">
             {totalClicks.toLocaleString()}
           </span>
           <div className="flex items-center gap-1 text-[11px] text-sky-400 mt-0.5">

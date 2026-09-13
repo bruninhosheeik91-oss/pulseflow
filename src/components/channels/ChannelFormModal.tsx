@@ -143,12 +143,12 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
               onClick={() => handlePlatformChange('WhatsApp')}
               className={`p-3 rounded-xl border text-left transition-colors cursor-pointer ${
                 platform === 'WhatsApp'
-                  ? 'bg-[#F8FAFC] border-emerald-500/50 text-white shadow-xs'
+                  ? 'bg-[#F8FAFC] border-emerald-500/50 text-[#172033] shadow-xs'
                   : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B] hover:border-[#BFDBFE]'
               }`}
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 font-bold text-xs text-white">
+                <div className="flex items-center gap-2 font-bold text-xs text-[#172033]">
                   <MessageSquare className="w-4 h-4 text-emerald-700" />
                   <span>WhatsApp</span>
                 </div>
@@ -167,12 +167,12 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
               onClick={() => handlePlatformChange('Telegram')}
               className={`p-3 rounded-xl border text-left transition-colors cursor-pointer ${
                 platform === 'Telegram'
-                  ? 'bg-[#EFF6FF] border-[#2563EB]/50 text-white shadow-xs'
+                  ? 'bg-[#EFF6FF] border-[#2563EB]/50 text-[#172033] shadow-xs'
                   : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B] hover:border-[#BFDBFE]'
               }`}
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 font-bold text-xs text-white">
+                <div className="flex items-center gap-2 font-bold text-xs text-[#172033]">
                   <Send className="w-4 h-4 text-[#2563EB]" />
                   <span>Telegram</span>
                 </div>
@@ -199,7 +199,7 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
                     onClick={() => setChannelType('Grupo WhatsApp')}
                     className={`px-3 py-2 rounded-lg border text-xs text-left transition-colors cursor-pointer ${
                       channelType === 'Grupo WhatsApp'
-                        ? 'bg-[#DBEAFE] border-[#2563EB] text-white font-semibold'
+                        ? 'bg-[#DBEAFE] border-[#2563EB] text-[#172033] font-semibold'
                         : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B]'
                     }`}
                   >
@@ -210,7 +210,7 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
                     onClick={() => setChannelType('Canal WhatsApp')}
                     className={`px-3 py-2 rounded-lg border text-xs text-left transition-colors cursor-pointer ${
                       channelType === 'Canal WhatsApp'
-                        ? 'bg-[#DBEAFE] border-[#2563EB] text-white font-semibold'
+                        ? 'bg-[#DBEAFE] border-[#2563EB] text-[#172033] font-semibold'
                         : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B]'
                     }`}
                   >
@@ -224,7 +224,7 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
                     onClick={() => setChannelType('Canal Telegram')}
                     className={`px-3 py-2 rounded-lg border text-xs text-left transition-colors cursor-pointer ${
                       channelType === 'Canal Telegram'
-                        ? 'bg-[#DBEAFE] border-[#2563EB] text-white font-semibold'
+                        ? 'bg-[#DBEAFE] border-[#2563EB] text-[#172033] font-semibold'
                         : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B]'
                     }`}
                   >
@@ -235,7 +235,7 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
                     onClick={() => setChannelType('Supergrupo Telegram')}
                     className={`px-3 py-2 rounded-lg border text-xs text-left transition-colors cursor-pointer ${
                       channelType === 'Supergrupo Telegram'
-                        ? 'bg-[#DBEAFE] border-[#2563EB] text-white font-semibold'
+                        ? 'bg-[#DBEAFE] border-[#2563EB] text-[#172033] font-semibold'
                         : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B]'
                     }`}
                   >
@@ -346,7 +346,7 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
                 </div>
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-bold text-white">
+                <p className="text-xs font-bold text-[#172033]">
                   Aponte a câmera do WhatsApp para escanear
                 </p>
                 <p className="text-[11px] text-[#64748B] max-w-xs mx-auto">
@@ -443,7 +443,7 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
                   onClick={() => toggleCampaign(camp)}
                   className={`w-full p-2.5 rounded-lg border text-left flex items-center justify-between text-xs transition-colors cursor-pointer ${
                     active
-                      ? 'bg-[#DBEAFE] border-[#2563EB] text-white font-medium'
+                      ? 'bg-[#DBEAFE] border-[#2563EB] text-[#172033] font-medium'
                       : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B] hover:border-[#BFDBFE]'
                   }`}
                 >

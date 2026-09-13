@@ -112,7 +112,7 @@ export const SettingsPage: React.FC = () => {
       {/* 1. Header Information */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <h2 className="text-xl font-bold text-[#172033] tracking-tight flex items-center gap-2">
             <Settings className="w-5 h-5 text-[#2563EB]" />
             <span>Configurações & Parâmetros do Sistema</span>
           </h2>
@@ -135,7 +135,7 @@ export const SettingsPage: React.FC = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
                 isActive
-                  ? 'bg-[#E2E8F0] text-white border border-[#2563EB] shadow-xs'
+                  ? 'bg-[#E2E8F0] text-[#172033] border border-[#2563EB] shadow-xs'
                   : 'text-[#64748B] hover:text-[#172033] hover:bg-[#F1F5F9] border border-transparent'
               }`}
             >

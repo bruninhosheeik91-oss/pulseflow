@@ -54,7 +54,7 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
         <div className="p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-4">
           <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-2.5">
             <Award className="w-4 h-4 text-amber-700" />
-            <h4 className="font-bold text-white text-xs">
+            <h4 className="font-bold text-[#172033] text-xs">
               Critérios de Corte & Aprovação
             </h4>
           </div>
@@ -127,7 +127,7 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
                   }
                   className="rounded border-[#DCE3EC] text-[#2563EB] focus:ring-0 bg-[#FFFFFF]"
                 />
-                <span className="text-white text-xs">
+                <span className="text-[#172033] text-xs">
                   Rejeitar automaticamente ofertas sem estoque imediato
                 </span>
               </label>
@@ -144,7 +144,7 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
                   }
                   className="rounded border-[#DCE3EC] text-[#2563EB] focus:ring-0 bg-[#FFFFFF]"
                 />
-                <span className="text-white text-xs">
+                <span className="text-[#172033] text-xs">
                   Priorizar produtos com frete grátis (acima de R$ 79)
                 </span>
               </label>
@@ -157,7 +157,7 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
           <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2.5">
             <div className="flex items-center gap-2">
               <Sliders className="w-4 h-4 text-[#2563EB]" />
-              <h4 className="font-bold text-white text-xs">
+              <h4 className="font-bold text-[#172033] text-xs">
                 Pesos do Algoritmo (Total: {totalWeights}%)
               </h4>
             </div>
@@ -178,7 +178,7 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
                   <Percent className="w-3.5 h-3.5 text-emerald-700" />
                   Magnitude do Desconto:
                 </span>
-                <span className="font-mono text-white font-bold">
+                <span className="font-mono text-[#172033] font-bold">
                   {formData.weightDiscount}%
                 </span>
               </div>
@@ -205,7 +205,7 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
                   <Star className="w-3.5 h-3.5 text-amber-700" />
                   Reputação & Estrelas (Mín. 4.0):
                 </span>
-                <span className="font-mono text-white font-bold">
+                <span className="font-mono text-[#172033] font-bold">
                   {formData.weightRating}%
                 </span>
               </div>
@@ -232,7 +232,7 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
                   <TrendingUp className="w-3.5 h-3.5 text-indigo-400" />
                   Velocidade de Vendas / Mais Vendidos:
                 </span>
-                <span className="font-mono text-white font-bold">
+                <span className="font-mono text-[#172033] font-bold">
                   {formData.weightSalesVelocity}%
                 </span>
               </div>
@@ -259,7 +259,7 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
                   <Sparkles className="w-3.5 h-3.5 text-sky-400" />
                   Menor Preço dos Últimos 60 Dias:
                 </span>
-                <span className="font-mono text-white font-bold">
+                <span className="font-mono text-[#172033] font-bold">
                   {formData.weightPriceHistory}%
                 </span>
               </div>
@@ -286,7 +286,7 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
                   <DollarSign className="w-3.5 h-3.5 text-purple-400" />
                   Taxa de Comissão Estimada:
                 </span>
-                <span className="font-mono text-white font-bold">
+                <span className="font-mono text-[#172033] font-bold">
                   {formData.weightCommission}%
                 </span>
               </div>

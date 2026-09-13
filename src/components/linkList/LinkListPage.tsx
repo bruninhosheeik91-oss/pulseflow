@@ -320,7 +320,7 @@ export const LinkListPage: React.FC = () => {
                   onClick={() => setActiveListId(list.id)}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer border ${
                     isActive
-                      ? 'bg-[#E2E8F0] text-white border-[#2563EB]'
+                      ? 'bg-[#E2E8F0] text-[#172033] border-[#2563EB]'
                       : 'bg-[#FFFFFF] text-[#64748B] border-[#DCE3EC] hover:text-[#172033] hover:border-[#93C5FD]'
                   }`}
                 >

@@ -211,7 +211,7 @@ export const HistoryPage: React.FC = () => {
       {/* 1. Header Information & Title */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <h2 className="text-xl font-bold text-[#172033] tracking-tight flex items-center gap-2">
             <History className="w-5 h-5 text-[#2563EB]" />
             <span>Histórico de Publicações & Auditoria</span>
           </h2>

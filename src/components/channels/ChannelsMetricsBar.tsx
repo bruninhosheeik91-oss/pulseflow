@@ -57,7 +57,7 @@ export const ChannelsMetricsBar: React.FC<ChannelsMetricsBarProps> = ({
 
           let badgeColorClass = 'bg-[#E2E8F0] text-[#64748B]';
           if (isActive) {
-            badgeColorClass = 'bg-white/20 text-white';
+            badgeColorClass = 'bg-white/20 text-[#172033]';
           } else if (pill.highlight === 'green') {
             badgeColorClass = 'bg-emerald-500/15 text-emerald-700';
           } else if (pill.highlight === 'amber') {

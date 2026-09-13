@@ -190,7 +190,7 @@ export const ProductFiltersDrawer: React.FC<ProductFiltersDrawerProps> = ({
                     onClick={() => toggleMarketplace(mp)}
                     className={`flex items-center justify-between p-2 rounded-lg border text-left transition-colors cursor-pointer ${
                       isSelected
-                        ? 'bg-[#F8FAFC] border-[#2563EB] text-white'
+                        ? 'bg-[#F8FAFC] border-[#2563EB] text-[#172033]'
                         : 'bg-[#F1F5F9] border-[#E2E8F0] text-[#64748B] hover:text-[#172033] hover:bg-[#F8FAFC]'
                     }`}
                   >

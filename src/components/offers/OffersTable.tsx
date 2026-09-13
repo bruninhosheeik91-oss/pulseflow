@@ -273,7 +273,7 @@ export const OffersTable: React.FC<OffersTableProps> = ({
                         }}
                         className={`p-1.5 rounded-lg border transition-colors ${
                           isMenuOpen
-                            ? 'bg-[#DBEAFE] border-[#2563EB] text-white'
+                            ? 'bg-[#DBEAFE] border-[#2563EB] text-[#172033]'
                             : 'bg-transparent border-transparent text-[#64748B] hover:text-[#172033] hover:bg-[#EFF6FF]'
                         }`}
                         title="Mais opções"

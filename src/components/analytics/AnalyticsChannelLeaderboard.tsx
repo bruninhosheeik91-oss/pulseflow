@@ -15,7 +15,7 @@ export const AnalyticsChannelLeaderboard: React.FC<AnalyticsChannelLeaderboardPr
         <div>
           <div className="flex items-center gap-2">
             <Radio className="w-4 h-4 text-[#2563EB]" />
-            <h3 className="font-semibold text-white text-sm">
+            <h3 className="font-semibold text-[#172033] text-sm">
               Ranking de Performance dos Canais
             </h3>
           </div>
@@ -70,7 +70,7 @@ export const AnalyticsChannelLeaderboard: React.FC<AnalyticsChannelLeaderboardPr
                         isWhatsApp ? 'bg-emerald-400' : 'bg-sky-400'
                       }`}
                     />
-                    <p className="font-semibold text-white text-xs truncate max-w-[240px]">
+                    <p className="font-semibold text-[#172033] text-xs truncate max-w-[240px]">
                       {channel.name}
                     </p>
                   </div>
@@ -88,7 +88,7 @@ export const AnalyticsChannelLeaderboard: React.FC<AnalyticsChannelLeaderboardPr
               <div className="flex items-center gap-4 sm:gap-6 shrink-0 border-t sm:border-t-0 border-[#E2E8F0] pt-2 sm:pt-0">
                 <div className="text-right">
                   <span className="text-[10px] text-[#64748B] block">Cliques:</span>
-                  <span className="font-mono-numeric font-bold text-white text-xs">
+                  <span className="font-mono-numeric font-bold text-[#172033] text-xs">
                     {channel.clicks.toLocaleString()}
                   </span>
                 </div>

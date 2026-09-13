@@ -121,7 +121,7 @@ export const QueueMessagePreviewModal: React.FC<QueueMessagePreviewModalProps> =
               className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
                 platformView === 'WhatsApp'
                   ? 'bg-emerald-500/15 text-emerald-700 border border-emerald-500/30'
-                  : 'text-[#94A3B8] hover:text-white bg-[#FFFFFF]'
+                  : 'text-[#94A3B8] hover:text-[#2563EB] bg-[#FFFFFF]'
               }`}
             >
               WhatsApp
@@ -132,7 +132,7 @@ export const QueueMessagePreviewModal: React.FC<QueueMessagePreviewModalProps> =
               className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
                 platformView === 'Telegram'
                   ? 'bg-[#2563EB]/15 text-[#2563EB] border border-[#2563EB]/30'
-                  : 'text-[#94A3B8] hover:text-white bg-[#FFFFFF]'
+                  : 'text-[#94A3B8] hover:text-[#2563EB] bg-[#FFFFFF]'
               }`}
             >
               Telegram
@@ -164,7 +164,7 @@ export const QueueMessagePreviewModal: React.FC<QueueMessagePreviewModalProps> =
                     {item.channel.substring(0, 2).toUpperCase()}
                   </div>
                   <div>
-                    <p className="font-semibold text-white truncate max-w-[240px]">
+                    <p className="font-semibold text-[#172033] truncate max-w-[240px]">
                       {item.channel}
                     </p>
                     <p className="text-[10px] text-[#64748B]">
@@ -178,7 +178,7 @@ export const QueueMessagePreviewModal: React.FC<QueueMessagePreviewModalProps> =
                 <button
                   type="button"
                   onClick={handleCopyClipboard}
-                  className="flex items-center gap-1 text-[11px] text-[#64748B] hover:text-white bg-white/5 px-2 py-1 rounded transition-colors"
+                  className="flex items-center gap-1 text-[11px] text-[#64748B] hover:text-[#2563EB] bg-white/5 px-2 py-1 rounded transition-colors"
                   title="Copiar texto da mensagem"
                 >
                   {copied ? (
@@ -199,8 +199,8 @@ export const QueueMessagePreviewModal: React.FC<QueueMessagePreviewModalProps> =
               <div
                 className={`max-w-[420px] rounded-lg p-3 shadow-md text-xs space-y-2.5 ${
                   platformView === 'WhatsApp'
-                    ? 'bg-[#F1F5F9] text-[#E9EDEF] border border-[#E2E8F0]'
-                    : 'bg-[#F8FAFC] text-[#E2E8F0] border border-[#E2E8F0]'
+                    ? 'bg-[#F1F5F9] text-[#334155] border border-[#E2E8F0]'
+                    : 'bg-[#F8FAFC] text-[#475569] border border-[#E2E8F0]'
                 }`}
               >
                 {/* Product Image preview inside bubble */}
@@ -230,12 +230,12 @@ export const QueueMessagePreviewModal: React.FC<QueueMessagePreviewModalProps> =
                 </div>
 
                 {/* Bottom timestamp in bubble */}
-                <div className="flex items-center justify-end gap-1 text-[10px] text-white/50 pt-1">
+                <div className="flex items-center justify-end gap-1 text-[10px] text-[#64748B] pt-1">
                   <span>{item.time}</span>
                   {platformView === 'WhatsApp' ? (
                     <CheckCheck className="w-3.5 h-3.5 text-[#53BDEB]" />
                   ) : (
-                    <Check className="w-3 h-3 text-white/60" />
+                    <Check className="w-3 h-3 text-[#64748B]" />
                   )}
                 </div>
               </div>
@@ -245,7 +245,7 @@ export const QueueMessagePreviewModal: React.FC<QueueMessagePreviewModalProps> =
             <div className="flex items-center justify-between text-xs text-[#64748B] bg-[#FFFFFF] border border-[#DCE3EC] p-2.5 rounded-lg">
               <span className="flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-[#2563EB]" />
-                Horário de postagem: <strong className="text-white">{item.time}</strong> (com delay anti-ban ativo)
+                Horário de postagem: <strong className="text-[#172033]">{item.time}</strong> (com delay anti-ban ativo)
               </span>
               <button
                 type="button"
@@ -293,14 +293,14 @@ export const QueueMessagePreviewModal: React.FC<QueueMessagePreviewModalProps> =
                 <button
                   type="button"
                   onClick={() => handleInsertVariable(`R$ ${item.price.toFixed(2)}`)}
-                  className="px-2 py-1 bg-[#EFF6FF] hover:bg-[#CBD5E1] border border-[#BFDBFE] rounded text-[11px] text-white transition-colors"
+                  className="px-2 py-1 bg-[#EFF6FF] hover:bg-[#CBD5E1] border border-[#BFDBFE] rounded text-[11px] text-[#172033] transition-colors"
                 >
                   + Preço Atual
                 </button>
                 <button
                   type="button"
                   onClick={() => handleInsertVariable(item.affiliateUrl || '')}
-                  className="px-2 py-1 bg-[#EFF6FF] hover:bg-[#CBD5E1] border border-[#BFDBFE] rounded text-[11px] text-white transition-colors"
+                  className="px-2 py-1 bg-[#EFF6FF] hover:bg-[#CBD5E1] border border-[#BFDBFE] rounded text-[11px] text-[#172033] transition-colors"
                 >
                   + Link Afiliado
                 </button>

@@ -108,7 +108,7 @@ export const ProductsMetricsBar: React.FC<ProductsMetricsBarProps> = ({
               </span>
               <span
                 className={`text-lg font-bold font-mono-numeric block mt-0.5 leading-tight ${
-                  isSelected ? 'text-white' : 'text-[#172033]'
+                  isSelected ? 'text-[#172033]' : 'text-[#172033]'
                 }`}
               >
                 {metric.count}

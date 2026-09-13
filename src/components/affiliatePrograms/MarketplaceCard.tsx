@@ -30,7 +30,7 @@ export const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
           </span>
         </div>
         <div>
-          <h4 className="font-bold text-white text-xs">{program.name}</h4>
+          <h4 className="font-bold text-[#172033] text-xs">{program.name}</h4>
           <p className="text-[10px] text-[#64748B] mt-1 leading-relaxed">
             {program.description}
           </p>
@@ -64,7 +64,7 @@ export const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
         )}
       </div>
       <div className="min-w-0">
-        <h4 className="font-bold text-white text-xs">{program.name}</h4>
+        <h4 className="font-bold text-[#172033] text-xs">{program.name}</h4>
         <p className="text-[10px] text-[#64748B] mt-0.5">{program.programName}</p>
       </div>
       <span className="text-[10px] font-medium text-[#2563EB] inline-flex items-center gap-1">

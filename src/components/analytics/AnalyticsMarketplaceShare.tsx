@@ -32,7 +32,7 @@ export const AnalyticsMarketplaceShare: React.FC<AnalyticsMarketplaceShareProps>
         <div>
           <div className="flex items-center gap-2">
             <Store className="w-4 h-4 text-[#2563EB]" />
-            <h3 className="font-semibold text-white text-sm">
+            <h3 className="font-semibold text-[#172033] text-sm">
               Performance por Marketplace
             </h3>
           </div>
@@ -68,7 +68,7 @@ export const AnalyticsMarketplaceShare: React.FC<AnalyticsMarketplaceShareProps>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className={`w-2.5 h-2.5 rounded-full ${styling.bg}`} />
-                  <span className="font-bold text-white text-xs">
+                  <span className="font-bold text-[#172033] text-xs">
                     {item.marketplace}
                   </span>
                   <span className="text-[11px] text-[#64748B]">
@@ -80,7 +80,7 @@ export const AnalyticsMarketplaceShare: React.FC<AnalyticsMarketplaceShareProps>
                   <span className="text-xs font-mono-numeric font-bold text-emerald-700">
                     R$ {item.commission.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
-                  <span className="text-xs font-mono font-bold text-white bg-[#E2E8F0] px-2 py-0.5 rounded border border-[#BFDBFE]">
+                  <span className="text-xs font-mono font-bold text-[#172033] bg-[#E2E8F0] px-2 py-0.5 rounded border border-[#BFDBFE]">
                     {item.sharePercentage}%
                   </span>
                 </div>
@@ -98,7 +98,7 @@ export const AnalyticsMarketplaceShare: React.FC<AnalyticsMarketplaceShareProps>
               <div className="grid grid-cols-4 gap-2 text-[11px] text-[#64748B] border-t border-[#F1F5F9] pt-2">
                 <div>
                   <span>GMV Bruto:</span>
-                  <p className="font-mono-numeric font-semibold text-white">
+                  <p className="font-mono-numeric font-semibold text-[#172033]">
                     R$ {item.revenue.toLocaleString('pt-BR')}
                   </p>
                 </div>
@@ -110,7 +110,7 @@ export const AnalyticsMarketplaceShare: React.FC<AnalyticsMarketplaceShareProps>
                 </div>
                 <div>
                   <span>Cliques:</span>
-                  <p className="font-mono-numeric font-semibold text-white">
+                  <p className="font-mono-numeric font-semibold text-[#172033]">
                     {item.clicks.toLocaleString()}
                   </p>
                 </div>

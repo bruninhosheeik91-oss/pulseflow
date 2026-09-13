@@ -422,7 +422,7 @@ export const CampaignDetailDrawer: React.FC<CampaignDetailDrawerProps> = ({
                   <p className="font-bold text-[#FACC15]">
                     🚨 NOVA OPORTUNIDADE DETECTADA!
                   </p>
-                  <p className="font-semibold text-white">
+                  <p className="font-semibold text-[#172033]">
                     {campaign.name}
                   </p>
                   <p className="text-[#64748B]">

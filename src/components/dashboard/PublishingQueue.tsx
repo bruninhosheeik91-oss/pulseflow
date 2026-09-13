@@ -55,7 +55,7 @@ export const PublishingQueue: React.FC<PublishingQueueProps> = ({
                 </span>
 
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold text-[#172033] truncate group-hover:text-white transition-colors">
+                  <p className="text-xs font-semibold text-[#172033] truncate group-hover:text-[#2563EB] transition-colors">
                     {item.productName}
                   </p>
                   <div className="flex items-center gap-1.5 text-xs text-[#94A3B8] mt-0.5">

@@ -46,7 +46,7 @@ export const SettingsCopywritingTab: React.FC<SettingsCopywritingTabProps> = ({
         <div className="p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-3.5">
           <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-2.5">
             <Sparkles className="w-4 h-4 text-[#2563EB]" />
-            <h4 className="font-bold text-white text-xs">
+            <h4 className="font-bold text-[#172033] text-xs">
               Estilo Padrão & Elementos da Copy
             </h4>
           </div>
@@ -64,7 +64,7 @@ export const SettingsCopywritingTab: React.FC<SettingsCopywritingTabProps> = ({
                     defaultCopyStyle: e.target.value as any,
                   })
                 }
-                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#2563EB]"
+                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB]"
               >
                 <option value="Padrão com Emojis">Padrão com Emojis & Formatação Rica (Recomendado)</option>
                 <option value="Minimalista Direto">Minimalista Direto (Sem emojis excessivos)</option>
@@ -86,7 +86,7 @@ export const SettingsCopywritingTab: React.FC<SettingsCopywritingTabProps> = ({
                   }
                   className="rounded border-[#DCE3EC] text-[#2563EB] focus:ring-0 bg-[#FFFFFF]"
                 />
-                <span className="text-white">
+                <span className="text-[#172033]">
                   Incluir comparação de preço tachado (De ~R$ 599~ por *R$ 279*)
                 </span>
               </label>
@@ -103,7 +103,7 @@ export const SettingsCopywritingTab: React.FC<SettingsCopywritingTabProps> = ({
                   }
                   className="rounded border-[#DCE3EC] text-[#2563EB] focus:ring-0 bg-[#FFFFFF]"
                 />
-                <span className="text-white">
+                <span className="text-[#172033]">
                   Incluir destaque de parcelamento sem juros quando disponível
                 </span>
               </label>
@@ -120,7 +120,7 @@ export const SettingsCopywritingTab: React.FC<SettingsCopywritingTabProps> = ({
                   }
                   className="rounded border-[#DCE3EC] text-[#2563EB] focus:ring-0 bg-[#FFFFFF]"
                 />
-                <span className="text-white">
+                <span className="text-[#172033]">
                   Incluir prova social (⭐ 4.9/5 estrelas e volume de vendas)
                 </span>
               </label>
@@ -137,7 +137,7 @@ export const SettingsCopywritingTab: React.FC<SettingsCopywritingTabProps> = ({
                   }
                   className="rounded border-[#DCE3EC] text-[#2563EB] focus:ring-0 bg-[#FFFFFF]"
                 />
-                <span className="text-white">
+                <span className="text-[#172033]">
                   Destacar cupom de desconto com instrução de resgate
                 </span>
               </label>
@@ -149,7 +149,7 @@ export const SettingsCopywritingTab: React.FC<SettingsCopywritingTabProps> = ({
         <div className="p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-3.5">
           <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-2.5">
             <Link className="w-4 h-4 text-[#2563EB]" />
-            <h4 className="font-bold text-white text-xs">
+            <h4 className="font-bold text-[#172033] text-xs">
               Encurtador & Conformidade de Afiliado
             </h4>
           </div>
@@ -167,7 +167,7 @@ export const SettingsCopywritingTab: React.FC<SettingsCopywritingTabProps> = ({
                     urlShortener: e.target.value as any,
                   })
                 }
-                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#2563EB]"
+                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB]"
               >
                 <option value="Link Direto">Link Direto da Loja (amzn.to, s.shopee, mercadolivre)</option>
                 <option value="Bitly">Bitly API (bit.ly/...)</option>
@@ -188,7 +188,7 @@ export const SettingsCopywritingTab: React.FC<SettingsCopywritingTabProps> = ({
                   }
                   className="rounded border-[#DCE3EC] text-[#2563EB] focus:ring-0 bg-[#FFFFFF]"
                 />
-                <span className="text-white font-medium">
+                <span className="text-[#172033] font-medium">
                   Incluir Disclaimer Legal de Afiliado (Transparência Procon / FTC)
                 </span>
               </label>

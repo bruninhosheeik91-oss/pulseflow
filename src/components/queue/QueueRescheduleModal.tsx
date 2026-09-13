@@ -68,7 +68,7 @@ export const QueueRescheduleModal: React.FC<QueueRescheduleModalProps> = ({
         <div className="p-3 bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl flex items-center justify-between">
           <div>
             <span className="text-[#64748B]">Canal de Destino:</span>
-            <p className="font-semibold text-white mt-0.5">{item.channel}</p>
+            <p className="font-semibold text-[#172033] mt-0.5">{item.channel}</p>
           </div>
           <div className="text-right">
             <span className="text-[#64748B]">Horário Atual:</span>

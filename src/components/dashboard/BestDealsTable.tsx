@@ -169,7 +169,7 @@ export const BestDealsTable: React.FC<BestDealsTableProps> = ({
                           />
                         </div>
                         <div className="min-w-0 max-w-xs md:max-w-sm">
-                          <p className="font-semibold text-[#172033] text-xs leading-snug line-clamp-2 group-hover:text-white">
+                          <p className="font-semibold text-[#172033] text-xs leading-snug line-clamp-2 group-hover:text-[#2563EB]">
                             {offer.name}
                           </p>
                           <div className="flex items-center gap-1.5 mt-1 flex-wrap">
