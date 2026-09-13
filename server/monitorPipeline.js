@@ -9,12 +9,6 @@
 //   - origem válida (chatId de grupo, sem broadcast/newsletter);
 //   - conteúdo textual real (body/caption/content).
 // NENHUM id é inventado (sem timestamp, sem hash do texto, sem aleatório).
-//
-// Listener canônico: onAnyMessage entrega TODAS as mensagens de
-// `chat.new_message` (recebidas E enviadas pela própria conta), já com as
-// notificações (gp2) filtradas pela biblioteca. onMessage descarta fromMe,
-// por isso NÃO é canônico para o Grupo Monitor (links enviados pela própria
-// conta precisam chegar ao fluxo afiliado).
 
 const { extractUrls } = require('./linkConversion/affiliateLinkConverter.js');
 const { isShopeeUrl } = require('./linkConversion/shopeeConverter.js');
@@ -44,14 +38,6 @@ function serializedId(value) {
   return null;
 }
 
-// Normaliza o id da mensagem da API real. O payload serializado do WPPConnect
-// v2.3.3 traz message.id como string (o _serialized da MsgKey). Conforme o
-// caminho interno pode aparecer também:
-//   - message.id objeto { fromMe, id, remote, participant, _serialized };
-//   - message.msgKey / message.messageKey (string);
-//   - WAMessage cru (wa-js): id em message.key.id (+ remoteJid/fromMe).
-// Devolve sempre a MESMA string real para a mesma mensagem (dedup estável).
-// Nunca inventa id: sem campo real identificável retorna null.
 function rawMessageId(message) {
   if (!message) return null;
 
@@ -86,8 +72,6 @@ function rawMessageId(message) {
   return serialized.find((s) => typeof s === 'string' && s.trim()) || null;
 }
 
-// Autor real da mensagem no grupo. Para mensagens de outros membros o WPP
-// expõe `author`; para fromMe usamos o contato serializado (a própria conta).
 function rawMessageAuthorId(message) {
   if (!message) return null;
 
@@ -108,7 +92,6 @@ function rawMessageAuthorId(message) {
   return null;
 }
 
-// Origem válida para o Grupo Monitor: id de GRUPO real, sem broadcast/newsletter.
 function isMonitorGroupChatId(chatId) {
   return (
     typeof chatId === 'string' &&
@@ -126,6 +109,7 @@ function rawMonitorChatId(message) {
     message.chatId,
     message.from,
     message.to,
+    message.chat && message.chat.id,
     id && id.remote,
     id && id.remoteJid,
     key && key.remoteJid,
@@ -143,21 +127,29 @@ function rawMonitorChatId(message) {
 
 function rawMessageBody(message) {
   if (!message) return '';
-  const candidates = [message.body, message.caption, message.content, message.text];
+  const extended =
+    message.extendedTextMessage && typeof message.extendedTextMessage === 'object'
+      ? message.extendedTextMessage
+      : null;
+  const candidates = [
+    message.body,
+    message.caption,
+    message.content,
+    message.text,
+    message.url,
+    extended && extended.text,
+  ];
   for (const candidate of candidates) {
     if (typeof candidate === 'string' && candidate.trim()) return candidate.trim();
   }
   return '';
 }
 
-// A mensagem canônica pertence ao Grupo Mãe configurado?
 function isParentMonitorChat(chatId, parentGroupId) {
   return typeof chatId === 'string' && chatId === parentGroupId;
 }
 
-// Normalizador ÚNICO do pipeline. Retorna a mensagem canônica ou null quando
-// o evento bruto não é uma mensagem processável (auxiliar/incompleta).
-function normalizeMonitorMessage(raw) {
+function normalizeOneMonitorMessage(raw) {
   if (!raw || typeof raw !== 'object') return null;
 
   const messageId = rawMessageId(raw);
@@ -179,8 +171,28 @@ function normalizeMonitorMessage(raw) {
   };
 }
 
-// Deduplicação em memória operando SOMENTE sobre messageId real/canônico.
-// Instância única por processo (mesmos resultados da fase anterior).
+// WPPConnect pode entregar o mesmo evento com os campos úteis em wrappers
+// internos (_data/data/message). Tentamos o envelope e combinações rasas com
+// esses wrappers sem fabricar nenhum id ou conteúdo.
+function normalizeMonitorMessage(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+
+  const nested = [raw._data, raw.data, raw.message].filter(
+    (value) => value && typeof value === 'object' && !Array.isArray(value)
+  );
+  const candidates = [raw];
+  for (const value of nested) {
+    candidates.push(value, { ...raw, ...value }, { ...value, ...raw });
+  }
+
+  for (const candidate of candidates) {
+    const normalized = normalizeOneMonitorMessage(candidate);
+    if (normalized) return normalized;
+  }
+
+  return null;
+}
+
 function createMonitorDeduper() {
   const seen = new Set();
   return {
@@ -196,9 +208,6 @@ function createMonitorDeduper() {
   };
 }
 
-// Roteia o conteúdo de uma mensagem já canônica/validada:
-//   - SOMENTE UMA URL Shopee (sem texto ao redor) -> fluxo afiliado;
-//   - qualquer outro formato -> replicação normal de texto.
 function resolveMonitorRoute(body) {
   const urls = extractUrls(body);
   const shopeeUrl =

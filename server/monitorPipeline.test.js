@@ -91,6 +91,49 @@ const captionMessage = normalizeMonitorMessage({
 assert(captionMessage);
 assert.strictEqual(captionMessage.body, 'https://shopee.com.br/produto-i.111.222');
 
+const nestedData = normalizeMonitorMessage({
+  event: 'chat.new_message',
+  _data: {
+    id: { _serialized: 'true_parent_NESTED001' },
+    from: '5511444444444@c.us',
+    to: parent,
+    fromMe: true,
+    body: 'https://s.shopee.com.br/9pNested123',
+    type: 'chat',
+  },
+});
+assert(nestedData);
+assert.strictEqual(nestedData.messageId, 'true_parent_NESTED001');
+assert.strictEqual(nestedData.chatId, parent);
+assert.strictEqual(nestedData.body, 'https://s.shopee.com.br/9pNested123');
+
+const nestedMessage = normalizeMonitorMessage({
+  fromMe: true,
+  message: {
+    id: 'true_parent_NESTED002',
+    to: { _serialized: parent },
+    from: '5511333333333@c.us',
+    extendedTextMessage: { text: 'https://s.shopee.com.br/9pNested456' },
+    type: 'chat',
+  },
+});
+assert(nestedMessage);
+assert.strictEqual(nestedMessage.chatId, parent);
+assert.strictEqual(nestedMessage.body, 'https://s.shopee.com.br/9pNested456');
+
+const nestedUrl = normalizeMonitorMessage({
+  data: {
+    id: 'true_parent_NESTED003',
+    to: parent,
+    from: '5511222222222@c.us',
+    fromMe: true,
+    url: 'https://s.shopee.com.br/9pNested789',
+    type: 'image',
+  },
+});
+assert(nestedUrl);
+assert.strictEqual(nestedUrl.body, 'https://s.shopee.com.br/9pNested789');
+
 assert.strictEqual(
   normalizeMonitorMessage({
     id: 'NEWS1',
