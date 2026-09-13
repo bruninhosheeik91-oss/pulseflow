@@ -7,7 +7,7 @@
 // Regra: um evento só é processável se tiver os campos de uma mensagem REAL:
 //   - identificador estável real da mensagem (messageId);
 //   - origem válida (chatId de grupo, sem broadcast/newsletter);
-//   - conteúdo textual real (body).
+//   - conteúdo textual real (body/caption/content).
 // NENHUM id é inventado (sem timestamp, sem hash do texto, sem aleatório).
 //
 // Listener canônico: onAnyMessage entrega TODAS as mensagens de
@@ -21,6 +21,28 @@ const { isShopeeUrl } = require('./linkConversion/shopeeConverter.js');
 
 const MONITOR_GROUP_ID_REGEX = /^[^\s@]+@g\.us$/i;
 const MONITOR_NON_GROUP_REGEX = /@broadcast|@newsletter/i;
+
+function serializedId(value) {
+  if (!value) return null;
+  if (typeof value === 'string') return value.trim() || null;
+  if (typeof value !== 'object') return null;
+
+  const candidates = [
+    value._serialized,
+    value.serialized,
+    value.remote,
+    value.remoteJid,
+    value.user && value.server ? `${value.user}@${value.server}` : null,
+    value.id && typeof value.id === 'string' ? value.id : null,
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string' && candidate.trim()) {
+      return candidate.trim();
+    }
+  }
+  return null;
+}
 
 // Normaliza o id da mensagem da API real. O payload serializado do WPPConnect
 // v2.3.3 traz message.id como string (o _serialized da MsgKey). Conforme o
@@ -52,7 +74,7 @@ function rawMessageId(message) {
   if (key && typeof key === 'object') {
     const keyObj = key;
     if (typeof keyObj.id === 'string') {
-      const remote = typeof keyObj.remoteJid === 'string' ? keyObj.remoteJid : '';
+      const remote = serializedId(keyObj.remoteJid) || '';
       const fromMe =
         keyObj.fromMe === true ? 'true' : keyObj.fromMe === false ? 'false' : '';
       serialized.push(
@@ -61,22 +83,29 @@ function rawMessageId(message) {
     }
   }
 
-  return serialized.find((s) => s && s.trim()) || null;
+  return serialized.find((s) => typeof s === 'string' && s.trim()) || null;
 }
 
 // Autor real da mensagem no grupo. Para mensagens de outros membros o WPP
 // expõe `author`; para fromMe usamos o contato serializado (a própria conta).
 function rawMessageAuthorId(message) {
   if (!message) return null;
-  if (message.author) return message.author;
-  const sender = message.sender || null;
-  if (sender) {
-    if (sender.id && typeof sender.id === 'object' && sender.id._serialized) {
-      return sender.id._serialized;
-    }
-    if (typeof sender.id === 'string') return sender.id;
+
+  const candidates = [
+    message.author,
+    message.sender && message.sender.id,
+    message.sender,
+    message.participant,
+    message.id && typeof message.id === 'object' ? message.id.participant : null,
+    message.fromMe === true ? message.from : null,
+  ];
+
+  for (const candidate of candidates) {
+    const normalized = serializedId(candidate);
+    if (normalized && !isMonitorGroupChatId(normalized)) return normalized;
   }
-  return message.from || null;
+
+  return null;
 }
 
 // Origem válida para o Grupo Monitor: id de GRUPO real, sem broadcast/newsletter.
@@ -86,6 +115,39 @@ function isMonitorGroupChatId(chatId) {
     MONITOR_GROUP_ID_REGEX.test(chatId) &&
     !MONITOR_NON_GROUP_REGEX.test(chatId)
   );
+}
+
+function rawMonitorChatId(message) {
+  if (!message) return null;
+
+  const id = message.id && typeof message.id === 'object' ? message.id : null;
+  const key = (id && id.key) || message.key || null;
+  const candidates = [
+    message.chatId,
+    message.from,
+    message.to,
+    id && id.remote,
+    id && id.remoteJid,
+    key && key.remoteJid,
+    message.remote,
+    message.remoteJid,
+  ];
+
+  for (const candidate of candidates) {
+    const normalized = serializedId(candidate);
+    if (normalized && isMonitorGroupChatId(normalized)) return normalized;
+  }
+
+  return null;
+}
+
+function rawMessageBody(message) {
+  if (!message) return '';
+  const candidates = [message.body, message.caption, message.content, message.text];
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string' && candidate.trim()) return candidate.trim();
+  }
+  return '';
 }
 
 // A mensagem canônica pertence ao Grupo Mãe configurado?
@@ -101,10 +163,10 @@ function normalizeMonitorMessage(raw) {
   const messageId = rawMessageId(raw);
   if (!messageId) return null;
 
-  const chatId = typeof raw.chatId === 'string' ? raw.chatId : raw.from || null;
-  if (!isMonitorGroupChatId(chatId)) return null;
+  const chatId = rawMonitorChatId(raw);
+  if (!chatId) return null;
 
-  const body = typeof raw.body === 'string' ? raw.body.trim() : '';
+  const body = rawMessageBody(raw);
   if (!body) return null;
 
   return {
