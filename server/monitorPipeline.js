@@ -7,7 +7,7 @@
 // Regra: um evento só é processável se tiver os campos de uma mensagem REAL:
 //   - identificador estável real da mensagem (messageId);
 //   - origem válida (chatId de grupo, sem broadcast/newsletter);
-//   - conteúdo textual real (body/caption/content/clientUrl).
+//   - conteúdo textual real (body/caption/content).
 // NENHUM id é inventado (sem timestamp, sem hash do texto, sem aleatório).
 
 const { extractUrls } = require('./linkConversion/affiliateLinkConverter.js');
@@ -122,12 +122,11 @@ function rawMonitorChatId(message) {
     if (normalized && isMonitorGroupChatId(normalized)) return normalized;
   }
 
-  // WPPConnect serializa ids de mensagens como true_<chatId>_<id> / false_<chatId>_<id>.
-  // Se chatId/to/from não vierem no evento, recuperamos SOMENTE o grupo real já
-  // presente no próprio id da mensagem; nada é inventado.
-  const messageId = rawMessageId(message);
-  if (messageId) {
-    const match = messageId.match(/(?:^|_)([^_\s]+@g\.us)(?:_|$)/i);
+  // Alguns eventos do WPPConnect omitem chatId/to/from no envelope, mas o
+  // _serialized da MsgKey ainda contém o JID real do grupo.
+  const serializedMessageId = rawMessageId(message);
+  if (serializedMessageId) {
+    const match = serializedMessageId.match(/([^\s_]+@g\.us)/i);
     if (match && isMonitorGroupChatId(match[1])) return match[1];
   }
 
@@ -146,7 +145,6 @@ function rawMessageBody(message) {
     message.content,
     message.text,
     message.url,
-    // Campo oficial do Message do WPPConnect usado por mensagens de URL/link.
     message.clientUrl,
     extended && extended.text,
   ];
@@ -182,7 +180,7 @@ function normalizeOneMonitorMessage(raw) {
   };
 }
 
-function monitorCandidates(raw) {
+function monitorPayloadCandidates(raw) {
   if (!raw || typeof raw !== 'object') return [];
   const nested = [raw._data, raw.data, raw.message].filter(
     (value) => value && typeof value === 'object' && !Array.isArray(value)
@@ -194,46 +192,70 @@ function monitorCandidates(raw) {
   return candidates;
 }
 
+// Diagnóstico estrutural seguro: não registra corpo, URL, IDs, nomes ou
+// qualquer conteúdo da mensagem. Expõe apenas quais campos existem e qual
+// requisito canônico está faltando. Serve para parar de adivinhar formatos
+// reais do WPPConnect quando um evento é descartado.
+function diagnoseMonitorMessage(raw) {
+  const candidates = monitorPayloadCandidates(raw);
+  if (!candidates.length) {
+    return { reason: 'payload-invalido', keys: [] };
+  }
+
+  let hasId = false;
+  let hasGroup = false;
+  let hasBody = false;
+  const keySet = new Set();
+  const nestedKeySet = new Set();
+
+  for (const candidate of candidates) {
+    Object.keys(candidate || {}).slice(0, 80).forEach((key) => keySet.add(key));
+    hasId = hasId || Boolean(rawMessageId(candidate));
+    hasGroup = hasGroup || Boolean(rawMonitorChatId(candidate));
+    hasBody = hasBody || Boolean(rawMessageBody(candidate));
+  }
+
+  if (raw && typeof raw === 'object') {
+    for (const wrapperName of ['_data', 'data', 'message']) {
+      const value = raw[wrapperName];
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        Object.keys(value)
+          .slice(0, 80)
+          .forEach((key) => nestedKeySet.add(`${wrapperName}.${key}`));
+      }
+    }
+  }
+
+  const missing = [];
+  if (!hasId) missing.push('messageId');
+  if (!hasGroup) missing.push('groupChatId');
+  if (!hasBody) missing.push('textContent');
+
+  return {
+    reason: missing.length ? `faltando:${missing.join(',')}` : 'nao-normalizado',
+    hasId,
+    hasGroup,
+    hasBody,
+    keys: [...keySet].sort().slice(0, 80),
+    nestedKeys: [...nestedKeySet].sort().slice(0, 80),
+  };
+}
+
 // WPPConnect pode entregar o mesmo evento com os campos úteis em wrappers
 // internos (_data/data/message). Tentamos o envelope e combinações rasas com
 // esses wrappers sem fabricar nenhum id ou conteúdo.
 function normalizeMonitorMessage(raw) {
-  for (const candidate of monitorCandidates(raw)) {
+  const candidates = monitorPayloadCandidates(raw);
+  for (const candidate of candidates) {
     const normalized = normalizeOneMonitorMessage(candidate);
     if (normalized) return normalized;
   }
+
+  const diagnostic = diagnoseMonitorMessage(raw);
+  console.log(
+    `[Monitor diagnóstico] ${JSON.stringify(diagnostic)}`
+  );
   return null;
-}
-
-// Diagnóstico seguro para o terminal: informa exatamente QUAL requisito faltou
-// sem registrar corpo da mensagem, URL, credenciais ou conteúdo privado.
-function diagnoseMonitorMessage(raw) {
-  const candidates = monitorCandidates(raw);
-  let hasMessageId = false;
-  let hasChatId = false;
-  let hasBody = false;
-  const types = new Set();
-  const keyNames = new Set();
-
-  for (const candidate of candidates) {
-    if (!candidate || typeof candidate !== 'object') continue;
-    if (rawMessageId(candidate)) hasMessageId = true;
-    if (rawMonitorChatId(candidate)) hasChatId = true;
-    if (rawMessageBody(candidate)) hasBody = true;
-    if (typeof candidate.type === 'string' && candidate.type) types.add(candidate.type);
-    Object.keys(candidate).slice(0, 40).forEach((key) => keyNames.add(key));
-  }
-
-  const missing = [];
-  if (!hasMessageId) missing.push('messageId');
-  if (!hasChatId) missing.push('chatIdGrupo');
-  if (!hasBody) missing.push('conteudo');
-
-  return {
-    missing,
-    types: [...types].slice(0, 5),
-    keys: [...keyNames].sort().slice(0, 40),
-  };
 }
 
 function createMonitorDeduper() {
