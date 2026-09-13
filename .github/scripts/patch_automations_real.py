@@ -1,0 +1,170 @@
+from pathlib import Path
+
+page = Path('src/components/automations/AutomationsPage.tsx')
+text = page.read_text(encoding='utf-8')
+
+text = text.replace(
+    "import React, { useState } from 'react';",
+    "import React, { useEffect, useState } from 'react';",
+    1,
+)
+text = text.replace(
+    "import { AutomationCard } from './AutomationCard';",
+    "import {\n  AutoSearchAutomation,\n  AutoSearchSendRecord,\n  getCurrentTenantId,\n  listAutoSearchAutomations,\n  listAutoSearchSends,\n} from '../../services/affiliatePrograms/affiliateProgramsService';\nimport { AutomationCard } from './AutomationCard';",
+    1,
+)
+
+marker = "export const AutomationsPage: React.FC<{\n"
+helper = '''function formatRealDate(value: string | undefined): string {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleString('pt-BR');
+}
+
+function realAutoSearchToAutomation(
+  automation: AutoSearchAutomation,
+  sends: AutoSearchSendRecord[]
+): Automation {
+  const automationSends = sends.filter((send) => send.automationId === automation.id);
+  const todayKey = new Date().toLocaleDateString('pt-BR');
+  const sentToday = automationSends.filter(
+    (send) => new Date(send.sentAt).toLocaleDateString('pt-BR') === todayKey
+  ).length;
+  const lastSend = automationSends
+    .slice()
+    .sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime())[0];
+  const hasDestination =
+    Boolean(automation.destination.accountId) && automation.destination.groupIds.length > 0;
+
+  return {
+    id: automation.id,
+    type: 'AUTO_SEARCH',
+    name: automation.name,
+    description: `Busca real Shopee · ${automation.destination.groupIds.length} destino(s) · intervalo ${automation.schedule.intervalMinutes} min`,
+    status: !hasDestination ? 'REQUIRES_CONFIGURATION' : automation.active ? 'ACTIVE' : 'PAUSED',
+    marketplaces: ['Shopee'],
+    metrics: {
+      entriesToday: sentToday,
+      processed: automationSends.length,
+      queued: 0,
+      published: automationSends.length,
+      invalid: 0,
+      duplicates: 0,
+      pending: 0,
+      lastRun: formatRealDate(lastSend?.sentAt),
+    },
+    sources: automation.destination.groupIds.map((groupId) => ({
+      id: `${automation.destination.accountId}|${groupId}`,
+      name: groupId,
+      type: 'AUTO_SEARCH',
+      description: `Destino WhatsApp da conta ${automation.destination.accountId}`,
+      active: automation.active,
+    })),
+    capabilities: {
+      detectNewEntries: 'AVAILABLE',
+      identifyProductAndLink: 'AVAILABLE',
+      generateAffiliateLink: 'AVAILABLE',
+      replaceAffiliateLink: 'AVAILABLE',
+      routeToChannels: hasDestination ? 'AVAILABLE' : 'REQUIRES_CONFIGURATION',
+      sendMessages: hasDestination ? 'AVAILABLE' : 'REQUIRES_CONFIGURATION',
+    },
+    requiresIntegration: !hasDestination,
+    integrationHint: hasDestination ? undefined : 'Defina uma conta e ao menos um grupo de destino.',
+  };
+}
+
+'''
+if marker not in text:
+    raise SystemExit('page marker not found')
+text = text.replace(marker, helper + marker, 1)
+
+old_state = """  const [automations, setAutomations] = useState<Automation[]>(
+    initialAutomations
+  );"""
+new_state = """  const [automations, setAutomations] = useState<Automation[]>(() =>
+    initialAutomations.filter((automation) => automation.type !== 'AUTO_SEARCH')
+  );
+  const [isLoadingRealAutomations, setIsLoadingRealAutomations] = useState(true);
+  const [realAutomationsError, setRealAutomationsError] = useState<string | null>(null);"""
+if old_state not in text:
+    raise SystemExit('state marker not found')
+text = text.replace(old_state, new_state, 1)
+
+insert_after = "  const activeCount = automations.filter((a) => a.status === 'ACTIVE').length;\n"
+effect = '''
+
+  useEffect(() => {
+    let active = true;
+    const tenantId = getCurrentTenantId();
+    if (!tenantId) {
+      setRealAutomationsError('Tenant de desenvolvimento não configurado para carregar automações reais.');
+      setIsLoadingRealAutomations(false);
+      return () => {
+        active = false;
+      };
+    }
+
+    Promise.all([listAutoSearchAutomations(tenantId), listAutoSearchSends(tenantId)])
+      .then(([realAutoSearch, sends]) => {
+        if (!active) return;
+        const realCards = realAutoSearch.map((automation) =>
+          realAutoSearchToAutomation(automation, sends)
+        );
+        const otherModules = initialAutomations.filter(
+          (automation) => automation.type !== 'AUTO_SEARCH'
+        );
+        setAutomations([...realCards, ...otherModules]);
+        setRealAutomationsError(null);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setRealAutomationsError(
+          error instanceof Error ? error.message : 'Falha ao carregar automações reais.'
+        );
+      })
+      .finally(() => {
+        if (active) setIsLoadingRealAutomations(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+'''
+if insert_after not in text:
+    raise SystemExit('activeCount marker not found')
+text = text.replace(insert_after, insert_after + effect, 1)
+
+subtitle = '''          <p className="text-xs text-[#64748B] mt-1">
+            Escolha como suas ofertas entram e são distribuídas.
+          </p>'''
+subtitle_new = subtitle + '''
+          {isLoadingRealAutomations && (
+            <p className="text-[11px] text-[#64748B] mt-1">Sincronizando automações reais...</p>
+          )}
+          {realAutomationsError && (
+            <p className="text-[11px] text-amber-700 mt-1">{realAutomationsError}</p>
+          )}'''
+if subtitle not in text:
+    raise SystemExit('subtitle marker not found')
+text = text.replace(subtitle, subtitle_new, 1)
+page.write_text(text, encoding='utf-8')
+
+card = Path('src/components/automations/AutomationCard.tsx')
+ctext = card.read_text(encoding='utf-8')
+old_metrics = """      AUTO_SEARCH: [
+        { label: 'Marketplaces', value: automation.marketplaces.length },
+        { label: 'Encontradas hoje', value: automation.metrics.entriesToday.toLocaleString('pt-BR') },
+        { label: 'Na fila', value: automation.metrics.queued },
+        { label: 'Última busca', value: automation.metrics.lastRun },
+      ],"""
+new_metrics = """      AUTO_SEARCH: [
+        { label: 'Destinos', value: automation.sources.length },
+        { label: 'Envios hoje', value: automation.metrics.entriesToday.toLocaleString('pt-BR') },
+        { label: 'Envios total', value: automation.metrics.published.toLocaleString('pt-BR') },
+        { label: 'Último envio', value: automation.metrics.lastRun },
+      ],"""
+if old_metrics not in ctext:
+    raise SystemExit('card metrics marker not found')
+card.write_text(ctext.replace(old_metrics, new_metrics, 1), encoding='utf-8')
