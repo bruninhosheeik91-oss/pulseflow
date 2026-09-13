@@ -3,6 +3,7 @@
 const assert = require('assert');
 const {
   normalizeMonitorMessage,
+  diagnoseMonitorMessage,
   createMonitorDeduper,
   resolveMonitorRoute,
   isParentMonitorChat,
@@ -133,6 +134,45 @@ const nestedUrl = normalizeMonitorMessage({
 });
 assert(nestedUrl);
 assert.strictEqual(nestedUrl.body, 'https://s.shopee.com.br/9pNested789');
+
+// WPPConnect v2.3.3 expõe clientUrl em mensagens de URL. Esse era o caso
+// crônico que chegava no onAnyMessage sem body/caption e era descartado.
+const clientUrlMessage = normalizeMonitorMessage({
+  id: {
+    _serialized: `true_${parent}_3EB0CLIENTURL001`,
+    id: '3EB0CLIENTURL001',
+    fromMe: true,
+    remote: { _serialized: parent },
+  },
+  chatId: { _serialized: parent },
+  from: '5511111111111@c.us',
+  to: parent,
+  fromMe: true,
+  clientUrl: 'https://s.shopee.com.br/9fKrjhoA8f',
+  type: 'url',
+});
+assert(clientUrlMessage);
+assert.strictEqual(clientUrlMessage.body, 'https://s.shopee.com.br/9fKrjhoA8f');
+assert.strictEqual(clientUrlMessage.chatId, parent);
+
+// Se o evento vier sem chatId/to/from, o grupo real pode ser recuperado do
+// próprio message id serializado, sem criar identificador artificial.
+const chatFromMessageId = normalizeMonitorMessage({
+  id: `true_${parent}_3EB0ONLYID001`,
+  fromMe: true,
+  clientUrl: 'https://s.shopee.com.br/9fOnlyId',
+  type: 'url',
+});
+assert(chatFromMessageId);
+assert.strictEqual(chatFromMessageId.chatId, parent);
+
+const missingBodyDiagnosis = diagnoseMonitorMessage({
+  id: `true_${parent}_3EB0DIAG001`,
+  chatId: parent,
+  type: 'url',
+});
+assert.deepStrictEqual(missingBodyDiagnosis.missing, ['conteudo']);
+assert(missingBodyDiagnosis.keys.includes('chatId'));
 
 assert.strictEqual(
   normalizeMonitorMessage({
