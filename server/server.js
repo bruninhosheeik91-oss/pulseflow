@@ -810,28 +810,48 @@ async function handleMonitorReplication(sessionId, message) {
       monitorLog(sessionId, 'não foi possível confirmar admins - autor não autorizado');
       return;
     }
-    // Mensagens enviadas pela própria conta podem chegar no onAnyMessage
-    // com `author` em formato LID, diferente do número retornado por
-    // getGroupAdmins(). Para fromMe, a identidade confiável é a própria
-    // conta conectada (devicePhone), obtida via getHostDevice().
-    if (canonical.fromMe === true && !monClient.devicePhone && typeof monClient.getHostDevice === 'function') {
-      await refreshHostDevice(getSessionState(sessionId));
+    // WhatsApp Multi-Device pode identificar participantes como @lid no
+    // onAnyMessage, enquanto getGroupAdmins() retorna o número telefônico.
+    // Primeiro tenta a identidade do próprio evento; se for LID, resolve pelo
+    // mapeamento oficial PN/LID do WPPConnect. Para mensagens explicitamente
+    // fromMe, ainda há fallback para o telefone real da conta conectada.
+    let actorId = canonical.authorId;
+    let authorNumber = canonicalNumber(actorId);
+
+    if (
+      actorId &&
+      /@lid$/i.test(String(actorId)) &&
+      typeof monClient.getPnLidEntry === 'function'
+    ) {
+      try {
+        const mapping = await monClient.getPnLidEntry(String(actorId));
+        const phoneWid = mapping && mapping.phoneNumber;
+        const mappedPhone =
+          (phoneWid && phoneWid._serialized) ||
+          (phoneWid && phoneWid.user && phoneWid.server
+            ? `${phoneWid.user}@${phoneWid.server}`
+            : null);
+        const mappedNumber = canonicalNumber(mappedPhone);
+        if (mappedNumber) authorNumber = mappedNumber;
+      } catch {
+        // Falha de cache PN/LID não autoriza ninguém; segue para fallback seguro.
+      }
     }
-    const sessionState = getSessionState(sessionId);
-    const actorId = canonical.fromMe === true
-      ? sessionState.devicePhone
-      : canonical.authorId;
-    const authorNumber = canonicalNumber(actorId);
+
+    if (canonical.fromMe === true && !adminNumbers.has(authorNumber)) {
+      const sessionState = getSessionState(sessionId);
+      if (!sessionState.devicePhone && typeof monClient.getHostDevice === 'function') {
+        await refreshHostDevice(sessionState);
+      }
+      const ownNumber = canonicalNumber(sessionState.devicePhone);
+      if (ownNumber) authorNumber = ownNumber;
+    }
+
     if (!authorNumber || !adminNumbers.has(authorNumber)) {
       monitorLog(sessionId, 'autor não autorizado');
       return;
     }
-    monitorLog(
-      sessionId,
-      canonical.fromMe === true
-        ? 'autor validado (conta conectada é admin do grupo mãe)'
-        : 'autor validado (admin do grupo mãe)'
-    );
+    monitorLog(sessionId, 'autor validado (admin do grupo mãe)');
 
     const route = resolveMonitorRoute(canonical.body);
     if (route.route === 'shopee' && route.url) {
