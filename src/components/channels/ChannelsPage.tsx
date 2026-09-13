@@ -13,8 +13,10 @@ import {
 import { getWhatsAppProvider } from '../../services/whatsApp/provider';
 import {
   addChildGroup,
+  getChildGroupDelay,
   getGroupConfig,
   removeChildGroup,
+  setChildGroupDelay,
   setSyncedGroupsForSession,
 } from '../../services/whatsApp/groupConfigStore';
 import { ChannelsHeader } from './ChannelsHeader';
@@ -75,7 +77,7 @@ function channelFromRealGroup(
     instanceStatus: accountStatusToInstanceStatus(account),
     instanceBattery: 0,
     linkedCampaigns: [],
-    antiFloodDelay: 30,
+    antiFloodDelay: getChildGroupDelay(group.id),
     stats: {
       messagesToday: 0,
       messagesTotal: 0,
@@ -445,12 +447,35 @@ export const ChannelsPage: React.FC = () => {
         onClose={() => setSelectedChannelForDrawer(null)}
         onToggleStatus={handleToggleStatus}
         onSendTestMessage={handleSendTestMessage}
-        onEdit={(channel) =>
+        onEdit={(channel) => {
+          const current = getChildGroupDelay(channel.identifier);
+          const raw = window.prompt(
+            `Anti-flood de "${channel.name}" em segundos (0 a 3600):`,
+            String(current)
+          );
+          if (raw === null) return;
+          const parsed = Number(raw);
+          if (!Number.isFinite(parsed) || parsed < 0 || parsed > 3600) {
+            showToast('Informe um intervalo entre 0 e 3600 segundos.', 'info');
+            return;
+          }
+          const seconds = Math.round(parsed);
+          setChildGroupDelay(channel.identifier, seconds);
+          setChannels((items) =>
+            items.map((item) =>
+              item.id === channel.id ? { ...item, antiFloodDelay: seconds } : item
+            )
+          );
+          setSelectedChannelForDrawer((currentChannel) =>
+            currentChannel?.id === channel.id
+              ? { ...currentChannel, antiFloodDelay: seconds }
+              : currentChannel
+          );
           showToast(
-            `"${channel.name}" é um grupo real sincronizado do WhatsApp; nome e participantes são gerenciados no próprio WhatsApp.`,
-            'info'
-          )
-        }
+            `Anti-flood de "${channel.name}" salvo em ${seconds}s e sincronizado com o monitor.`,
+            'success'
+          );
+        }}
       />
     </div>
   );
