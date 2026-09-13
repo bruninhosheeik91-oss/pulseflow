@@ -11,13 +11,11 @@ const {
 const parent = '120363429412966849@g.us';
 const child = '120363426316518174@g.us';
 
-// Evento auxiliar/incompleto do onAnyMessage: deve morrer antes do pipeline.
 assert.strictEqual(
   normalizeMonitorMessage({ chatId: parent, body: 'qualquer coisa' }),
   null
 );
 
-// Mensagem inbound completa.
 const inbound = normalizeMonitorMessage({
   id: 'false_parent_ABC123',
   chatId: parent,
@@ -32,7 +30,6 @@ assert.strictEqual(inbound.chatId, parent);
 assert.strictEqual(inbound.fromMe, false);
 assert.strictEqual(inbound.body, 'mensagem real');
 
-// Mensagem fromMe completa também precisa ser processável pelo onAnyMessage.
 const outbound = normalizeMonitorMessage({
   id: {
     _serialized: 'true_parent_XYZ789',
@@ -53,8 +50,6 @@ assert.strictEqual(outbound.messageId, 'true_parent_XYZ789');
 assert.strictEqual(outbound.chatId, parent);
 assert.strictEqual(outbound.authorId, '5511888888888@c.us');
 
-// Payload realista do WPPConnect pode trazer chatId como objeto e, em fromMe,
-// `from` como a própria conta; o grupo precisa ser resolvido por `to`.
 const outgoingObjectJid = normalizeMonitorMessage({
   id: {
     _serialized: 'true_parent_OBJ001',
@@ -74,7 +69,6 @@ assert(outgoingObjectJid);
 assert.strictEqual(outgoingObjectJid.chatId, parent);
 assert.strictEqual(outgoingObjectJid.authorId, '5511777777777@c.us');
 
-// Mesmo sem chatId, mensagens fromMe podem usar `to` como grupo remoto.
 const outgoingViaTo = normalizeMonitorMessage({
   id: 'true_parent_TO001',
   from: '5511666666666@c.us',
@@ -86,7 +80,6 @@ const outgoingViaTo = normalizeMonitorMessage({
 assert(outgoingViaTo);
 assert.strictEqual(outgoingViaTo.chatId, parent);
 
-// Conteúdo textual alternativo real (caption) também é aceito.
 const captionMessage = normalizeMonitorMessage({
   id: 'false_parent_CAP001',
   chatId: { _serialized: parent },
@@ -98,7 +91,6 @@ const captionMessage = normalizeMonitorMessage({
 assert(captionMessage);
 assert.strictEqual(captionMessage.body, 'https://shopee.com.br/produto-i.111.222');
 
-// Newsletter e evento sem texto não entram no monitor.
 assert.strictEqual(
   normalizeMonitorMessage({
     id: 'NEWS1',
@@ -112,16 +104,21 @@ assert.strictEqual(
   null
 );
 
-// Origem mãe/filho é determinística.
 assert.strictEqual(isParentMonitorChat(parent, parent), true);
 assert.strictEqual(isParentMonitorChat(child, parent), false);
 
-// Roteamento: somente URL Shopee pura entra no afiliado.
 const shopeeUrl = 'https://shopee.com.br/produto-i.123.456';
 assert.deepStrictEqual(resolveMonitorRoute(shopeeUrl), {
   route: 'shopee',
   url: shopeeUrl,
 });
+
+const shopeeBrazilShortUrl = 'https://s.shopee.com.br/9pTeste123';
+assert.deepStrictEqual(resolveMonitorRoute(shopeeBrazilShortUrl), {
+  route: 'shopee',
+  url: shopeeBrazilShortUrl,
+});
+
 assert.deepStrictEqual(resolveMonitorRoute(`confira ${shopeeUrl}`), {
   route: 'replicate',
   url: null,
@@ -131,7 +128,6 @@ assert.deepStrictEqual(resolveMonitorRoute('https://example.com/produto'), {
   url: null,
 });
 
-// Dedup opera apenas sobre o id canônico real.
 const deduper = createMonitorDeduper();
 assert.strictEqual(deduper.isDuplicate('ABC'), false);
 deduper.remember('ABC');
