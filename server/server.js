@@ -554,9 +554,14 @@ async function handleMonitorAffiliateLink(sessionId, cfg, sourceUrl, msgId) {
   const subIds = Array.isArray(view.subIds) ? view.subIds : [];
 
   let affiliateUrl = null;
+  let resolvedSourceUrl = null;
   try {
     const result = await client.generateShortLink({ sourceUrl, subIds });
     affiliateUrl = result && result.affiliateUrl ? result.affiliateUrl : null;
+    resolvedSourceUrl =
+      result && typeof result.resolvedSourceUrl === 'string'
+        ? result.resolvedSourceUrl
+        : null;
   } catch (err) {
     cfg.lastMessageAt = new Date().toISOString();
     cfg.lastMessageId = msgId;
@@ -588,7 +593,8 @@ async function handleMonitorAffiliateLink(sessionId, cfg, sourceUrl, msgId) {
   }
 
   const offer = { affiliateUrl };
-  const product = await resolveMonitorProduct(client, sourceUrl);
+  const productSourceUrl = resolvedSourceUrl || sourceUrl;
+  const product = await resolveMonitorProduct(client, productSourceUrl);
   if (product) {
     offer.itemId = product.itemId;
     offer.productName = product.productName;
@@ -637,7 +643,12 @@ async function handleMonitorAffiliateLink(sessionId, cfg, sourceUrl, msgId) {
       const result = offer.imageUrl
         ? await sendProductWithMedia(st.client, child, message, offer.imageUrl)
         : await st.client.sendText(child, message);
-      if (result && result.messageId) sentIds.push(result.messageId);
+      const sentId =
+        (result && result.messageId) ||
+        (result && result.id && (result.id._serialized || result.id.id)) ||
+        null;
+      if (sentId) sentIds.push(sentId);
+      else if (result) sentIds.push('sent-without-id');
     } catch (err) {
       cfg.lastError = String((err && err.message) || err);
       monitorErrorLog(sessionId, `erro no envio para ${child}: ${cfg.lastError}`);

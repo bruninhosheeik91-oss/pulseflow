@@ -378,7 +378,10 @@ function createShopeeApiClient(options = {}) {
     }
 
     await rememberShortLinkTarget(cleanSourceUrl);
-    return { affiliateUrl: shortLink.trim() };
+    return {
+      affiliateUrl: shortLink.trim(),
+      resolvedSourceUrl: lookupResolvedSourceUrl(cleanSourceUrl) || null,
+    };
   }
 
   // Consulta produtos/ofertas reais (sem mock). Devolve { nodes } — lista de
