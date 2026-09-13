@@ -24,11 +24,11 @@ export const OffersPagination: React.FC<OffersPaginationProps> = ({
   const endItem = Math.min(startItem + currentCount - 1, totalItems);
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 bg-[#0A0F1C] border border-[#162340] rounded-xl text-xs">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 bg-[#F4F7FB] border border-[#E2E8F0] rounded-xl text-xs">
       {/* Total & Current Showing */}
-      <div className="text-[#8E9BAE]">
-        Mostrando <span className="font-mono-numeric font-semibold text-[#E6E8EC]">{startItem}–{endItem}</span> de{' '}
-        <span className="font-mono-numeric font-semibold text-[#E6E8EC]">
+      <div className="text-[#64748B]">
+        Mostrando <span className="font-mono-numeric font-semibold text-[#172033]">{startItem}–{endItem}</span> de{' '}
+        <span className="font-mono-numeric font-semibold text-[#172033]">
           {totalItems.toLocaleString('pt-BR')}
         </span>{' '}
         ofertas
@@ -37,12 +37,12 @@ export const OffersPagination: React.FC<OffersPaginationProps> = ({
       {/* Page Size & Page Controls */}
       <div className="flex items-center gap-4">
         {/* Items per page selector */}
-        <div className="flex items-center gap-1.5 text-[#8E9BAE]">
+        <div className="flex items-center gap-1.5 text-[#64748B]">
           <span className="hidden sm:inline">Itens por página:</span>
           <select
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="bg-[#070C18] border border-[#182747] text-[#E6E8EC] rounded-md px-2 py-1 text-xs font-mono-numeric cursor-pointer focus:outline-none focus:border-[#1E5EFF]"
+            className="bg-[#FFFFFF] border border-[#DCE3EC] text-[#172033] rounded-md px-2 py-1 text-xs font-mono-numeric cursor-pointer focus:outline-none focus:border-[#2563EB]"
           >
             <option value={25}>25</option>
             <option value={50}>50</option>
@@ -56,7 +56,7 @@ export const OffersPagination: React.FC<OffersPaginationProps> = ({
             type="button"
             disabled={currentPage <= 1}
             onClick={() => onPageChange(currentPage - 1)}
-            className="p-1.5 rounded-lg border border-[#182747] text-[#8E9BAE] hover:text-[#E6E8EC] hover:bg-[#121E38] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="p-1.5 rounded-lg border border-[#DCE3EC] text-[#64748B] hover:text-[#172033] hover:bg-[#EFF6FF] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             title="Página anterior"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
@@ -69,23 +69,23 @@ export const OffersPagination: React.FC<OffersPaginationProps> = ({
               onClick={() => onPageChange(p)}
               className={`w-7 h-7 rounded-lg border text-xs font-mono-numeric font-semibold transition-all ${
                 currentPage === p
-                  ? 'bg-[#152345] border-[#1E5EFF] text-[#00C2FF]'
-                  : 'border-[#182747] text-[#8E9BAE] hover:text-[#E6E8EC] hover:bg-[#121E38]'
+                  ? 'bg-[#DBEAFE] border-[#2563EB] text-[#2563EB]'
+                  : 'border-[#DCE3EC] text-[#64748B] hover:text-[#172033] hover:bg-[#EFF6FF]'
               }`}
             >
               {p}
             </button>
           ))}
 
-          <span className="px-1 text-[#5A6470] font-mono-numeric">...</span>
+          <span className="px-1 text-[#94A3B8] font-mono-numeric">...</span>
 
           <button
             type="button"
             onClick={() => onPageChange(totalPages)}
             className={`w-7 h-7 rounded-lg border text-xs font-mono-numeric font-semibold transition-all ${
               currentPage === totalPages
-                ? 'bg-[#152345] border-[#1E5EFF] text-[#00C2FF]'
-                : 'border-[#182747] text-[#8E9BAE] hover:text-[#E6E8EC] hover:bg-[#121E38]'
+                ? 'bg-[#DBEAFE] border-[#2563EB] text-[#2563EB]'
+                : 'border-[#DCE3EC] text-[#64748B] hover:text-[#172033] hover:bg-[#EFF6FF]'
             }`}
           >
             {totalPages}
@@ -95,7 +95,7 @@ export const OffersPagination: React.FC<OffersPaginationProps> = ({
             type="button"
             disabled={currentPage >= totalPages}
             onClick={() => onPageChange(currentPage + 1)}
-            className="p-1.5 rounded-lg border border-[#182747] text-[#8E9BAE] hover:text-[#E6E8EC] hover:bg-[#121E38] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="p-1.5 rounded-lg border border-[#DCE3EC] text-[#64748B] hover:text-[#172033] hover:bg-[#EFF6FF] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             title="Próxima página"
           >
             <ChevronRight className="w-3.5 h-3.5" />

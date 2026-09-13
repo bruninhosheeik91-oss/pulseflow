@@ -132,7 +132,7 @@ export const AutoSearchPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-bold text-[#E6E8EC] tracking-tight">
+            <h1 className="text-xl font-bold text-[#172033] tracking-tight">
               Busca Automática
             </h1>
             <Status
@@ -146,7 +146,7 @@ export const AutoSearchPage: React.FC = () => {
               </Badge>
             )}
           </div>
-          <p className="text-xs text-[#8E9BAE] mt-1">
+          <p className="text-xs text-[#64748B] mt-1">
             Encontre ofertas reais da Shopee, gere links afiliados e prepare a divulgação.
           </p>
         </div>
@@ -169,8 +169,8 @@ export const AutoSearchPage: React.FC = () => {
       </div>
 
       {!tenantId && (
-        <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-[#0E2030] border border-[#1C3A4E]">
-          <Info className="w-4 h-4 text-[#00C2FF] shrink-0 mt-0.5" />
+        <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-[#EFF6FF] border border-[#BFDBFE]">
+          <Info className="w-4 h-4 text-[#2563EB] shrink-0 mt-0.5" />
           <p className="text-xs text-[#94A3B8] leading-relaxed">
             Nenhum tenant identificado (X-Tenant-Id). A Busca Automática permanece desligada até
             existir um tenant autenticado.
@@ -192,7 +192,7 @@ export const AutoSearchPage: React.FC = () => {
           {automations.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-8">
               <Search className="w-5 h-5 text-[#64748B]" />
-              <p className="text-xs text-[#8E9BAE]">Nenhuma automação criada ainda.</p>
+              <p className="text-xs text-[#64748B]">Nenhuma automação criada ainda.</p>
               <Button variant="primary" size="sm" onClick={openNew} disabled={!tenantId} className="text-xs">
                 <Plus className="w-3.5 h-3.5" />
                 Criar primeira automação
@@ -204,7 +204,7 @@ export const AutoSearchPage: React.FC = () => {
               return (
                 <div
                   key={automation.id}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[#080E1C] border border-[#14203B] hover:border-[#1E3057] transition-colors"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#BFDBFE] transition-colors"
                 >
                   <button
                     type="button"
@@ -213,7 +213,7 @@ export const AutoSearchPage: React.FC = () => {
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-[#E6E8EC] truncate">
+                        <span className="text-xs font-medium text-[#172033] truncate">
                           {automation.name}
                         </span>
                         <Badge
@@ -228,7 +228,7 @@ export const AutoSearchPage: React.FC = () => {
                         {automation.schedule.intervalMinutes} min
                       </span>
                     </div>
-                    <span className="text-[10px] text-[#00C2FF] flex items-center gap-1 shrink-0">
+                    <span className="text-[10px] text-[#2563EB] flex items-center gap-1 shrink-0">
                       <Pencil className="w-3.5 h-3.5" />
                       Editar
                     </span>
@@ -237,7 +237,7 @@ export const AutoSearchPage: React.FC = () => {
                     type="button"
                     onClick={() => handleToggleActive(automation)}
                     title={automation.active ? 'Desativar' : 'Ativar'}
-                    className="p-1.5 rounded-lg text-[#8E9BAE] hover:text-[#00C2FF] hover:bg-[#121E38] transition-colors cursor-pointer"
+                    className="p-1.5 rounded-lg text-[#64748B] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors cursor-pointer"
                   >
                     <CheckCircle2 className="w-4 h-4" />
                   </button>
@@ -246,7 +246,7 @@ export const AutoSearchPage: React.FC = () => {
                     onClick={() => handleDelete(automation)}
                     disabled={deletingId === automation.id}
                     title="Excluir"
-                    className="p-1.5 rounded-lg text-[#8E9BAE] hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+                    className="p-1.5 rounded-lg text-[#64748B] hover:text-red-700 hover:bg-red-500/10 transition-colors cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -265,31 +265,31 @@ export const AutoSearchPage: React.FC = () => {
           />
           <CardContent className="space-y-2">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <div className="p-2.5 bg-[#080E1C] border border-[#14203B] rounded-lg">
+              <div className="p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
                 <span className="text-[10px] text-[#64748B] block">Configurada</span>
                 <span
                   className={`text-xs font-bold mt-0.5 block ${
-                    sourceConfig.configured ? 'text-emerald-400' : 'text-[#8E9BAE]'
+                    sourceConfig.configured ? 'text-emerald-700' : 'text-[#64748B]'
                   }`}
                 >
                   {sourceConfig.configured ? 'Sim' : 'Não'}
                 </span>
               </div>
-              <div className="p-2.5 bg-[#080E1C] border border-[#14203B] rounded-lg">
+              <div className="p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
                 <span className="text-[10px] text-[#64748B] block">Status</span>
-                <span className="text-xs font-bold text-[#E6E8EC] mt-0.5 block">
+                <span className="text-xs font-bold text-[#172033] mt-0.5 block">
                   {sourceConfig.status}
                 </span>
               </div>
-              <div className="p-2.5 bg-[#080E1C] border border-[#14203B] rounded-lg">
+              <div className="p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
                 <span className="text-[10px] text-[#64748B] block">App ID</span>
-                <span className="text-xs font-mono-numeric font-bold text-[#E6E8EC] mt-0.5 block">
+                <span className="text-xs font-mono-numeric font-bold text-[#172033] mt-0.5 block">
                   {sourceConfig.appIdMasked || '—'}
                 </span>
               </div>
-              <div className="p-2.5 bg-[#080E1C] border border-[#14203B] rounded-lg">
+              <div className="p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
                 <span className="text-[10px] text-[#64748B] block">Sub IDs</span>
-                <span className="text-xs font-mono-numeric font-bold text-[#E6E8EC] mt-0.5 block">
+                <span className="text-xs font-mono-numeric font-bold text-[#172033] mt-0.5 block">
                   {sourceConfig.subIds.join(', ') || '—'}
                 </span>
               </div>
@@ -299,11 +299,11 @@ export const AutoSearchPage: React.FC = () => {
       )}
 
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#0E172C] border border-[#1E3563] text-[#E6E8EC] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
+        <div className="fixed bottom-6 right-6 z-50 bg-[#FFFFFF] border border-[#BFDBFE] text-[#172033] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
           {toast.type === 'success' ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
           ) : (
-            <Info className="w-4 h-4 text-[#00C2FF] shrink-0" />
+            <Info className="w-4 h-4 text-[#2563EB] shrink-0" />
           )}
           <span className="font-medium leading-relaxed">{toast.text}</span>
         </div>

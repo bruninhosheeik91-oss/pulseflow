@@ -40,10 +40,10 @@ export const WhatsAppPage: React.FC = () => {
     <div className="space-y-5">
       {/* Header */}
       <div className="pb-1">
-        <h1 className="text-xl font-bold text-[#E6E8EC] tracking-tight">
+        <h1 className="text-xl font-bold text-[#172033] tracking-tight">
           WhatsApp
         </h1>
-        <p className="text-xs text-[#8E9BAE] mt-1">
+        <p className="text-xs text-[#64748B] mt-1">
           Conecte e gerencie a conta utilizada pelas automações do PULSE FLOW.
         </p>
       </div>

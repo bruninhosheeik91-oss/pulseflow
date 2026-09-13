@@ -40,10 +40,10 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Intro */}
-      <div className="p-3.5 bg-[#0B1220] border border-[#16233B] rounded-xl flex items-center justify-between text-xs">
+      <div className="p-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl flex items-center justify-between text-xs">
         <div className="flex items-center gap-2.5">
-          <Sparkles className="w-4 h-4 text-[#00C2FF] shrink-0" />
-          <span className="text-[#8E9BAE]">
+          <Sparkles className="w-4 h-4 text-[#2563EB] shrink-0" />
+          <span className="text-[#64748B]">
             Defina como o algoritmo inteligente calcula a pontuação (0-100) de cada oferta encontrada pelos spiders e crawlers.
           </span>
         </div>
@@ -51,9 +51,9 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* 1. Pontuação de Corte & Desconto */}
-        <div className="p-4 bg-[#0A1020] border border-[#16233B] rounded-xl space-y-4">
-          <div className="flex items-center gap-2 border-b border-[#14203B] pb-2.5">
-            <Award className="w-4 h-4 text-amber-400" />
+        <div className="p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-4">
+          <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-2.5">
+            <Award className="w-4 h-4 text-amber-700" />
             <h4 className="font-bold text-white text-xs">
               Critérios de Corte & Aprovação
             </h4>
@@ -62,10 +62,10 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
           <div className="space-y-3.5 text-xs">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-[#8E9BAE] text-[11px]">
+                <label className="text-[#64748B] text-[11px]">
                   Nota Mínima para Fila de Postagem Automática:
                 </label>
-                <span className="font-mono text-emerald-400 font-bold">
+                <span className="font-mono text-emerald-700 font-bold">
                   {formData.minScoreAutoApprove} / 100 pontos
                 </span>
               </div>
@@ -81,7 +81,7 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
                     minScoreAutoApprove: parseInt(e.target.value),
                   })
                 }
-                className="w-full accent-emerald-400 bg-[#14203B] rounded-lg h-2"
+                className="w-full accent-emerald-400 bg-[#E2E8F0] rounded-lg h-2"
               />
               <p className="text-[11px] text-[#64748B] mt-1">
                 Ofertas abaixo deste índice ficam retidas para moderação manual ou descarte.
@@ -90,10 +90,10 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-[#8E9BAE] text-[11px]">
+                <label className="text-[#64748B] text-[11px]">
                   Desconto Mínimo Obrigatório:
                 </label>
-                <span className="font-mono text-[#00C2FF] font-bold">
+                <span className="font-mono text-[#2563EB] font-bold">
                   {formData.minDiscountPercentage}% OFF
                 </span>
               </div>
@@ -109,12 +109,12 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
                     minDiscountPercentage: parseInt(e.target.value),
                   })
                 }
-                className="w-full accent-[#00C2FF] bg-[#14203B] rounded-lg h-2"
+                className="w-full accent-[#2563EB] bg-[#E2E8F0] rounded-lg h-2"
               />
             </div>
 
             {/* Hard filters */}
-            <div className="pt-2 border-t border-[#14203B] space-y-2">
+            <div className="pt-2 border-t border-[#E2E8F0] space-y-2">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
@@ -125,7 +125,7 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
                       rejectOutOfStock: e.target.checked,
                     })
                   }
-                  className="rounded border-[#192747] text-[#1E5EFF] focus:ring-0 bg-[#0E1628]"
+                  className="rounded border-[#DCE3EC] text-[#2563EB] focus:ring-0 bg-[#FFFFFF]"
                 />
                 <span className="text-white text-xs">
                   Rejeitar automaticamente ofertas sem estoque imediato
@@ -142,7 +142,7 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
                       requireFreeShippingMinPrice: e.target.checked ? 79 : 0,
                     })
                   }
-                  className="rounded border-[#192747] text-[#1E5EFF] focus:ring-0 bg-[#0E1628]"
+                  className="rounded border-[#DCE3EC] text-[#2563EB] focus:ring-0 bg-[#FFFFFF]"
                 />
                 <span className="text-white text-xs">
                   Priorizar produtos com frete grátis (acima de R$ 79)
@@ -153,17 +153,17 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
         </div>
 
         {/* 2. Distribuição de Pesos do Algoritmo */}
-        <div className="p-4 bg-[#0A1020] border border-[#16233B] rounded-xl space-y-4">
-          <div className="flex items-center justify-between border-b border-[#14203B] pb-2.5">
+        <div className="p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-4">
+          <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2.5">
             <div className="flex items-center gap-2">
-              <Sliders className="w-4 h-4 text-[#00C2FF]" />
+              <Sliders className="w-4 h-4 text-[#2563EB]" />
               <h4 className="font-bold text-white text-xs">
                 Pesos do Algoritmo (Total: {totalWeights}%)
               </h4>
             </div>
             <span
               className={`text-[11px] font-mono font-bold ${
-                totalWeights === 100 ? 'text-emerald-400' : 'text-amber-400'
+                totalWeights === 100 ? 'text-emerald-700' : 'text-amber-700'
               }`}
             >
               {totalWeights === 100 ? '100% Equilibrado' : `${totalWeights}%`}
@@ -174,8 +174,8 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
             {/* Desconto */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[#8E9BAE] text-[11px] flex items-center gap-1.5">
-                  <Percent className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-[#64748B] text-[11px] flex items-center gap-1.5">
+                  <Percent className="w-3.5 h-3.5 text-emerald-700" />
                   Magnitude do Desconto:
                 </span>
                 <span className="font-mono text-white font-bold">
@@ -194,15 +194,15 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
                     weightDiscount: parseInt(e.target.value),
                   })
                 }
-                className="w-full accent-emerald-400 bg-[#14203B] rounded-lg h-2"
+                className="w-full accent-emerald-400 bg-[#E2E8F0] rounded-lg h-2"
               />
             </div>
 
             {/* Avaliação */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[#8E9BAE] text-[11px] flex items-center gap-1.5">
-                  <Star className="w-3.5 h-3.5 text-amber-400" />
+                <span className="text-[#64748B] text-[11px] flex items-center gap-1.5">
+                  <Star className="w-3.5 h-3.5 text-amber-700" />
                   Reputação & Estrelas (Mín. 4.0):
                 </span>
                 <span className="font-mono text-white font-bold">
@@ -221,14 +221,14 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
                     weightRating: parseInt(e.target.value),
                   })
                 }
-                className="w-full accent-amber-400 bg-[#14203B] rounded-lg h-2"
+                className="w-full accent-amber-400 bg-[#E2E8F0] rounded-lg h-2"
               />
             </div>
 
             {/* Velocidade de Vendas */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[#8E9BAE] text-[11px] flex items-center gap-1.5">
+                <span className="text-[#64748B] text-[11px] flex items-center gap-1.5">
                   <TrendingUp className="w-3.5 h-3.5 text-indigo-400" />
                   Velocidade de Vendas / Mais Vendidos:
                 </span>
@@ -248,14 +248,14 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
                     weightSalesVelocity: parseInt(e.target.value),
                   })
                 }
-                className="w-full accent-indigo-400 bg-[#14203B] rounded-lg h-2"
+                className="w-full accent-indigo-400 bg-[#E2E8F0] rounded-lg h-2"
               />
             </div>
 
             {/* Histórico do Preço */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[#8E9BAE] text-[11px] flex items-center gap-1.5">
+                <span className="text-[#64748B] text-[11px] flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-sky-400" />
                   Menor Preço dos Últimos 60 Dias:
                 </span>
@@ -275,14 +275,14 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
                     weightPriceHistory: parseInt(e.target.value),
                   })
                 }
-                className="w-full accent-sky-400 bg-[#14203B] rounded-lg h-2"
+                className="w-full accent-sky-400 bg-[#E2E8F0] rounded-lg h-2"
               />
             </div>
 
             {/* Comissão */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[#8E9BAE] text-[11px] flex items-center gap-1.5">
+                <span className="text-[#64748B] text-[11px] flex items-center gap-1.5">
                   <DollarSign className="w-3.5 h-3.5 text-purple-400" />
                   Taxa de Comissão Estimada:
                 </span>
@@ -302,7 +302,7 @@ export const SettingsScoringTab: React.FC<SettingsScoringTabProps> = ({
                     weightCommission: parseInt(e.target.value),
                   })
                 }
-                className="w-full accent-purple-400 bg-[#14203B] rounded-lg h-2"
+                className="w-full accent-purple-400 bg-[#E2E8F0] rounded-lg h-2"
               />
             </div>
           </div>

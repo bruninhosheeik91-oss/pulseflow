@@ -212,10 +212,10 @@ export const HistoryPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <History className="w-5 h-5 text-[#00C2FF]" />
+            <History className="w-5 h-5 text-[#2563EB]" />
             <span>Histórico de Publicações & Auditoria</span>
           </h2>
-          <p className="text-xs text-[#8E9BAE] mt-0.5">
+          <p className="text-xs text-[#64748B] mt-0.5">
             Registro cronológico completo de mensagens enviadas, telemetria de instâncias e conversões atribuídas
           </p>
         </div>
@@ -261,13 +261,13 @@ export const HistoryPage: React.FC = () => {
 
       {/* Toast Notification */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#0E172C] border border-[#1E3563] text-[#E6E8EC] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
+        <div className="fixed bottom-6 right-6 z-50 bg-[#FFFFFF] border border-[#BFDBFE] text-[#172033] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
           {toast.type === 'warning' ? (
-            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+            <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0" />
           ) : toast.type === 'info' ? (
-            <Sparkles className="w-4 h-4 text-[#00C2FF] shrink-0" />
+            <Sparkles className="w-4 h-4 text-[#2563EB] shrink-0" />
           ) : (
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
           )}
           <span className="font-medium leading-relaxed">{toast.text}</span>
         </div>

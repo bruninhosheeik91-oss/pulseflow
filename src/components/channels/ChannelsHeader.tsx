@@ -28,25 +28,25 @@ export const ChannelsHeader: React.FC<ChannelsHeaderProps> = ({
   onOpenConnectModal,
 }) => {
   return (
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-1 border-b border-[#14203B]/60">
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-1 border-b border-[#E2E8F0]/60">
       {/* Title and Subtitle */}
       <div className="space-y-1">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#102347] to-[#0A162C] border border-[#1E3A6E] flex items-center justify-center text-[#00C2FF] shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#EFF6FF] to-[#EFF6FF] border border-[#93C5FD] flex items-center justify-center text-[#2563EB] shadow-sm">
             <Radio className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2.5">
-              <h1 className="text-xl font-bold text-[#E6E8EC] tracking-tight">
+              <h1 className="text-xl font-bold text-[#172033] tracking-tight">
                 Canais e Grupos
               </h1>
               {/* Online indicator */}
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 border border-emerald-500/25 text-emerald-700">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 {onlineCount} de {totalCount} canais online
               </span>
             </div>
-            <p className="text-xs text-[#8E9BAE]">
+            <p className="text-xs text-[#64748B]">
               Gerenciamento de canais de distribuição, instâncias WhatsApp, bots do Telegram e status de entrega.
             </p>
           </div>
@@ -63,11 +63,11 @@ export const ChannelsHeader: React.FC<ChannelsHeaderProps> = ({
           leftIcon={
             <RefreshCw
               className={`w-3.5 h-3.5 ${
-                isTestingConnections ? 'animate-spin text-[#00C2FF]' : 'text-[#8E9BAE]'
+                isTestingConnections ? 'animate-spin text-[#2563EB]' : 'text-[#64748B]'
               }`}
             />
           }
-          className="text-xs border-[#182747] text-[#E6E8EC] hover:text-[#00C2FF] cursor-pointer"
+          className="text-xs border-[#DCE3EC] text-[#172033] hover:text-[#2563EB] cursor-pointer"
         >
           {isTestingConnections ? 'Testando Conexões...' : 'Testar Conexões'}
         </Button>

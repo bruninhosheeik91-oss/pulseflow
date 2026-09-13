@@ -113,17 +113,17 @@ export const SettingsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <Settings className="w-5 h-5 text-[#00C2FF]" />
+            <Settings className="w-5 h-5 text-[#2563EB]" />
             <span>Configurações & Parâmetros do Sistema</span>
           </h2>
-          <p className="text-xs text-[#8E9BAE] mt-0.5">
+          <p className="text-xs text-[#64748B] mt-0.5">
             Gerencie credenciais de APIs parceiras, regras de inteligência artificial, cadência anti-ban e templates de copy
           </p>
         </div>
       </div>
 
       {/* 2. Tab Navigation Bar */}
-      <div className="flex items-center gap-1.5 border-b border-[#14203B] pb-3 overflow-x-auto no-scrollbar">
+      <div className="flex items-center gap-1.5 border-b border-[#E2E8F0] pb-3 overflow-x-auto no-scrollbar">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -135,14 +135,14 @@ export const SettingsPage: React.FC = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
                 isActive
-                  ? 'bg-[#142340] text-white border border-[#1E5EFF] shadow-xs'
-                  : 'text-[#8E9BAE] hover:text-[#E6E8EC] hover:bg-[#0D162B] border border-transparent'
+                  ? 'bg-[#E2E8F0] text-white border border-[#2563EB] shadow-xs'
+                  : 'text-[#64748B] hover:text-[#172033] hover:bg-[#F1F5F9] border border-transparent'
               }`}
             >
-              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#00C2FF]' : 'text-[#8E9BAE]'}`} />
+              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#2563EB]' : 'text-[#64748B]'}`} />
               <span>{tab.label}</span>
               {tab.badge && (
-                <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded-full font-mono">
+                <span className="text-[10px] bg-emerald-500/20 text-emerald-700 px-1.5 py-0.2 rounded-full font-mono">
                   {tab.badge}
                 </span>
               )}
@@ -188,8 +188,8 @@ export const SettingsPage: React.FC = () => {
 
       {/* Toast Notification */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#0E172C] border border-[#1E3563] text-[#E6E8EC] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+        <div className="fixed bottom-6 right-6 z-50 bg-[#FFFFFF] border border-[#BFDBFE] text-[#172033] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
           <span className="font-medium leading-relaxed">{toast}</span>
         </div>
       )}

@@ -22,14 +22,14 @@ export const OffersHeader: React.FC<OffersHeaderProps> = ({
       {/* Title & Subtitle */}
       <div>
         <div className="flex items-center gap-3">
-          <h2 className="text-xl font-bold text-[#E6E8EC] tracking-tight">
+          <h2 className="text-xl font-bold text-[#172033] tracking-tight">
             Ofertas
           </h2>
-          <span className="text-xs font-mono-numeric px-2 py-0.5 rounded-full bg-[#121E38] text-[#00C2FF] border border-[#1E3563]">
+          <span className="text-xs font-mono-numeric px-2 py-0.5 rounded-full bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
             Central Operacional
           </span>
         </div>
-        <p className="text-xs text-[#8E9BAE] mt-1">
+        <p className="text-xs text-[#64748B] mt-1">
           Encontre, analise e publique as melhores oportunidades.
         </p>
       </div>
@@ -37,8 +37,8 @@ export const OffersHeader: React.FC<OffersHeaderProps> = ({
       {/* Right Actions & Sync Time */}
       <div className="flex items-center flex-wrap gap-3">
         {/* Sync Info */}
-        <div className="flex items-center gap-1.5 text-xs text-[#8E9BAE] bg-[#0A1020] px-2.5 py-1 rounded-lg border border-[#162340]">
-          <Clock className="w-3.5 h-3.5 text-[#5A6470]" />
+        <div className="flex items-center gap-1.5 text-xs text-[#64748B] bg-[#F8FAFC] px-2.5 py-1 rounded-lg border border-[#E2E8F0]">
+          <Clock className="w-3.5 h-3.5 text-[#94A3B8]" />
           <span>Última sincronização {lastSyncText}</span>
         </div>
 
@@ -50,12 +50,12 @@ export const OffersHeader: React.FC<OffersHeaderProps> = ({
           disabled={isSyncing || isScanning}
           leftIcon={
             <RefreshCw
-              className={`w-3.5 h-3.5 text-[#8E9BAE] ${
-                isSyncing ? 'animate-spin text-[#00C2FF]' : ''
+              className={`w-3.5 h-3.5 text-[#64748B] ${
+                isSyncing ? 'animate-spin text-[#2563EB]' : ''
               }`}
             />
           }
-          className="text-xs text-[#E6E8EC] border-[#1B2947] hover:border-[#283E6E]"
+          className="text-xs text-[#172033] border-[#DCE3EC] hover:border-[#E2E8F0]"
         >
           {isSyncing ? 'Sincronizando...' : 'Sincronizar ofertas'}
         </Button>
@@ -73,7 +73,7 @@ export const OffersHeader: React.FC<OffersHeaderProps> = ({
               <Sparkles className="w-3.5 h-3.5 text-white" />
             )
           }
-          className="text-xs font-semibold shadow-sm shadow-[#1E5EFF]/30"
+          className="text-xs font-semibold shadow-sm shadow-[#2563EB]/30"
         >
           {isScanning ? 'Buscando novas ofertas...' : '+ Buscar ofertas'}
         </Button>

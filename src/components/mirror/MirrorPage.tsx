@@ -136,10 +136,10 @@ export const MirrorPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div>
-          <h1 className="text-xl font-bold text-[#E6E8EC] tracking-tight">
+          <h1 className="text-xl font-bold text-[#172033] tracking-tight">
             Espelhamento
           </h1>
-          <p className="text-xs text-[#8E9BAE] mt-1">
+          <p className="text-xs text-[#64748B] mt-1">
             Configure fontes monitoradas para preparar novas ofertas para sua
             operação.
           </p>
@@ -159,9 +159,9 @@ export const MirrorPage: React.FC = () => {
 
       {/* Integration notice */}
       <div className="flex items-start gap-2.5 px-3.5 py-3 rounded-lg bg-amber-500/[0.07] border border-amber-500/20">
-        <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-        <p className="text-[11px] text-amber-200/90 leading-relaxed">
-          <span className="font-semibold text-amber-300">
+        <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+        <p className="text-[11px] text-amber-700/90 leading-relaxed">
+          <span className="font-semibold text-amber-700">
             Requer integração.
           </span>{' '}
           Este módulo prepara o fluxo de espelhamento, mas nenhuma leitura
@@ -172,14 +172,14 @@ export const MirrorPage: React.FC = () => {
 
       {/* Empty state */}
       {sources.length === 0 ? (
-        <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl py-10 px-6 flex flex-col items-center text-center">
-          <div className="w-12 h-12 rounded-xl bg-[#14203B] border border-[#1E3057] flex items-center justify-center mb-4">
-            <RefreshCw className="w-5 h-5 text-[#00C2FF]" />
+        <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl py-10 px-6 flex flex-col items-center text-center">
+          <div className="w-12 h-12 rounded-xl bg-[#E2E8F0] border border-[#BFDBFE] flex items-center justify-center mb-4">
+            <RefreshCw className="w-5 h-5 text-[#2563EB]" />
           </div>
-          <h2 className="text-sm font-semibold text-[#E6E8EC]">
+          <h2 className="text-sm font-semibold text-[#172033]">
             Nenhuma fonte configurada
           </h2>
-          <p className="text-xs text-[#8E9BAE] mt-1.5 max-w-sm leading-relaxed">
+          <p className="text-xs text-[#64748B] mt-1.5 max-w-sm leading-relaxed">
             Adicione uma fonte para começar a configurar o fluxo de
             espelhamento.
           </p>
@@ -195,11 +195,11 @@ export const MirrorPage: React.FC = () => {
         </div>
       ) : (
         /* Sources table */
-        <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl overflow-hidden">
+        <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px]">
               <thead>
-                <tr className="border-b border-[#162340] bg-[#0A1020] text-[11px] font-semibold text-[#8E9BAE] uppercase tracking-wider">
+                <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC] text-[11px] font-semibold text-[#64748B] uppercase tracking-wider">
                   <th className="px-4 py-3 text-left">Fonte</th>
                   <th className="px-4 py-3 text-left">Plataforma</th>
                   <th className="px-4 py-3 text-left">Status</th>
@@ -208,7 +208,7 @@ export const MirrorPage: React.FC = () => {
                   <th className="px-4 py-3 text-right">Ações</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#101B33]">
+              <tbody className="divide-y divide-[#F1F5F9]">
                 {sources.map((source) => {
                   const TypeIcon = TYPE_ICONS[source.type];
                   const enabledSteps = PROCESSING_STEPS.filter(
@@ -217,15 +217,15 @@ export const MirrorPage: React.FC = () => {
                   return (
                     <tr
                       key={source.id}
-                      className="hover:bg-[#0F182E] transition-colors"
+                      className="hover:bg-[#F1F5F9] transition-colors"
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-8 h-8 rounded-lg bg-[#14203B] border border-[#1E3057] flex items-center justify-center shrink-0">
+                          <div className="w-8 h-8 rounded-lg bg-[#E2E8F0] border border-[#BFDBFE] flex items-center justify-center shrink-0">
                             <TypeIcon className="w-3.5 h-3.5 text-[#A78BFA]" />
                           </div>
                           <div className="min-w-0">
-                            <span className="text-xs font-medium text-[#E6E8EC] block truncate">
+                            <span className="text-xs font-medium text-[#172033] block truncate">
                               {source.name}
                             </span>
                             <span className="text-[10px] text-[#64748B] font-mono-numeric block">
@@ -259,7 +259,7 @@ export const MirrorPage: React.FC = () => {
                           )}
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-xs font-mono-numeric text-[#C8D1DE]">
+                        <span className="text-xs font-mono-numeric text-[#334155]">
                           {enabledSteps}/{PROCESSING_STEPS.length} etapas
                         </span>
                       </td>
@@ -269,7 +269,7 @@ export const MirrorPage: React.FC = () => {
                             type="button"
                             onClick={() => setDrawerId(source.id)}
                             title="Abrir fonte"
-                            className="w-7 h-7 rounded-md flex items-center justify-center text-[#8E9BAE] hover:bg-[#14203B] hover:text-white transition-colors cursor-pointer"
+                            className="w-7 h-7 rounded-md flex items-center justify-center text-[#64748B] hover:bg-[#E2E8F0] hover:text-white transition-colors cursor-pointer"
                           >
                             <Eye className="w-3.5 h-3.5" />
                           </button>
@@ -281,7 +281,7 @@ export const MirrorPage: React.FC = () => {
                                 ? 'Retomar fonte'
                                 : 'Pausar fonte'
                             }
-                            className="w-7 h-7 rounded-md flex items-center justify-center text-[#8E9BAE] hover:bg-[#14203B] hover:text-white transition-colors cursor-pointer"
+                            className="w-7 h-7 rounded-md flex items-center justify-center text-[#64748B] hover:bg-[#E2E8F0] hover:text-white transition-colors cursor-pointer"
                           >
                             {source.status === 'paused' ? (
                               <Play className="w-3.5 h-3.5" />
@@ -293,7 +293,7 @@ export const MirrorPage: React.FC = () => {
                             type="button"
                             onClick={() => handleDelete(source.id)}
                             title="Excluir fonte"
-                            className="w-7 h-7 rounded-md flex items-center justify-center text-[#8E9BAE] hover:bg-red-500/10 hover:text-red-400 transition-colors cursor-pointer"
+                            className="w-7 h-7 rounded-md flex items-center justify-center text-[#64748B] hover:bg-red-500/10 hover:text-red-700 transition-colors cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -334,18 +334,18 @@ export const MirrorPage: React.FC = () => {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className="flex items-center gap-2.5 px-4 py-2.5 rounded-lg border border-[#1E325C] bg-[#0E1628] shadow-lg shadow-black/30 animate-in slide-in-from-bottom-3 fade-in"
+            className="flex items-center gap-2.5 px-4 py-2.5 rounded-lg border border-[#BFDBFE] bg-[#FFFFFF] shadow-lg shadow-black/30 animate-in slide-in-from-bottom-3 fade-in"
           >
             {t.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
             ) : (
               <AlertTriangle
                 className={`w-4 h-4 shrink-0 ${
-                  t.type === 'info' ? 'text-[#00C2FF]' : 'text-red-400'
+                  t.type === 'info' ? 'text-[#2563EB]' : 'text-red-700'
                 }`}
               />
             )}
-            <span className="text-xs text-[#E6E8EC]">{t.message}</span>
+            <span className="text-xs text-[#172033]">{t.message}</span>
           </div>
         ))}
       </div>

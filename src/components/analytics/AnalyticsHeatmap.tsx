@@ -13,14 +13,14 @@ export const AnalyticsHeatmap: React.FC<AnalyticsHeatmapProps> = ({ heatmapData 
     if (intensity >= 90) return 'bg-[#FF3366] text-white border-[#FF3366] shadow-sm shadow-[#FF3366]/30';
     if (intensity >= 75) return 'bg-[#FF6B00] text-white border-[#FF6B00]';
     if (intensity >= 55) return 'bg-[#FFB800] text-slate-950 border-[#FFB800] font-bold';
-    if (intensity >= 30) return 'bg-[#1E5EFF] text-white border-[#1E5EFF]';
-    if (intensity >= 15) return 'bg-[#102347] text-[#93C5FD] border-[#1E3B70]';
-    return 'bg-[#0B1426] text-[#475569] border-[#121E36]';
+    if (intensity >= 30) return 'bg-[#2563EB] text-white border-[#2563EB]';
+    if (intensity >= 15) return 'bg-[#EFF6FF] text-[#93C5FD] border-[#93C5FD]';
+    return 'bg-[#F8FAFC] text-[#475569] border-[#EFF6FF]';
   };
 
   return (
-    <div className="bg-[#0A1020] border border-[#16233B] rounded-xl p-4.5 space-y-4 shadow-sm">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#14203B] pb-3">
+    <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-4.5 space-y-4 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E2E8F0] pb-3">
         <div>
           <div className="flex items-center gap-2">
             <Flame className="w-4 h-4 text-[#FF3366]" />
@@ -28,18 +28,18 @@ export const AnalyticsHeatmap: React.FC<AnalyticsHeatmapProps> = ({ heatmapData 
               Mapa de Calor: Melhores Horários de Conversão
             </h3>
           </div>
-          <p className="text-xs text-[#8E9BAE] mt-0.5">
+          <p className="text-xs text-[#64748B] mt-0.5">
             Concentração de cliques e compras por faixa de horário (24 horas)
           </p>
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-2 text-[11px] text-[#8E9BAE]">
+        <div className="flex items-center gap-2 text-[11px] text-[#64748B]">
           <span>Menor</span>
           <div className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-xs bg-[#0B1426] border border-[#121E36]" />
-            <span className="w-2.5 h-2.5 rounded-xs bg-[#102347]" />
-            <span className="w-2.5 h-2.5 rounded-xs bg-[#1E5EFF]" />
+            <span className="w-2.5 h-2.5 rounded-xs bg-[#F8FAFC] border border-[#EFF6FF]" />
+            <span className="w-2.5 h-2.5 rounded-xs bg-[#EFF6FF]" />
+            <span className="w-2.5 h-2.5 rounded-xs bg-[#2563EB]" />
             <span className="w-2.5 h-2.5 rounded-xs bg-[#FFB800]" />
             <span className="w-2.5 h-2.5 rounded-xs bg-[#FF3366]" />
           </div>
@@ -49,9 +49,9 @@ export const AnalyticsHeatmap: React.FC<AnalyticsHeatmapProps> = ({ heatmapData 
 
       {/* Grid of 24 hours */}
       {heatmapData.length === 0 ? (
-        <div className="h-40 rounded-xl bg-[#0B1324] border border-[#162340] flex flex-col items-center justify-center gap-2 text-center">
-          <Flame className="w-7 h-7 text-[#5A6470]" />
-          <p className="text-xs text-[#8E9BAE]">
+        <div className="h-40 rounded-xl bg-[#F1F5F9] border border-[#E2E8F0] flex flex-col items-center justify-center gap-2 text-center">
+          <Flame className="w-7 h-7 text-[#94A3B8]" />
+          <p className="text-xs text-[#64748B]">
             Sem dados de horários de conversão
           </p>
           <p className="text-[11px] text-[#64748B] max-w-xs">
@@ -75,7 +75,7 @@ export const AnalyticsHeatmap: React.FC<AnalyticsHeatmapProps> = ({ heatmapData 
               }`}
             >
               {h.isPeak && (
-                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-[#0A1020]" />
+                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-[#F8FAFC]" />
               )}
               <span className="text-[11px] font-mono">{h.label}</span>
               <span className="text-xs font-mono font-bold mt-1">
@@ -89,9 +89,9 @@ export const AnalyticsHeatmap: React.FC<AnalyticsHeatmapProps> = ({ heatmapData 
 
       {/* Selected Hour Details or Insights */}
       {selectedHour ? (
-        <div className="p-3 bg-[#0E1B33] border border-[#1E3B70] rounded-xl flex items-center justify-between text-xs animate-in fade-in duration-150">
+        <div className="p-3 bg-[#F1F5F9] border border-[#93C5FD] rounded-xl flex items-center justify-between text-xs animate-in fade-in duration-150">
           <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-[#00C2FF]" />
+            <Clock className="w-4 h-4 text-[#2563EB]" />
             <div>
               <span className="font-semibold text-white">
                 Faixa de {selectedHour.label} ({selectedHour.hour}:00 às {selectedHour.hour}:59):
@@ -106,21 +106,21 @@ export const AnalyticsHeatmap: React.FC<AnalyticsHeatmapProps> = ({ heatmapData 
               🔥 Horário Nobre Recomendado
             </span>
           ) : (
-            <span className="text-[11px] text-[#8E9BAE]">
+            <span className="text-[11px] text-[#64748B]">
               Janela Regular
             </span>
           )}
         </div>
       ) : heatmapData.length > 0 ? (
-        <div className="p-3 bg-[#0B1220] border border-[#16233B] rounded-xl flex items-center gap-2.5 text-xs text-[#8E9BAE]">
-          <Sparkles className="w-4 h-4 text-[#00C2FF] shrink-0" />
+        <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl flex items-center gap-2.5 text-xs text-[#64748B]">
+          <Sparkles className="w-4 h-4 text-[#2563EB] shrink-0" />
           <span>
-            <strong className="text-white">Insight PULSE FLOW:</strong> Os dois maiores picos de conversão ocorrem entre às <strong className="text-[#00C2FF]">11h e 13h</strong> (pausa do almoço) e entre às <strong className="text-emerald-400">19h e 21h30</strong> (horário nobre noturno). Agende suas campanhas prioritárias nessas janelas para maximizar o ROI.
+            <strong className="text-white">Insight PULSE FLOW:</strong> Os dois maiores picos de conversão ocorrem entre às <strong className="text-[#2563EB]">11h e 13h</strong> (pausa do almoço) e entre às <strong className="text-emerald-700">19h e 21h30</strong> (horário nobre noturno). Agende suas campanhas prioritárias nessas janelas para maximizar o ROI.
           </span>
         </div>
       ) : (
-        <div className="p-3 bg-[#0B1220] border border-[#16233B] rounded-xl flex items-center gap-2.5 text-xs text-[#8E9BAE]">
-          <Sparkles className="w-4 h-4 text-[#00C2FF] shrink-0" />
+        <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl flex items-center gap-2.5 text-xs text-[#64748B]">
+          <Sparkles className="w-4 h-4 text-[#2563EB] shrink-0" />
           <span>Sem dados suficientes para gerar insights de horários nobres.</span>
         </div>
       )}

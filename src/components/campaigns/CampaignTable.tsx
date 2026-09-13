@@ -25,11 +25,11 @@ export const CampaignTable: React.FC<CampaignTableProps> = ({
   onRunNow,
 }) => {
   return (
-    <div className="bg-[#0B1324] border border-[#162340] rounded-xl overflow-hidden shadow-sm">
+    <div className="bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl overflow-hidden shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[980px]">
           <thead>
-            <tr className="border-b border-[#162340] bg-[#080E1C] text-[11px] font-semibold text-[#8E9BAE] uppercase tracking-wider">
+            <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC] text-[11px] font-semibold text-[#64748B] uppercase tracking-wider">
               <th className="py-3 px-4">Campanha</th>
               <th className="py-3 px-3">Marketplaces</th>
               <th className="py-3 px-3">Regras & Deal Score</th>
@@ -40,14 +40,14 @@ export const CampaignTable: React.FC<CampaignTableProps> = ({
               <th className="py-3 px-4 text-right">Ações</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#121E38] text-xs">
+          <tbody className="divide-y divide-[#EFF6FF] text-xs">
             {campaigns.map((c) => {
               const isRunning = c.status === 'Ativa';
 
               return (
                 <tr
                   key={c.id}
-                  className="hover:bg-[#0E172C]/60 transition-colors group cursor-pointer"
+                  className="hover:bg-[#FFFFFF]/60 transition-colors group cursor-pointer"
                   onClick={() => onOpenDetails(c)}
                 >
                   {/* Campanha */}
@@ -61,7 +61,7 @@ export const CampaignTable: React.FC<CampaignTableProps> = ({
                               : 'bg-amber-400'
                           }`}
                         />
-                        <span className="font-bold text-[#E6E8EC] group-hover:text-[#00C2FF] transition-colors truncate">
+                        <span className="font-bold text-[#172033] group-hover:text-[#2563EB] transition-colors truncate">
                           {c.name}
                         </span>
                       </div>
@@ -73,8 +73,8 @@ export const CampaignTable: React.FC<CampaignTableProps> = ({
                         <span
                           className={`text-[10px] font-medium px-1.5 py-0.2 rounded border ${
                             c.executionMode === 'Automático'
-                              ? 'bg-[#0E203B] text-[#00C2FF] border-[#18366A]'
-                              : 'bg-[#151D2E] text-[#94A3B8] border-[#1C2C47]'
+                              ? 'bg-[#EFF6FF] text-[#2563EB] border-[#E2E8F0]'
+                              : 'bg-[#F1F5F9] text-[#94A3B8] border-[#CBD5E1]'
                           }`}
                         >
                           {c.executionMode}
@@ -96,14 +96,14 @@ export const CampaignTable: React.FC<CampaignTableProps> = ({
                   <td className="py-3 px-3">
                     <div className="space-y-1">
                       <div className="flex items-center gap-1.5">
-                        <span className="px-1.5 py-0.5 rounded bg-[#101A30] border border-[#182B4E] text-[#70A1FF] font-mono-numeric text-[11px] font-medium">
+                        <span className="px-1.5 py-0.5 rounded bg-[#F1F5F9] border border-[#DCE3EC] text-[#2563EB] font-mono-numeric text-[11px] font-medium">
                           Score ≥ {c.minScore}
                         </span>
-                        <span className="px-1.5 py-0.5 rounded bg-[#101A30] border border-[#182B4E] text-[#38BDF8] font-mono-numeric text-[11px] font-medium">
+                        <span className="px-1.5 py-0.5 rounded bg-[#F1F5F9] border border-[#DCE3EC] text-[#3B82F6] font-mono-numeric text-[11px] font-medium">
                           ≥ {c.minDiscount}%
                         </span>
                       </div>
-                      <div className="text-[10px] text-[#8E9BAE]">
+                      <div className="text-[10px] text-[#64748B]">
                         {c.minPrice || c.maxPrice
                           ? `R$ ${c.minPrice || 0} - R$ ${c.maxPrice || '∞'}`
                           : 'Qualquer valor'}
@@ -114,16 +114,16 @@ export const CampaignTable: React.FC<CampaignTableProps> = ({
                   {/* Canais & Frequência */}
                   <td className="py-3 px-3">
                     <div className="space-y-1 max-w-[170px]">
-                      <div className="text-xs text-[#C8D1DE] truncate flex items-center gap-1">
-                        <Radio className="w-3 h-3 text-[#00C2FF] shrink-0" />
+                      <div className="text-xs text-[#334155] truncate flex items-center gap-1">
+                        <Radio className="w-3 h-3 text-[#2563EB] shrink-0" />
                         <span className="truncate">{c.channels[0]}</span>
                         {c.channels.length > 1 && (
-                          <span className="text-[#8E9BAE] text-[10px]">
+                          <span className="text-[#64748B] text-[10px]">
                             +{c.channels.length - 1}
                           </span>
                         )}
                       </div>
-                      <div className="text-[10px] text-[#8E9BAE] flex items-center gap-1">
+                      <div className="text-[10px] text-[#64748B] flex items-center gap-1">
                         <Clock className="w-3 h-3 text-[#64748B]" />
                         <span>{c.frequencyLabel}</span>
                       </div>
@@ -132,7 +132,7 @@ export const CampaignTable: React.FC<CampaignTableProps> = ({
 
                   {/* Disparos */}
                   <td className="py-3 px-3 text-center">
-                    <span className="font-bold font-mono-numeric text-[#E6E8EC]">
+                    <span className="font-bold font-mono-numeric text-[#172033]">
                       {c.stats.dispatchesToday}
                     </span>
                     <span className="text-[10px] text-[#64748B] block font-mono-numeric">
@@ -142,7 +142,7 @@ export const CampaignTable: React.FC<CampaignTableProps> = ({
 
                   {/* Cliques / Pedidos */}
                   <td className="py-3 px-3 text-center">
-                    <span className="font-bold font-mono-numeric text-[#00C2FF]">
+                    <span className="font-bold font-mono-numeric text-[#2563EB]">
                       {c.stats.clicksToday}
                     </span>
                     <span className="text-[10px] text-[#64748B] block font-mono-numeric">
@@ -152,7 +152,7 @@ export const CampaignTable: React.FC<CampaignTableProps> = ({
 
                   {/* Comissão Hoje */}
                   <td className="py-3 px-3 text-right">
-                    <span className="font-bold font-mono-numeric text-emerald-400">
+                    <span className="font-bold font-mono-numeric text-emerald-700">
                       R$ {c.stats.commissionToday.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </span>
                     <span className="text-[10px] text-[#64748B] block font-mono-numeric">
@@ -170,7 +170,7 @@ export const CampaignTable: React.FC<CampaignTableProps> = ({
                         type="button"
                         onClick={() => onRunNow(c)}
                         title="Disparar varredura agora"
-                        className="p-1.5 rounded-lg border border-[#182B4E] bg-[#0E1A33] text-[#00C2FF] hover:bg-[#15254A] transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg border border-[#DCE3EC] bg-[#F1F5F9] text-[#2563EB] hover:bg-[#DBEAFE] transition-colors cursor-pointer"
                       >
                         <Zap className="w-3.5 h-3.5" />
                       </button>
@@ -181,8 +181,8 @@ export const CampaignTable: React.FC<CampaignTableProps> = ({
                         title={isRunning ? 'Pausar campanha' : 'Ativar campanha'}
                         className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
                           isRunning
-                            ? 'bg-[#0E1A33] border-[#182B4E] text-[#8E9BAE] hover:text-amber-400 hover:border-amber-500/30'
-                            : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
+                            ? 'bg-[#F1F5F9] border-[#DCE3EC] text-[#64748B] hover:text-amber-700 hover:border-amber-500/30'
+                            : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 hover:bg-emerald-500/20'
                         }`}
                       >
                         {isRunning ? (
@@ -196,7 +196,7 @@ export const CampaignTable: React.FC<CampaignTableProps> = ({
                         type="button"
                         onClick={() => onOpenDetails(c)}
                         title="Ver regras e histórico"
-                        className="p-1.5 rounded-lg border border-[#182B4E] bg-[#0E1A33] text-[#8E9BAE] hover:text-[#E6E8EC] hover:bg-[#15254A] transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg border border-[#DCE3EC] bg-[#F1F5F9] text-[#64748B] hover:text-[#172033] hover:bg-[#DBEAFE] transition-colors cursor-pointer"
                       >
                         <ChevronRight className="w-3.5 h-3.5" />
                       </button>

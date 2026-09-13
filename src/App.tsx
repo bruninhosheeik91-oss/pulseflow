@@ -260,7 +260,7 @@ export default function App() {
           {toast.type === 'info' ? (
             <AlertCircle className="w-4 h-4 text-[#2563EB] shrink-0" />
           ) : (
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
           )}
           <span className="font-medium leading-relaxed">{toast.message}</span>
         </div>

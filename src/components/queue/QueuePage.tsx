@@ -339,11 +339,11 @@ export const QueuePage: React.FC = () => {
     <div className="space-y-6">
       {/* Paused Banner if queue is suspended */}
       {isQueuePaused && (
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-300 animate-in fade-in duration-200">
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-700 animate-in fade-in duration-200">
           <div className="flex items-center gap-2.5">
-            <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0" />
+            <ShieldAlert className="w-5 h-5 text-amber-700 shrink-0" />
             <div>
-              <p className="font-semibold text-amber-200">
+              <p className="font-semibold text-amber-700">
                 Atenção: A Fila de Disparos está Pausada Globalmente
               </p>
               <p className="text-[#CBD5E1] mt-0.5">
@@ -448,13 +448,13 @@ export const QueuePage: React.FC = () => {
 
       {/* In-page Toast Notification */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#0E172C] border border-[#1E3563] text-[#E6E8EC] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
+        <div className="fixed bottom-6 right-6 z-50 bg-[#FFFFFF] border border-[#BFDBFE] text-[#172033] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
           {toast.type === 'warning' ? (
-            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+            <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0" />
           ) : toast.type === 'info' ? (
-            <Sparkles className="w-4 h-4 text-[#00C2FF] shrink-0" />
+            <Sparkles className="w-4 h-4 text-[#2563EB] shrink-0" />
           ) : (
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
           )}
           <span className="font-medium leading-relaxed">{toast.text}</span>
         </div>

@@ -31,10 +31,10 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
 }) => {
   if (items.length === 0) {
     return (
-      <div className="bg-[#0E1628] border border-[#16233B] rounded-xl p-8 text-center">
-        <Clock className="w-8 h-8 text-[#8E9BAE] mx-auto mb-3 opacity-60" />
+      <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-8 text-center">
+        <Clock className="w-8 h-8 text-[#64748B] mx-auto mb-3 opacity-60" />
         <h3 className="text-sm font-semibold text-white">Nenhum registro encontrado</h3>
-        <p className="text-xs text-[#8E9BAE] mt-1 max-w-sm mx-auto">
+        <p className="text-xs text-[#64748B] mt-1 max-w-sm mx-auto">
           Não foram encontrados disparos com os filtros selecionados. Tente ajustar os parâmetros de busca ou período.
         </p>
       </div>
@@ -52,18 +52,18 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
       case 'AliExpress':
         return 'bg-[#FF4747]/15 text-[#FF7070] border-[#FF4747]/30';
       case 'Magalu':
-        return 'bg-[#0086FF]/15 text-[#60A5FA] border-[#0086FF]/30';
+        return 'bg-[#F8FAFC]/15 text-[#60A5FA] border-[#E2E8F0]/30';
       default:
-        return 'bg-[#1E5EFF]/15 text-[#70A1FF] border-[#1E5EFF]/30';
+        return 'bg-[#2563EB]/15 text-[#2563EB] border-[#2563EB]/30';
     }
   };
 
   return (
-    <div className="bg-[#0A1020] border border-[#16233B] rounded-xl overflow-hidden shadow-sm">
+    <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl overflow-hidden shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="border-b border-[#14203B] bg-[#070D1A] text-[#8E9BAE] font-medium">
+            <tr className="border-b border-[#E2E8F0] bg-[#FFFFFF] text-[#64748B] font-medium">
               <th className="py-3 px-3.5">Disparo & Canal</th>
               <th className="py-3 px-3.5">Produto & Oferta</th>
               <th className="py-3 px-3">Loja</th>
@@ -74,7 +74,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
               <th className="py-3 px-3.5 text-right">Ações</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#131D33]">
+          <tbody className="divide-y divide-[#F1F5F9]">
             {items.map((item) => {
               const isDelivered = item.status === 'Entregue';
               const isFailed = item.status === 'Falha';
@@ -83,13 +83,13 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
               return (
                 <tr
                   key={item.id}
-                  className="hover:bg-[#0E172C] transition-colors group"
+                  className="hover:bg-[#FFFFFF] transition-colors group"
                 >
                   {/* 1. Disparo & Canal */}
                   <td className="py-3 px-3.5 whitespace-nowrap">
                     <div className="flex flex-col gap-0.5">
                       <div className="flex items-center gap-1.5 font-mono text-[11px] text-white">
-                        <Clock className="w-3 h-3 text-[#00C2FF]" />
+                        <Clock className="w-3 h-3 text-[#2563EB]" />
                         <span>{item.dispatchedAt}</span>
                       </div>
                       <div className="flex items-center gap-1.5 mt-0.5">
@@ -113,11 +113,11 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
                       <img
                         src={item.productImage}
                         alt=""
-                        className="w-10 h-10 rounded-lg object-cover bg-[#14203B] shrink-0 border border-[#192747]"
+                        className="w-10 h-10 rounded-lg object-cover bg-[#E2E8F0] shrink-0 border border-[#DCE3EC]"
                         referrerPolicy="no-referrer"
                       />
                       <div className="min-w-0">
-                        <p className="font-semibold text-white truncate group-hover:text-[#00C2FF] transition-colors" title={item.productName}>
+                        <p className="font-semibold text-white truncate group-hover:text-[#2563EB] transition-colors" title={item.productName}>
                           {item.productName}
                         </p>
                         <div className="flex items-center gap-2 text-[11px] mt-0.5">
@@ -125,12 +125,12 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
                             R$ {item.price.toFixed(2).replace('.', ',')}
                           </span>
                           {item.discountPercentage && (
-                            <span className="text-[10px] font-bold text-[#00C2FF] bg-[#00C2FF]/10 px-1.5 py-0.2 rounded border border-[#00C2FF]/20">
+                            <span className="text-[10px] font-bold text-[#2563EB] bg-[#2563EB]/10 px-1.5 py-0.2 rounded border border-[#2563EB]/20">
                               -{item.discountPercentage}%
                             </span>
                           )}
                           {item.coupon && (
-                            <span className="text-[10px] font-mono text-amber-300 bg-amber-400/10 px-1 py-0.2 rounded border border-amber-400/20">
+                            <span className="text-[10px] font-mono text-amber-700 bg-amber-400/10 px-1 py-0.2 rounded border border-amber-400/20">
                               {item.coupon}
                             </span>
                           )}
@@ -153,14 +153,14 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
                   {/* 4. Status */}
                   <td className="py-3 px-3 whitespace-nowrap text-center">
                     {isDelivered && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
                         <CheckCircle2 className="w-3 h-3" />
                         Entregue
                       </span>
                     )}
                     {isFailed && (
                       <span
-                        className="inline-flex items-center gap-1 text-[11px] font-medium text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20 cursor-help"
+                        className="inline-flex items-center gap-1 text-[11px] font-medium text-rose-700 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20 cursor-help"
                         title={item.errorMessage || 'Falha de entrega no webhook da instância'}
                       >
                         <AlertTriangle className="w-3 h-3" />
@@ -168,7 +168,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
                       </span>
                     )}
                     {isRetried && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#00C2FF] bg-[#00C2FF]/10 px-2 py-0.5 rounded-full border border-[#00C2FF]/20">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#2563EB] bg-[#2563EB]/10 px-2 py-0.5 rounded-full border border-[#2563EB]/20">
                         <RotateCcw className="w-3 h-3" />
                         Re-enviado
                       </span>
@@ -187,14 +187,14 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
                   {/* 6. Pedidos */}
                   <td className="py-3 px-3 text-right whitespace-nowrap font-mono-numeric font-medium">
                     {item.orders > 0 ? (
-                      <span className="text-indigo-300 font-bold">{item.orders}</span>
+                      <span className="text-indigo-700 font-bold">{item.orders}</span>
                     ) : (
                       <span className="text-[#64748B]">—</span>
                     )}
                   </td>
 
                   {/* 7. Comissão */}
-                  <td className="py-3 px-3 text-right whitespace-nowrap font-mono-numeric font-bold text-emerald-400">
+                  <td className="py-3 px-3 text-right whitespace-nowrap font-mono-numeric font-bold text-emerald-700">
                     {item.commission > 0 ? (
                       `R$ ${item.commission.toFixed(2).replace('.', ',')}`
                     ) : (
@@ -209,7 +209,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
                       <button
                         type="button"
                         onClick={() => onInspect(item)}
-                        className="p-1.5 rounded-lg text-[#94A3B8] hover:text-white hover:bg-[#152340] transition-colors"
+                        className="p-1.5 rounded-lg text-[#94A3B8] hover:text-white hover:bg-[#E2E8F0] transition-colors"
                         title="Inspecionar mensagem e telemetria"
                       >
                         <Eye className="w-3.5 h-3.5" />
@@ -221,8 +221,8 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
                         onClick={() => onRetry(item)}
                         className={`p-1.5 rounded-lg transition-colors ${
                           isFailed
-                            ? 'text-rose-400 hover:text-rose-300 hover:bg-rose-500/10'
-                            : 'text-[#94A3B8] hover:text-[#00C2FF] hover:bg-[#152340]'
+                            ? 'text-rose-700 hover:text-rose-700 hover:bg-rose-500/10'
+                            : 'text-[#94A3B8] hover:text-[#2563EB] hover:bg-[#E2E8F0]'
                         }`}
                         title="Re-enviar disparo para o canal"
                       >
@@ -233,7 +233,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
                       <button
                         type="button"
                         onClick={() => onCopyLink(item.affiliateUrl)}
-                        className="p-1.5 rounded-lg text-[#94A3B8] hover:text-white hover:bg-[#152340] transition-colors"
+                        className="p-1.5 rounded-lg text-[#94A3B8] hover:text-white hover:bg-[#E2E8F0] transition-colors"
                         title="Copiar link de afiliado oficial"
                       >
                         <Copy className="w-3.5 h-3.5" />
@@ -243,7 +243,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
                       <button
                         type="button"
                         onClick={() => onDelete(item.id)}
-                        className="p-1.5 rounded-lg text-[#64748B] hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                        className="p-1.5 rounded-lg text-[#64748B] hover:text-rose-700 hover:bg-rose-500/10 transition-colors"
                         title="Remover registro"
                       >
                         <Trash2 className="w-3.5 h-3.5" />

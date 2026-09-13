@@ -90,11 +90,11 @@ export const PerformanceSection: React.FC = () => {
     : '';
 
   return (
-    <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-5 flex flex-col justify-between h-full">
+    <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-5 flex flex-col justify-between h-full">
       {/* Top Header & Range Selector with Integrated Legend */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#162442]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E2E8F0]">
         <div>
-          <h2 className="text-base font-semibold text-[#E6E8EC] tracking-tight">
+          <h2 className="text-base font-semibold text-[#172033] tracking-tight">
             Performance
           </h2>
           <p className="text-xs text-[#94A3B8] mt-0.5 font-medium">
@@ -107,17 +107,17 @@ export const PerformanceSection: React.FC = () => {
           {/* Legend */}
           <div className="flex items-center gap-3 text-xs text-[#94A3B8]">
             <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#00C2FF]" />
+              <span className="w-2 h-2 rounded-full bg-[#2563EB]" />
               <span>Cliques</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#1E5EFF]" />
+              <span className="w-2 h-2 rounded-full bg-[#2563EB]" />
               <span>Pedidos</span>
             </div>
           </div>
 
           {/* Date Selector Pills */}
-          <div className="flex items-center gap-1 bg-[#0A1020] p-1 rounded-lg border border-[#172545]">
+          <div className="flex items-center gap-1 bg-[#F8FAFC] p-1 rounded-lg border border-[#DCE3EC]">
             {(['7d', '14d', '30d'] as const).map((range) => (
               <button
                 key={range}
@@ -128,8 +128,8 @@ export const PerformanceSection: React.FC = () => {
                 }}
                 className={`px-2.5 py-1 text-xs rounded transition-all font-medium ${
                   activeRange === range
-                    ? 'bg-[#152345] text-[#E6E8EC] font-semibold shadow-xs border border-[#1E325C]'
-                    : 'text-[#8E9BAE] hover:text-[#E6E8EC] border border-transparent'
+                    ? 'bg-[#DBEAFE] text-[#172033] font-semibold shadow-xs border border-[#BFDBFE]'
+                    : 'text-[#64748B] hover:text-[#172033] border border-transparent'
                 }`}
               >
                 {range === '7d'
@@ -148,43 +148,43 @@ export const PerformanceSection: React.FC = () => {
       <>
       <div className="grid grid-cols-3 gap-3 my-3">
         {/* Cliques */}
-        <div className="p-3 bg-[#0A1020] border border-[#162340] rounded-lg">
+        <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
           <div className="flex items-center justify-between text-xs text-[#94A3B8]">
             <span>Cliques totais</span>
-            <span className="w-2 h-2 rounded-full bg-[#00C2FF]" />
+            <span className="w-2 h-2 rounded-full bg-[#2563EB]" />
           </div>
-          <div className="text-xl lg:text-2xl font-bold font-mono-numeric text-[#E6E8EC] mt-1 tracking-tight">
+          <div className="text-xl lg:text-2xl font-bold font-mono-numeric text-[#172033] mt-1 tracking-tight">
             {totalCliques.toLocaleString('pt-BR')}
           </div>
-          <div className="text-xs text-[#8E9BAE] mt-0.5">
-            Média: <span className="font-mono-numeric font-medium text-[#C8D1DE]">{avgCliquesPerDay}</span>/dia
+          <div className="text-xs text-[#64748B] mt-0.5">
+            Média: <span className="font-mono-numeric font-medium text-[#334155]">{avgCliquesPerDay}</span>/dia
           </div>
         </div>
 
         {/* Pedidos */}
-        <div className="p-3 bg-[#0A1020] border border-[#162340] rounded-lg">
+        <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
           <div className="flex items-center justify-between text-xs text-[#94A3B8]">
             <span>Pedidos gerados</span>
-            <span className="w-2 h-2 rounded-full bg-[#1E5EFF]" />
+            <span className="w-2 h-2 rounded-full bg-[#2563EB]" />
           </div>
-          <div className="text-xl lg:text-2xl font-bold font-mono-numeric text-[#E6E8EC] mt-1 tracking-tight">
+          <div className="text-xl lg:text-2xl font-bold font-mono-numeric text-[#172033] mt-1 tracking-tight">
             {totalPedidos.toLocaleString('pt-BR')}
           </div>
-          <div className="text-xs text-[#8E9BAE] mt-0.5">
-            Média: <span className="font-mono-numeric font-medium text-[#C8D1DE]">{avgPedidosPerDay}</span>/dia
+          <div className="text-xs text-[#64748B] mt-0.5">
+            Média: <span className="font-mono-numeric font-medium text-[#334155]">{avgPedidosPerDay}</span>/dia
           </div>
         </div>
 
         {/* Conversão */}
-        <div className="p-3 bg-[#0A1020] border border-[#162340] rounded-lg">
+        <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
           <div className="flex items-center justify-between text-xs text-[#94A3B8]">
             <span>Taxa de conversão</span>
-            <Percent className="w-3.5 h-3.5 text-emerald-400" />
+            <Percent className="w-3.5 h-3.5 text-emerald-700" />
           </div>
-          <div className="text-xl lg:text-2xl font-bold font-mono-numeric text-[#E6E8EC] mt-1 tracking-tight">
+          <div className="text-xl lg:text-2xl font-bold font-mono-numeric text-[#172033] mt-1 tracking-tight">
             {avgConversao}%
           </div>
-          <div className="text-xs text-emerald-400 mt-0.5 font-medium">
+          <div className="text-xs text-emerald-700 mt-0.5 font-medium">
             +0,4% vs. mercado
           </div>
         </div>
@@ -199,12 +199,12 @@ export const PerformanceSection: React.FC = () => {
         >
           <defs>
             <linearGradient id="cliqueGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#00C2FF" stopOpacity="0.22" />
-              <stop offset="100%" stopColor="#00C2FF" stopOpacity="0" />
+              <stop offset="0%" stopColor="#2563EB" stopOpacity="0.22" />
+              <stop offset="100%" stopColor="#2563EB" stopOpacity="0" />
             </linearGradient>
             <linearGradient id="pedidoGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#1E5EFF" stopOpacity="0.28" />
-              <stop offset="100%" stopColor="#1E5EFF" stopOpacity="0" />
+              <stop offset="0%" stopColor="#2563EB" stopOpacity="0.28" />
+              <stop offset="100%" stopColor="#2563EB" stopOpacity="0" />
             </linearGradient>
           </defs>
 
@@ -218,7 +218,7 @@ export const PerformanceSection: React.FC = () => {
                 y1={y}
                 x2={chartWidth - paddingX}
                 y2={y}
-                stroke="#15223E"
+                stroke="#E2E8F0"
                 strokeDasharray="3 3"
                 strokeWidth="1"
               />
@@ -233,14 +233,14 @@ export const PerformanceSection: React.FC = () => {
           <path
             d={cliquePath}
             fill="none"
-            stroke="#00C2FF"
+            stroke="#2563EB"
             strokeWidth="2.2"
             strokeLinecap="round"
           />
           <path
             d={pedidoPath}
             fill="none"
-            stroke="#1E5EFF"
+            stroke="#2563EB"
             strokeWidth="2.2"
             strokeLinecap="round"
           />
@@ -283,8 +283,8 @@ export const PerformanceSection: React.FC = () => {
                   cx={cp.x}
                   cy={cp.y}
                   r={isHovered ? 5 : 3.5}
-                  fill="#0A0F1C"
-                  stroke="#00C2FF"
+                  fill="#F4F7FB"
+                  stroke="#2563EB"
                   strokeWidth={isHovered ? 2.5 : 2}
                   className="transition-all duration-150 pointer-events-none"
                 />
@@ -294,8 +294,8 @@ export const PerformanceSection: React.FC = () => {
                   cx={pp.x}
                   cy={pp.y}
                   r={isHovered ? 5 : 3.5}
-                  fill="#0A0F1C"
-                  stroke="#1E5EFF"
+                  fill="#F4F7FB"
+                  stroke="#2563EB"
                   strokeWidth={isHovered ? 2.5 : 2}
                   className="transition-all duration-150 pointer-events-none"
                 />
@@ -321,23 +321,23 @@ export const PerformanceSection: React.FC = () => {
         {/* Hover Floating Tooltip */}
         {hoveredIndex !== null && hoveredIndex < data.length && (
           <div
-            className="absolute top-2 pointer-events-none bg-[#0D162B] border border-[#22355C] rounded-lg px-3 py-2 shadow-xl text-xs z-10 transition-all"
+            className="absolute top-2 pointer-events-none bg-[#F1F5F9] border border-[#94A3B8] rounded-lg px-3 py-2 shadow-xl text-xs z-10 transition-all"
             style={{
               left: `${(hoveredIndex / (data.length - 1)) * 75 + 12}%`,
               transform: 'translateX(-50%)',
             }}
           >
-            <div className="font-semibold text-[#E6E8EC] border-b border-[#182643] pb-1 mb-1.5 flex items-center justify-between gap-3">
+            <div className="font-semibold text-[#172033] border-b border-[#DCE3EC] pb-1 mb-1.5 flex items-center justify-between gap-3">
               <span>{data[hoveredIndex].date}</span>
-              <span className="text-emerald-400 font-mono-numeric">
+              <span className="text-emerald-700 font-mono-numeric">
                 {data[hoveredIndex].conversao}% conv.
               </span>
             </div>
             <div className="flex items-center justify-between gap-4 text-xs font-mono-numeric">
-              <span className="text-[#00C2FF]">
+              <span className="text-[#2563EB]">
                 Cliques: {data[hoveredIndex].cliques}
               </span>
-              <span className="text-[#70A1FF]">
+              <span className="text-[#2563EB]">
                 Pedidos: {data[hoveredIndex].pedidos}
               </span>
             </div>
@@ -347,14 +347,14 @@ export const PerformanceSection: React.FC = () => {
       </>
       ) : (
         <div className="flex flex-col items-center justify-center gap-3 h-56 text-center">
-          <div className="w-10 h-10 rounded-lg bg-[#14203B] border border-[#1E3057] flex items-center justify-center text-[#00C2FF]">
+          <div className="w-10 h-10 rounded-lg bg-[#E2E8F0] border border-[#BFDBFE] flex items-center justify-center text-[#2563EB]">
             <Percent className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-[#C8D1DE]">
+            <p className="text-sm font-semibold text-[#334155]">
               Sem dados de performance
             </p>
-            <p className="text-xs text-[#8E9BAE] mt-1 max-w-xs">
+            <p className="text-xs text-[#64748B] mt-1 max-w-xs">
               Dados de cliques e pedidos ficarão disponíveis após o início da
               operação.
             </p>

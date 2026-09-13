@@ -34,21 +34,21 @@ export const Badge: React.FC<BadgeProps> = ({
   };
 
   const variantClasses = {
-    default: 'bg-[#152243] text-[#E6E8EC] border border-[#223561]',
+    default: 'bg-[#E2E8F0] text-[#172033] border border-[#E2E8F0]',
     'score-excellent':
-      'bg-[#1E5EFF]/15 text-[#00C2FF] border border-[#1E5EFF]/40 font-semibold',
+      'bg-[#2563EB]/15 text-[#2563EB] border border-[#2563EB]/40 font-semibold',
     'score-great':
-      'bg-[#00C2FF]/10 text-[#38BDF8] border border-[#00C2FF]/30 font-semibold',
+      'bg-[#2563EB]/10 text-[#3B82F6] border border-[#2563EB]/30 font-semibold',
     'score-good':
-      'bg-amber-500/10 text-amber-400 border border-amber-500/30 font-semibold',
+      'bg-amber-500/10 text-amber-700 border border-amber-500/30 font-semibold',
     success:
-      'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-medium',
+      'bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 font-medium',
     warning:
-      'bg-amber-500/15 text-amber-400 border border-amber-500/30 font-medium',
+      'bg-amber-500/15 text-amber-700 border border-amber-500/30 font-medium',
     danger:
-      'bg-red-500/15 text-red-400 border border-red-500/30 font-medium',
-    info: 'bg-[#1E5EFF]/20 text-[#70A1FF] border border-[#1E5EFF]/40 font-medium',
-    neutral: 'bg-[#121C33] text-[#8E9BAE] border border-[#1E2E50] font-medium',
+      'bg-red-500/15 text-red-700 border border-red-500/30 font-medium',
+    info: 'bg-[#2563EB]/20 text-[#2563EB] border border-[#2563EB]/40 font-medium',
+    neutral: 'bg-[#F1F5F9] text-[#64748B] border border-[#BFDBFE] font-medium',
     shopee: 'bg-[#FF5722]/10 text-[#FF6B4A] border border-[#FF5722]/30 font-medium',
     amazon: 'bg-[#FF9900]/10 text-[#FFB03A] border border-[#FF9900]/30 font-medium',
   };

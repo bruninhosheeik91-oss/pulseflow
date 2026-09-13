@@ -20,23 +20,23 @@ export const AnalyticsMarketplaceShare: React.FC<AnalyticsMarketplaceShareProps>
       case 'AliExpress':
         return { bg: 'bg-[#FF4747]', text: 'text-[#FF7070]', bar: 'bg-[#FF4747]' };
       case 'Magalu':
-        return { bg: 'bg-[#0086FF]', text: 'text-[#60A5FA]', bar: 'bg-[#0086FF]' };
+        return { bg: 'bg-[#F8FAFC]', text: 'text-[#60A5FA]', bar: 'bg-[#F8FAFC]' };
       default:
-        return { bg: 'bg-[#1E5EFF]', text: 'text-[#70A1FF]', bar: 'bg-[#1E5EFF]' };
+        return { bg: 'bg-[#2563EB]', text: 'text-[#2563EB]', bar: 'bg-[#2563EB]' };
     }
   };
 
   return (
-    <div className="bg-[#0A1020] border border-[#16233B] rounded-xl p-4.5 space-y-4 shadow-sm">
-      <div className="flex items-center justify-between border-b border-[#14203B] pb-3">
+    <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-4.5 space-y-4 shadow-sm">
+      <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
         <div>
           <div className="flex items-center gap-2">
-            <Store className="w-4 h-4 text-[#00C2FF]" />
+            <Store className="w-4 h-4 text-[#2563EB]" />
             <h3 className="font-semibold text-white text-sm">
               Performance por Marketplace
             </h3>
           </div>
-          <p className="text-xs text-[#8E9BAE] mt-0.5">
+          <p className="text-xs text-[#64748B] mt-0.5">
             Distribuição de faturamento bruto, comissões e eficiência de conversão
           </p>
         </div>
@@ -44,9 +44,9 @@ export const AnalyticsMarketplaceShare: React.FC<AnalyticsMarketplaceShareProps>
 
       {/* Progress Bars Container */}
       {marketplaces.length === 0 ? (
-        <div className="h-40 rounded-xl bg-[#0B1324] border border-[#162340] flex flex-col items-center justify-center gap-2 text-center">
-          <Store className="w-7 h-7 text-[#5A6470]" />
-          <p className="text-xs text-[#8E9BAE]">
+        <div className="h-40 rounded-xl bg-[#F1F5F9] border border-[#E2E8F0] flex flex-col items-center justify-center gap-2 text-center">
+          <Store className="w-7 h-7 text-[#94A3B8]" />
+          <p className="text-xs text-[#64748B]">
             Sem dados de marketplaces
           </p>
           <p className="text-[11px] text-[#64748B] max-w-xs">
@@ -62,7 +62,7 @@ export const AnalyticsMarketplaceShare: React.FC<AnalyticsMarketplaceShareProps>
           return (
             <div
               key={item.marketplace}
-              className="p-3 bg-[#0B1220] border border-[#16233B] rounded-xl hover:border-[#1E3A6D] transition-colors"
+              className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl hover:border-[#93C5FD] transition-colors"
             >
               {/* Header line */}
               <div className="flex items-center justify-between mb-2">
@@ -71,23 +71,23 @@ export const AnalyticsMarketplaceShare: React.FC<AnalyticsMarketplaceShareProps>
                   <span className="font-bold text-white text-xs">
                     {item.marketplace}
                   </span>
-                  <span className="text-[11px] text-[#8E9BAE]">
+                  <span className="text-[11px] text-[#64748B]">
                     &bull; Top categoria: {item.topCategory}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <span className="text-xs font-mono-numeric font-bold text-emerald-400">
+                  <span className="text-xs font-mono-numeric font-bold text-emerald-700">
                     R$ {item.commission.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
-                  <span className="text-xs font-mono font-bold text-white bg-[#14203B] px-2 py-0.5 rounded border border-[#1E325C]">
+                  <span className="text-xs font-mono font-bold text-white bg-[#E2E8F0] px-2 py-0.5 rounded border border-[#BFDBFE]">
                     {item.sharePercentage}%
                   </span>
                 </div>
               </div>
 
               {/* Share bar */}
-              <div className="w-full h-2 bg-[#0E1628] rounded-full overflow-hidden mb-2.5">
+              <div className="w-full h-2 bg-[#FFFFFF] rounded-full overflow-hidden mb-2.5">
                 <div
                   style={{ width: `${item.sharePercentage}%` }}
                   className={`h-full rounded-full transition-all duration-500 ${styling.bar}`}
@@ -95,7 +95,7 @@ export const AnalyticsMarketplaceShare: React.FC<AnalyticsMarketplaceShareProps>
               </div>
 
               {/* Sub-metrics */}
-              <div className="grid grid-cols-4 gap-2 text-[11px] text-[#8E9BAE] border-t border-[#131D33] pt-2">
+              <div className="grid grid-cols-4 gap-2 text-[11px] text-[#64748B] border-t border-[#F1F5F9] pt-2">
                 <div>
                   <span>GMV Bruto:</span>
                   <p className="font-mono-numeric font-semibold text-white">
@@ -104,7 +104,7 @@ export const AnalyticsMarketplaceShare: React.FC<AnalyticsMarketplaceShareProps>
                 </div>
                 <div>
                   <span>Pedidos:</span>
-                  <p className="font-mono-numeric font-semibold text-indigo-300">
+                  <p className="font-mono-numeric font-semibold text-indigo-700">
                     {item.orders}
                   </p>
                 </div>
@@ -116,7 +116,7 @@ export const AnalyticsMarketplaceShare: React.FC<AnalyticsMarketplaceShareProps>
                 </div>
                 <div>
                   <span>Conversão:</span>
-                  <p className="font-mono-numeric font-semibold text-amber-400">
+                  <p className="font-mono-numeric font-semibold text-amber-700">
                     {item.conversionRate}%
                   </p>
                 </div>

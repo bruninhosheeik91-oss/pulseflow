@@ -33,31 +33,31 @@ export const Status: React.FC<StatusProps> = ({
 
   const variantConfig = {
     active: {
-      bg: 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400',
+      bg: 'bg-emerald-500/10 border-emerald-500/25 text-emerald-700',
       dotColor: 'bg-emerald-500',
       pingColor: 'bg-emerald-400',
       defaultLabel: 'Ativo',
     },
     syncing: {
-      bg: 'bg-[#1E5EFF]/15 border-[#1E5EFF]/30 text-[#00C2FF]',
-      dotColor: 'bg-[#00C2FF]',
-      pingColor: 'bg-[#00C2FF]',
+      bg: 'bg-[#2563EB]/15 border-[#2563EB]/30 text-[#2563EB]',
+      dotColor: 'bg-[#2563EB]',
+      pingColor: 'bg-[#2563EB]',
       defaultLabel: 'Sincronizando',
     },
     idle: {
-      bg: 'bg-[#131F38] border-[#1C2C50] text-[#8E9BAE]',
-      dotColor: 'bg-[#5A6470]',
-      pingColor: 'bg-[#8E9BAE]',
+      bg: 'bg-[#EFF6FF] border-[#CBD5E1] text-[#64748B]',
+      dotColor: 'bg-[#94A3B8]',
+      pingColor: 'bg-[#64748B]',
       defaultLabel: 'Em espera',
     },
     warning: {
-      bg: 'bg-amber-500/10 border-amber-500/25 text-amber-400',
+      bg: 'bg-amber-500/10 border-amber-500/25 text-amber-700',
       dotColor: 'bg-amber-500',
       pingColor: 'bg-amber-400',
       defaultLabel: 'Atenção',
     },
     error: {
-      bg: 'bg-red-500/10 border-red-500/25 text-red-400',
+      bg: 'bg-red-500/10 border-red-500/25 text-red-700',
       dotColor: 'bg-red-500',
       pingColor: 'bg-red-400',
       defaultLabel: 'Erro',

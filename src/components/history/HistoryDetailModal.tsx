@@ -62,9 +62,9 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
     >
       <div className="space-y-4 text-xs">
         {/* Top Summary Banner */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 bg-[#0B1220] border border-[#16233B] rounded-xl">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl">
           <div>
-            <span className="text-[#8E9BAE] text-[11px]">Canal de Destino:</span>
+            <span className="text-[#64748B] text-[11px]">Canal de Destino:</span>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span
                 className={`w-2 h-2 rounded-full ${
@@ -78,27 +78,27 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
           </div>
 
           <div>
-            <span className="text-[#8E9BAE] text-[11px]">Marketplace:</span>
-            <p className="font-semibold text-[#00C2FF] mt-0.5">
+            <span className="text-[#64748B] text-[11px]">Marketplace:</span>
+            <p className="font-semibold text-[#2563EB] mt-0.5">
               {item.marketplace}
             </p>
           </div>
 
           <div>
-            <span className="text-[#8E9BAE] text-[11px]">Status da Entrega:</span>
+            <span className="text-[#64748B] text-[11px]">Status da Entrega:</span>
             <div className="mt-0.5">
               {item.status === 'Entregue' ? (
-                <span className="inline-flex items-center gap-1 text-emerald-400 font-bold">
+                <span className="inline-flex items-center gap-1 text-emerald-700 font-bold">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   Entregue (200 OK)
                 </span>
               ) : item.status === 'Falha' ? (
-                <span className="inline-flex items-center gap-1 text-rose-400 font-bold">
+                <span className="inline-flex items-center gap-1 text-rose-700 font-bold">
                   <AlertTriangle className="w-3.5 h-3.5" />
                   Falha de Envio
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-[#00C2FF] font-bold">
+                <span className="inline-flex items-center gap-1 text-[#2563EB] font-bold">
                   <RotateCcw className="w-3.5 h-3.5" />
                   Re-enviado
                 </span>
@@ -107,7 +107,7 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
           </div>
 
           <div>
-            <span className="text-[#8E9BAE] text-[11px]">Deal Score:</span>
+            <span className="text-[#64748B] text-[11px]">Deal Score:</span>
             <p className="font-mono-numeric font-bold text-white mt-0.5">
               {item.dealScore}/100 pts
             </p>
@@ -116,8 +116,8 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
 
         {/* Failure alert banner if failed */}
         {isFailed && (
-          <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl flex items-start gap-2.5 text-rose-200">
-            <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+          <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl flex items-start gap-2.5 text-rose-700">
+            <AlertTriangle className="w-4 h-4 text-rose-700 shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold">Falha registrada no envio:</p>
               <p className="text-[11px] text-[#CBD5E1] mt-0.5">
@@ -139,11 +139,11 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
               <button
                 type="button"
                 onClick={handleCopyText}
-                className="text-[11px] text-[#00C2FF] hover:underline flex items-center gap-1"
+                className="text-[11px] text-[#2563EB] hover:underline flex items-center gap-1"
               >
                 {copiedText ? (
                   <>
-                    <Check className="w-3 h-3 text-emerald-400" />
+                    <Check className="w-3 h-3 text-emerald-700" />
                     <span>Copiado!</span>
                   </>
                 ) : (
@@ -159,16 +159,16 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
             <div
               className={`p-3 rounded-xl border ${
                 isWhatsApp
-                  ? 'bg-[#0B141A] border-[#1F2C34]'
-                  : 'bg-[#0E1621] border-[#182533]'
+                  ? 'bg-[#F8FAFC] border-[#F1F5F9]'
+                  : 'bg-[#F8FAFC] border-[#E2E8F0]'
               }`}
             >
               {/* Balloon */}
               <div
                 className={`rounded-xl p-3 border shadow-md ${
                   isWhatsApp
-                    ? 'bg-[#1F2C34] border-[#2A3942] text-[#E9EDEF]'
-                    : 'bg-[#182533] border-[#243447] text-[#E4ECF2]'
+                    ? 'bg-[#F1F5F9] border-[#E2E8F0] text-[#E9EDEF]'
+                    : 'bg-[#E2E8F0] border-[#E2E8F0] text-[#E4ECF2]'
                 }`}
               >
                 {/* Product Image */}
@@ -205,51 +205,51 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
           {/* Right Column: Telemetry & Conversion Metrics (5 cols) */}
           <div className="md:col-span-5 space-y-3">
             {/* Conversion card */}
-            <div className="bg-[#0B1220] border border-[#16233B] rounded-xl p-3 space-y-2.5">
+            <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-3 space-y-2.5">
               <span className="font-semibold text-white block">
                 Resultados Financeiros
               </span>
 
               <div className="grid grid-cols-2 gap-2">
-                <div className="p-2 bg-[#0E172C] rounded-lg border border-[#182642]">
-                  <span className="text-[#8E9BAE] text-[10px]">Cliques:</span>
+                <div className="p-2 bg-[#FFFFFF] rounded-lg border border-[#DCE3EC]">
+                  <span className="text-[#64748B] text-[10px]">Cliques:</span>
                   <p className="font-mono-numeric font-bold text-white text-base mt-0.5">
                     {item.clicks.toLocaleString()}
                   </p>
                 </div>
-                <div className="p-2 bg-[#0E172C] rounded-lg border border-[#182642]">
-                  <span className="text-[#8E9BAE] text-[10px]">Pedidos:</span>
-                  <p className="font-mono-numeric font-bold text-indigo-300 text-base mt-0.5">
+                <div className="p-2 bg-[#FFFFFF] rounded-lg border border-[#DCE3EC]">
+                  <span className="text-[#64748B] text-[10px]">Pedidos:</span>
+                  <p className="font-mono-numeric font-bold text-indigo-700 text-base mt-0.5">
                     {item.orders}
                   </p>
                 </div>
               </div>
 
-              <div className="p-2.5 bg-gradient-to-r from-[#0E172C] to-[#12284C] rounded-lg border border-[#1E3B70]">
-                <span className="text-[#8E9BAE] text-[10px]">Comissão Atribuída:</span>
-                <p className="font-mono-numeric font-bold text-emerald-400 text-lg mt-0.5">
+              <div className="p-2.5 bg-gradient-to-r from-[#FFFFFF] to-[#EFF6FF] rounded-lg border border-[#93C5FD]">
+                <span className="text-[#64748B] text-[10px]">Comissão Atribuída:</span>
+                <p className="font-mono-numeric font-bold text-emerald-700 text-lg mt-0.5">
                   R$ {item.commission.toFixed(2).replace('.', ',')}
                 </p>
               </div>
             </div>
 
             {/* Technical Telemetry Card */}
-            <div className="bg-[#0B1220] border border-[#16233B] rounded-xl p-3 space-y-2">
+            <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-3 space-y-2">
               <div className="flex items-center gap-1.5 text-white font-semibold">
-                <Cpu className="w-3.5 h-3.5 text-[#00C2FF]" />
+                <Cpu className="w-3.5 h-3.5 text-[#2563EB]" />
                 <span>Telemetria do Gateway</span>
               </div>
 
               <div className="space-y-1.5 text-[11px] text-[#94A3B8]">
-                <div className="flex items-center justify-between border-b border-[#14203B] pb-1">
+                <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-1">
                   <span>Instância:</span>
                   <span className="text-white font-mono">{item.instanceName || '—'}</span>
                 </div>
-                <div className="flex items-center justify-between border-b border-[#14203B] pb-1">
+                <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-1">
                   <span>Latência HTTP:</span>
-                  <span className="text-[#8E9BAE] font-mono">—</span>
+                  <span className="text-[#64748B] font-mono">—</span>
                 </div>
-                <div className="flex items-center justify-between border-b border-[#14203B] pb-1">
+                <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-1">
                   <span>Espaçamento Anti-Flood:</span>
                   <span className="text-white font-mono">—</span>
                 </div>
@@ -261,7 +261,7 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
             </div>
 
             {/* Link Copy */}
-            <div className="bg-[#0B1220] border border-[#16233B] rounded-xl p-3 space-y-1.5">
+            <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-3 space-y-1.5">
               <span className="font-medium text-[#CBD5E1] block">
                 Link de Afiliado com Rastreamento
               </span>
@@ -270,15 +270,15 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
                   type="text"
                   readOnly
                   value={item.affiliateUrl}
-                  className="w-full bg-[#070D1A] border border-[#192747] rounded-lg px-2.5 py-1 text-[11px] text-[#94A3B8] font-mono select-all focus:outline-none"
+                  className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-2.5 py-1 text-[11px] text-[#94A3B8] font-mono select-all focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={handleCopyLink}
-                  className="p-1.5 bg-[#142340] hover:bg-[#1E325C] border border-[#1E5EFF]/40 rounded-lg text-[#93C5FD] transition-colors shrink-0"
+                  className="p-1.5 bg-[#E2E8F0] hover:bg-[#BFDBFE] border border-[#2563EB]/40 rounded-lg text-[#93C5FD] transition-colors shrink-0"
                   title="Copiar Link"
                 >
-                  {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-700" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>
               </div>
             </div>
@@ -286,7 +286,7 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
         </div>
 
         {/* Modal Footer Actions */}
-        <div className="flex items-center justify-between pt-3 border-t border-[#16233B]">
+        <div className="flex items-center justify-between pt-3 border-t border-[#E2E8F0]">
           <Button variant="ghost" size="sm" onClick={onClose}>
             Fechar Auditoria
           </Button>
@@ -299,7 +299,7 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
                 onRetry(item);
                 onClose();
               }}
-              className="shadow-lg shadow-[#1E5EFF]/15 flex items-center gap-1.5"
+              className="shadow-lg shadow-[#2563EB]/15 flex items-center gap-1.5"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Re-enviar Oferta ao Canal</span>

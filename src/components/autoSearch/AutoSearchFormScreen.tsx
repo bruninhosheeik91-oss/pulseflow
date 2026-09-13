@@ -186,7 +186,7 @@ const SectionCard: React.FC<{
     <CardHeader
       title={
         <span className="flex items-center gap-2">
-          <span className="w-7 h-7 rounded-lg bg-[#1E5EFF]/15 border border-[#1E5EFF]/30 flex items-center justify-center shrink-0">
+          <span className="w-7 h-7 rounded-lg bg-[#2563EB]/15 border border-[#2563EB]/30 flex items-center justify-center shrink-0">
             {icon}
           </span>
           {title}
@@ -469,13 +469,13 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
             type="button"
             onClick={onExit}
             title="Voltar para a lista"
-            className="p-2 rounded-lg text-[#8E9BAE] hover:text-[#E6E8EC] hover:bg-[#131E38]/80 transition-colors cursor-pointer"
+            className="p-2 rounded-lg text-[#64748B] hover:text-[#172033] hover:bg-[#EFF6FF]/80 transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div className="min-w-0">
             <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-xl font-bold text-[#E6E8EC] tracking-tight">
+              <h1 className="text-xl font-bold text-[#172033] tracking-tight">
                 {draft.id ? 'Editar Automação' : 'Nova Automação'}
               </h1>
               <Badge variant={draft.active ? 'success' : 'neutral'} size="xs">
@@ -485,7 +485,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                 Shopee real
               </Badge>
             </div>
-            <p className="text-xs text-[#8E9BAE] mt-1">
+            <p className="text-xs text-[#64748B] mt-1">
               {draft.id
                 ? 'Edite a automação salva no backend real do tenant.'
                 : 'Configure a automação ligada ao backend real do tenant.'}
@@ -500,13 +500,13 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
         <div className="lg:col-span-8 space-y-5">
           {/* 1 — Configuração Geral */}
           <SectionCard
-            icon={<Users className="w-3.5 h-3.5 text-[#00C2FF]" />}
+            icon={<Users className="w-3.5 h-3.5 text-[#2563EB]" />}
             title="Configuração Geral"
             subtitle="Identificação e modo de operação da automação"
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] text-[#8E9BAE] block mb-1">Modo de Automação</label>
+                <label className="text-[11px] text-[#64748B] block mb-1">Modo de Automação</label>
                 <Select
                   options={[{ value: 'busca-promocoes', label: 'Busca de Promoções' }]}
                   value="busca-promocoes"
@@ -514,7 +514,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                 />
               </div>
               <div>
-                <label className="text-[11px] text-[#8E9BAE] block mb-1">Nome da Automação</label>
+                <label className="text-[11px] text-[#64748B] block mb-1">Nome da Automação</label>
                 <Input
                   value={draft.name}
                   onChange={(e) => setDraft((prev) => ({ ...prev, name: e.target.value }))}
@@ -525,7 +525,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
             <button
               type="button"
               onClick={() => setDraft((prev) => ({ ...prev, active: !prev.active }))}
-              className="flex items-center justify-between w-full px-3 py-2.5 rounded-lg bg-[#080E1C] border border-[#14203B] text-left cursor-pointer hover:border-[#1E3057] transition-colors"
+              className="flex items-center justify-between w-full px-3 py-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] text-left cursor-pointer hover:border-[#BFDBFE] transition-colors"
             >
               <div>
                 <span className="text-xs text-[#94A3B8] block">Ativa / Inativa</span>
@@ -537,7 +537,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
               </div>
               <span
                 className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                  draft.active ? 'bg-[#1E5EFF]' : 'bg-[#1B2947]'
+                  draft.active ? 'bg-[#2563EB]' : 'bg-[#DCE3EC]'
                 }`}
               >
                 <span
@@ -551,13 +551,13 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
 
           {/* 2 — Agendamento */}
           <SectionCard
-            icon={<Clock className="w-3.5 h-3.5 text-[#00C2FF]" />}
+            icon={<Clock className="w-3.5 h-3.5 text-[#2563EB]" />}
             title="Agendamento"
             subtitle="Nesta etapa apenas a configuração é salva — o scheduler não é iniciado"
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] text-[#8E9BAE] block mb-1">Data de início (opcional)</label>
+                <label className="text-[11px] text-[#64748B] block mb-1">Data de início (opcional)</label>
                 <Input
                   type="date"
                   value={draft.schedule.startDate}
@@ -570,7 +570,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                 />
               </div>
               <div>
-                <label className="text-[11px] text-[#8E9BAE] block mb-1">Data de fim (opcional)</label>
+                <label className="text-[11px] text-[#64748B] block mb-1">Data de fim (opcional)</label>
                 <Input
                   type="date"
                   value={draft.schedule.endDate}
@@ -583,7 +583,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                 />
               </div>
               <div>
-                <label className="text-[11px] text-[#8E9BAE] block mb-1">Horário de início</label>
+                <label className="text-[11px] text-[#64748B] block mb-1">Horário de início</label>
                 <Input
                   type="time"
                   value={draft.schedule.timeStart}
@@ -596,7 +596,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                 />
               </div>
               <div>
-                <label className="text-[11px] text-[#8E9BAE] block mb-1">Horário de término</label>
+                <label className="text-[11px] text-[#64748B] block mb-1">Horário de término</label>
                 <Input
                   type="time"
                   value={draft.schedule.timeEnd}
@@ -609,7 +609,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="text-[11px] text-[#8E9BAE] block mb-1">
+                <label className="text-[11px] text-[#64748B] block mb-1">
                   Intervalo de execução
                 </label>
                 <Select
@@ -631,13 +631,13 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
 
           {/* 3 — Destino (WhatsApp) */}
           <SectionCard
-            icon={<MessageSquare className="w-3.5 h-3.5 text-[#00C2FF]" />}
+            icon={<MessageSquare className="w-3.5 h-3.5 text-[#2563EB]" />}
             title="Destino (WhatsApp)"
             subtitle="Conta e grupos reais vindos de /api/affiliate/auto-search/destinations"
           >
             {accounts.length === 0 ? (
-              <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-[#0E2030] border border-[#1C3A4E]">
-                <Info className="w-3.5 h-3.5 text-[#00C2FF] shrink-0 mt-0.5" />
+              <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE]">
+                <Info className="w-3.5 h-3.5 text-[#2563EB] shrink-0 mt-0.5" />
                 <span className="text-[11px] text-[#94A3B8]">
                   Nenhuma conta WhatsApp real disponível para este tenant.
                 </span>
@@ -645,7 +645,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
             ) : (
               <div className="space-y-3">
                 <div>
-                  <label className="text-[11px] text-[#8E9BAE] block mb-1">Conta WhatsApp</label>
+                  <label className="text-[11px] text-[#64748B] block mb-1">Conta WhatsApp</label>
                   <Select
                     loading={loadingDestinations}
                     options={[
@@ -661,11 +661,11 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                 </div>
 
                 {selectedAccount && !accountConnected && (
-                  <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-[#0E2030] border border-[#1C3A4E]">
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE]">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-700 shrink-0 mt-0.5" />
                     <span className="text-[11px] text-[#94A3B8] leading-relaxed">
                       Conta em status real{' '}
-                      <strong className="text-amber-300">
+                      <strong className="text-amber-700">
                         {ACCOUNT_STATUS_LABEL[selectedAccount.status] || selectedAccount.status}
                       </strong>
                       . Conecte a conta no WhatsApp para carregar os grupos reais — a seleção fica
@@ -677,7 +677,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                 {selectedAccount && (
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-[11px] text-[#8E9BAE]">
+                      <label className="text-[11px] text-[#64748B]">
                         Grupos ({selectedAccount.groups.length} reais)
                       </label>
                       {accountConnected && selectedAccount.groups.length > 0 && (
@@ -685,14 +685,14 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                           <button
                             type="button"
                             onClick={selectAllGroups}
-                            className="text-[10px] text-[#00C2FF] hover:text-[#33D1FF] cursor-pointer"
+                            className="text-[10px] text-[#2563EB] hover:text-[#3B82F6] cursor-pointer"
                           >
                             Selecionar todos
                           </button>
                           <button
                             type="button"
                             onClick={clearGroups}
-                            className="text-[10px] text-[#8E9BAE] hover:text-[#E6E8EC] cursor-pointer"
+                            className="text-[10px] text-[#64748B] hover:text-[#172033] cursor-pointer"
                           >
                             Limpar seleção
                           </button>
@@ -722,17 +722,17 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                               return (
                                 <label
                                   key={group.id}
-                                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-[#080E1C] border border-[#14203B] hover:border-[#1E3057] transition-colors cursor-pointer"
+                                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#BFDBFE] transition-colors cursor-pointer"
                                 >
                                   <input
                                     type="checkbox"
                                     checked={selected}
                                     onChange={() => toggleGroup(group.id)}
-                                    className="w-4 h-4 rounded border-[#374151] bg-[#0A1020] text-[#1E5EFF] focus:ring-[#1E5EFF] focus:ring-offset-0 cursor-pointer"
+                                    className="w-4 h-4 rounded border-[#374151] bg-[#F8FAFC] text-[#2563EB] focus:ring-[#2563EB] focus:ring-offset-0 cursor-pointer"
                                   />
                                   <span className="min-w-0 flex-1">
                                     <span
-                                      className={`text-xs block truncate ${selected ? 'text-[#E6E8EC]' : 'text-[#94A3B8]'}`}
+                                      className={`text-xs block truncate ${selected ? 'text-[#172033]' : 'text-[#94A3B8]'}`}
                                     >
                                       {group.name || group.id}
                                     </span>
@@ -749,7 +749,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                         </div>
                       </>
                     ) : (
-                      <div className="px-3 py-2.5 rounded-lg bg-[#080E1C] border border-[#14203B]">
+                      <div className="px-3 py-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
                         <span className="text-[11px] text-[#64748B]">
                           Seleção de grupos desabilitada (sem conta conectada).
                         </span>
@@ -763,11 +763,11 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
 
           {/* 4 — Loja / Marketplace */}
           <SectionCard
-            icon={<Store className="w-3.5 h-3.5 text-[#00C2FF]" />}
+            icon={<Store className="w-3.5 h-3.5 text-[#2563EB]" />}
             title="Loja / Marketplace"
             subtitle="Marketplace conectado ao Programa de Afiliados"
           >
-            <div className="p-3 rounded-xl bg-[#0B1324] border border-[#162340] space-y-2.5">
+            <div className="p-3 rounded-xl bg-[#F1F5F9] border border-[#E2E8F0] space-y-2.5">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <MarketplaceBadge marketplace="Shopee" size="sm" />
@@ -786,21 +786,21 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
               </div>
               {sourceConfig && sourceConfig.configured && (
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="p-2.5 bg-[#080E1C] border border-[#14203B] rounded-lg">
+                  <div className="p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
                     <span className="text-[10px] text-[#64748B] block">Status</span>
-                    <span className="text-xs font-bold text-[#E6E8EC] mt-0.5 block">
+                    <span className="text-xs font-bold text-[#172033] mt-0.5 block">
                       {sourceConfig.status}
                     </span>
                   </div>
-                  <div className="p-2.5 bg-[#080E1C] border border-[#14203B] rounded-lg">
+                  <div className="p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
                     <span className="text-[10px] text-[#64748B] block">App ID</span>
-                    <span className="text-xs font-mono-numeric font-bold text-[#E6E8EC] mt-0.5 block">
+                    <span className="text-xs font-mono-numeric font-bold text-[#172033] mt-0.5 block">
                       {sourceConfig.appIdMasked || '—'}
                     </span>
                   </div>
-                  <div className="col-span-2 p-2.5 bg-[#080E1C] border border-[#14203B] rounded-lg">
+                  <div className="col-span-2 p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
                     <span className="text-[10px] text-[#64748B] block">Sub IDs vinculados</span>
-                    <span className="text-xs font-mono-numeric font-bold text-[#E6E8EC] mt-0.5 block">
+                    <span className="text-xs font-mono-numeric font-bold text-[#172033] mt-0.5 block">
                       {sourceConfig.subIds.join(', ') || '—'}
                     </span>
                   </div>
@@ -814,7 +814,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
 
           {/* 5 — Categorias */}
           <SectionCard
-            icon={<Tags className="w-3.5 h-3.5 text-[#00C2FF]" />}
+            icon={<Tags className="w-3.5 h-3.5 text-[#2563EB]" />}
             title="Categorias"
             subtitle="Somente dados suportados pelo backend atual — a Shopee API não fornece catálogo de categorias (auditado)"
           >
@@ -828,29 +828,29 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
               }
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg border text-left cursor-pointer transition-colors ${
                 draft.categories.general
-                  ? 'bg-[#121E38] border-[#1E325C]'
-                  : 'bg-[#080E1C] border-[#14203B]'
+                  ? 'bg-[#EFF6FF] border-[#BFDBFE]'
+                  : 'bg-[#F8FAFC] border-[#E2E8F0]'
               }`}
             >
               <div>
-                <span className="text-xs text-[#E6E8EC] block">Ofertas gerais</span>
+                <span className="text-xs text-[#172033] block">Ofertas gerais</span>
                 <span className="text-[10px] text-[#64748B] block mt-0.5">
                   Sem filtro de categoria — usa todas as ofertas reais do productOfferV2.
                 </span>
               </div>
               <span
                 className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                  draft.categories.general ? 'border-[#00C2FF] bg-[#00C2FF]/20' : 'border-[#374151]'
+                  draft.categories.general ? 'border-[#2563EB] bg-[#2563EB]/20' : 'border-[#374151]'
                 }`}
               >
                 {draft.categories.general && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#00C2FF]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB]" />
                 )}
               </span>
             </button>
 
             <div>
-              <label className="text-[11px] text-[#8E9BAE] block mb-1">
+              <label className="text-[11px] text-[#64748B] block mb-1">
                 ID de categoria real (productCatId)
               </label>
               <Input
@@ -868,7 +868,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
               />
             </div>
 
-            <div className="px-3 py-2.5 rounded-lg border border-dashed border-[#1E2E52] bg-[#080E1C]">
+            <div className="px-3 py-2.5 rounded-lg border border-dashed border-[#BFDBFE] bg-[#F8FAFC]">
               <span className="text-[10px] text-[#64748B] block">
                 Quando a API disponibilizar o catálogo, a lista real de categorias será exibida
                 aqui — a estrutura deste bloco já está preparada para recebê-la.
@@ -878,13 +878,13 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
 
           {/* 6 — Filtros e Prioridade */}
           <SectionCard
-            icon={<Filter className="w-3.5 h-3.5 text-[#00C2FF]" />}
+            icon={<Filter className="w-3.5 h-3.5 text-[#2563EB]" />}
             title="Filtros e Prioridade"
             subtitle="Critérios de seleção das ofertas reais"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-[11px] text-[#8E9BAE] block mb-1.5">Prioridade</label>
+                <label className="text-[11px] text-[#64748B] block mb-1.5">Prioridade</label>
                 <div className="space-y-1.5">
                   {PRIORITY_OPTIONS.map((option) => (
                     <button
@@ -893,24 +893,24 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                       onClick={() => setDraft((prev) => ({ ...prev, priority: option.value }))}
                       className={`w-full flex items-start gap-3 px-3 py-2 rounded-lg border text-left cursor-pointer transition-colors ${
                         draft.priority === option.value
-                          ? 'bg-[#121E38] border-[#1E325C]'
-                          : 'bg-[#080E1C] border-[#14203B] hover:border-[#1E3057]'
+                          ? 'bg-[#EFF6FF] border-[#BFDBFE]'
+                          : 'bg-[#F8FAFC] border-[#E2E8F0] hover:border-[#BFDBFE]'
                       }`}
                     >
                       <span
                         className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
                           draft.priority === option.value
-                            ? 'border-[#00C2FF] bg-[#00C2FF]/20'
+                            ? 'border-[#2563EB] bg-[#2563EB]/20'
                             : 'border-[#374151]'
                         }`}
                       >
                         {draft.priority === option.value && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#00C2FF]" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB]" />
                         )}
                       </span>
                       <div className="min-w-0">
                         <span
-                          className={`text-xs block ${draft.priority === option.value ? 'text-[#E6E8EC]' : 'text-[#94A3B8]'}`}
+                          className={`text-xs block ${draft.priority === option.value ? 'text-[#172033]' : 'text-[#94A3B8]'}`}
                         >
                           {option.label}
                         </span>
@@ -926,7 +926,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
               </div>
 
               <div>
-                <label className="text-[11px] text-[#8E9BAE] block mb-1.5">Filtros</label>
+                <label className="text-[11px] text-[#64748B] block mb-1.5">Filtros</label>
                 <div className="grid grid-cols-2 gap-2.5">
                   <div className="col-span-2">
                     <label className="text-[10px] text-[#64748B] block mb-1">
@@ -964,12 +964,12 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
 
           {/* 7 — Texto de Divulgação */}
           <SectionCard
-            icon={<MessageSquare className="w-3.5 h-3.5 text-[#00C2FF]" />}
+            icon={<MessageSquare className="w-3.5 h-3.5 text-[#2563EB]" />}
             title="Texto de Divulgação"
             subtitle="Template preenchido com dados reais do produto"
           >
             <div>
-              <label className="text-[11px] text-[#8E9BAE] block mb-1">
+              <label className="text-[11px] text-[#64748B] block mb-1">
                 Template / texto de disparo
               </label>
               <textarea
@@ -978,7 +978,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                   setDraft((prev) => ({ ...prev, messageTemplate: e.target.value }))
                 }
                 rows={5}
-                className="w-full bg-[#0A1020] border border-[#1B2947] text-[#E6E8EC] rounded-lg px-3 py-2 text-xs leading-relaxed placeholder:text-[#5A6470] focus:outline-none focus:border-[#1E5EFF] resize-y"
+                className="w-full bg-[#F8FAFC] border border-[#DCE3EC] text-[#172033] rounded-lg px-3 py-2 text-xs leading-relaxed placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] resize-y"
                 placeholder="Escreva o texto de disparo..."
               />
               <p className="text-[10px] text-[#64748B] mt-1">
@@ -990,13 +990,13 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
 
           {/* 8 — Mídia do Produto */}
           <SectionCard
-            icon={<Image className="w-3.5 h-3.5 text-[#00C2FF]" />}
+            icon={<Image className="w-3.5 h-3.5 text-[#2563EB]" />}
             title="Mídia do Produto"
             subtitle="Apresentação do produto na divulgação"
           >
-            <div className="p-3 rounded-xl bg-[#0B1324] border border-[#162340] space-y-2.5">
+            <div className="p-3 rounded-xl bg-[#F1F5F9] border border-[#E2E8F0] space-y-2.5">
               <div className="flex items-start gap-3">
-                <div className="w-20 h-20 rounded-lg bg-[#080E1C] border border-[#14203B] flex items-center justify-center overflow-hidden shrink-0">
+                <div className="w-20 h-20 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-center overflow-hidden shrink-0">
                   {selectedProduct?.imageUrl ? (
                     <img
                       src={selectedProduct.imageUrl}
@@ -1008,7 +1008,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                   )}
                 </div>
                 <div className="min-w-0 space-y-1">
-                  <span className="text-xs text-[#E6E8EC] block">Imagem do produto</span>
+                  <span className="text-xs text-[#172033] block">Imagem do produto</span>
                   <span className="text-[10px] text-[#64748B] block leading-relaxed">
                     A imagem real do produto é exibida no preview da divulgação após a busca. Esta
                     etapa não altera o comportamento do backend.
@@ -1040,11 +1040,11 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
             />
             <CardContent className="space-y-4">
               {draft.destination.accountId && (
-                <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-[#0B1324] border border-[#162340]">
-                  <Users className="w-3.5 h-3.5 text-[#00C2FF] shrink-0 mt-0.5" />
+                <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-[#F1F5F9] border border-[#E2E8F0]">
+                  <Users className="w-3.5 h-3.5 text-[#2563EB] shrink-0 mt-0.5" />
                   <span className="text-[11px] text-[#94A3B8] break-words">
                     Destino do preview:{' '}
-                    <strong className="text-[#E6E8EC]">{destinationLabel}</strong>
+                    <strong className="text-[#172033]">{destinationLabel}</strong>
                   </span>
                 </div>
               )}
@@ -1056,9 +1056,9 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                   ['Ignorados', String(ignoredCount)],
                   ['Short links', String(runResult?.shortLinksGenerated ?? 0)],
                 ].map(([label, value]) => (
-                  <div key={label} className="p-2.5 bg-[#080E1C] border border-[#14203B] rounded-lg">
+                  <div key={label} className="p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
                     <span className="text-[10px] text-[#64748B] block">{label}</span>
-                    <span className="text-base font-bold font-mono-numeric text-[#00C2FF] mt-0.5 block">
+                    <span className="text-base font-bold font-mono-numeric text-[#2563EB] mt-0.5 block">
                       {value}
                     </span>
                   </div>
@@ -1067,7 +1067,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#00C2FF]">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#2563EB]">
                     Aprovados
                   </span>
                   <Badge variant="success" size="xs">
@@ -1077,7 +1077,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                 {!runResult || qualifiedCount === 0 ? (
                   <div className="flex flex-col items-center gap-3 py-8">
                     <Search className="w-6 h-6 text-[#64748B]" />
-                    <p className="text-xs text-[#8E9BAE]">
+                    <p className="text-xs text-[#64748B]">
                       {runResult
                         ? 'Nenhum produto aprovado com os filtros atuais.'
                         : 'Execute uma busca para ver os produtos aprovados.'}
@@ -1097,7 +1097,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs">
                       <thead>
-                        <tr className="border-b border-[#162442]">
+                        <tr className="border-b border-[#E2E8F0]">
                           {['Produto', 'Preço', 'Desc.', 'Avaliação', 'Short link', 'Ações'].map(
                             (h) => (
                               <th
@@ -1114,17 +1114,17 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                         {approvedProducts.map((product) => (
                           <tr
                             key={`${product.itemId}-${product.productLink}`}
-                            className="border-b border-[#14203B] last:border-0 hover:bg-[#0A1020] transition-colors"
+                            className="border-b border-[#E2E8F0] last:border-0 hover:bg-[#F8FAFC] transition-colors"
                           >
                             <td className="px-3 py-2.5">
                               <div className="flex items-center gap-2 min-w-0">
                                 <img
                                   src={product.imageUrl}
                                   alt=""
-                                  className="w-8 h-8 rounded-md object-cover bg-[#14203B] shrink-0"
+                                  className="w-8 h-8 rounded-md object-cover bg-[#E2E8F0] shrink-0"
                                 />
                                 <div className="min-w-0">
-                                  <span className="text-[11px] font-medium text-[#E6E8EC] block truncate max-w-[180px]">
+                                  <span className="text-[11px] font-medium text-[#172033] block truncate max-w-[180px]">
                                     {product.productName}
                                   </span>
                                   <span className="text-[10px] text-[#64748B]">
@@ -1134,7 +1134,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                               </div>
                             </td>
                             <td className="px-3 py-2.5">
-                              <span className="text-[11px] font-mono-numeric font-bold text-[#E6E8EC]">
+                              <span className="text-[11px] font-mono-numeric font-bold text-[#172033]">
                                 {formatBRL(product.price)}
                               </span>
                             </td>
@@ -1160,7 +1160,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                                 <button
                                   type="button"
                                   onClick={() => void copyText(product.affiliateUrl as string)}
-                                  className="flex items-center gap-1 text-[10px] text-[#00C2FF] hover:text-[#33D1FF] transition-colors cursor-pointer"
+                                  className="flex items-center gap-1 text-[10px] text-[#2563EB] hover:text-[#3B82F6] transition-colors cursor-pointer"
                                 >
                                   <Link2 className="w-3 h-3" />
                                   <span className="max-w-[120px] truncate">
@@ -1168,7 +1168,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                                   </span>
                                 </button>
                               ) : product.linkError ? (
-                                <span className="text-[10px] text-amber-400">
+                                <span className="text-[10px] text-amber-700">
                                   {product.linkError}
                                 </span>
                               ) : (
@@ -1190,7 +1190,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                                 <button
                                   type="button"
                                   onClick={() => setSelectedProduct(product)}
-                                  className="text-[10px] text-[#00C2FF] hover:text-[#33D1FF] transition-colors flex items-center gap-1 cursor-pointer"
+                                  className="text-[10px] text-[#2563EB] hover:text-[#3B82F6] transition-colors flex items-center gap-1 cursor-pointer"
                                 >
                                   <Eye className="w-3 h-3" />
                                   Ver
@@ -1207,7 +1207,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#8E9BAE]">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748B]">
                     Ignorados
                   </span>
                   <Badge variant="neutral" size="xs">
@@ -1225,14 +1225,14 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                     {ignoredProducts.map((product) => (
                       <div
                         key={`${product.itemId}-${product.productLink}`}
-                        className="flex items-start gap-2.5 px-3 py-2 rounded-lg bg-[#080E1C] border border-[#14203B]"
+                        className="flex items-start gap-2.5 px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]"
                       >
-                        <XCircle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                        <XCircle className="w-3.5 h-3.5 text-amber-700 shrink-0 mt-0.5" />
                         <div className="min-w-0">
                           <span className="text-[11px] text-[#94A3B8] block truncate">
                             {product.productName}
                           </span>
-                          <span className="text-[10px] text-amber-400/90 block mt-0.5">
+                          <span className="text-[10px] text-amber-700/90 block mt-0.5">
                             {product.rejectReason || 'Não passou nos filtros.'}
                           </span>
                         </div>
@@ -1251,7 +1251,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
             <CardHeader
               title={
                 <span className="flex items-center gap-2">
-                  <Lightbulb className="w-4 h-4 text-[#00C2FF]" />
+                  <Lightbulb className="w-4 h-4 text-[#2563EB]" />
                   Dicas importantes
                 </span>
               }
@@ -1264,7 +1264,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                 'O preview nunca envia mensagens ao WhatsApp nesta etapa.',
               ].map((tip) => (
                 <div key={tip} className="flex items-start gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400/80 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700/80 shrink-0 mt-0.5" />
                   <span className="text-[11px] text-[#94A3B8] leading-relaxed">{tip}</span>
                 </div>
               ))}
@@ -1277,10 +1277,10 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
               {TEMPLATE_VARIABLES.map((item) => (
                 <div
                   key={item.key}
-                  className="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg bg-[#080E1C] border border-[#14203B]"
+                  className="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]"
                 >
-                  <code className="text-[10px] font-mono text-[#00C2FF]">{item.key}</code>
-                  <span className="text-[10px] text-[#8E9BAE] text-right">{item.desc}</span>
+                  <code className="text-[10px] font-mono text-[#2563EB]">{item.key}</code>
+                  <span className="text-[10px] text-[#64748B] text-right">{item.desc}</span>
                 </div>
               ))}
             </CardContent>
@@ -1290,16 +1290,16 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
             <CardHeader
               title={
                 <span className="flex items-center gap-2">
-                  <Info className="w-4 h-4 text-[#00C2FF]" />
+                  <Info className="w-4 h-4 text-[#2563EB]" />
                   Limite da execução
                 </span>
               }
             />
             <CardContent>
-              <div className="p-3 rounded-xl bg-[#0B1324] border border-[#162340] space-y-2">
+              <div className="p-3 rounded-xl bg-[#F1F5F9] border border-[#E2E8F0] space-y-2">
                 <div className="flex items-end justify-between">
-                  <span className="text-[11px] text-[#8E9BAE]">Máx. por consulta</span>
-                  <span className="text-2xl font-bold font-mono-numeric text-[#00C2FF]">
+                  <span className="text-[11px] text-[#64748B]">Máx. por consulta</span>
+                  <span className="text-2xl font-bold font-mono-numeric text-[#2563EB]">
                     {draft.maxResults}
                     <span className="text-sm text-[#64748B]"> / 5</span>
                   </span>
@@ -1316,31 +1316,31 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
             <CardContent className="space-y-2">
               {sourceConfig ? (
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="p-2.5 bg-[#080E1C] border border-[#14203B] rounded-lg">
+                  <div className="p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
                     <span className="text-[10px] text-[#64748B] block">Configurada</span>
                     <span
                       className={`text-xs font-bold mt-0.5 block ${
-                        sourceConfig.configured ? 'text-emerald-400' : 'text-[#8E9BAE]'
+                        sourceConfig.configured ? 'text-emerald-700' : 'text-[#64748B]'
                       }`}
                     >
                       {sourceConfig.configured ? 'Sim' : 'Não'}
                     </span>
                   </div>
-                  <div className="p-2.5 bg-[#080E1C] border border-[#14203B] rounded-lg">
+                  <div className="p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
                     <span className="text-[10px] text-[#64748B] block">Habilitada</span>
-                    <span className="text-xs font-bold text-[#E6E8EC] mt-0.5 block">
+                    <span className="text-xs font-bold text-[#172033] mt-0.5 block">
                       {sourceConfig.enabled ? 'Sim' : 'Não'}
                     </span>
                   </div>
-                  <div className="p-2.5 bg-[#080E1C] border border-[#14203B] rounded-lg">
+                  <div className="p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
                     <span className="text-[10px] text-[#64748B] block">Status</span>
-                    <span className="text-xs font-bold text-[#E6E8EC] mt-0.5 block">
+                    <span className="text-xs font-bold text-[#172033] mt-0.5 block">
                       {sourceConfig.status}
                     </span>
                   </div>
-                  <div className="p-2.5 bg-[#080E1C] border border-[#14203B] rounded-lg">
+                  <div className="p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
                     <span className="text-[10px] text-[#64748B] block">Sub IDs</span>
-                    <span className="text-xs font-mono-numeric font-bold text-[#E6E8EC] mt-0.5 block">
+                    <span className="text-xs font-mono-numeric font-bold text-[#172033] mt-0.5 block">
                       {sourceConfig.subIds.join(', ') || '—'}
                     </span>
                   </div>
@@ -1354,7 +1354,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
       </div>
 
       {/* ===== Rodapé da tela ===== */}
-      <div className="sticky bottom-0 z-30 -mx-2 px-2 py-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 border-t border-[#162442] bg-[#0A0F1C]/95 backdrop-blur">
+      <div className="sticky bottom-0 z-30 -mx-2 px-2 py-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 border-t border-[#E2E8F0] bg-[#F4F7FB]/95 backdrop-blur">
         <Button variant="ghost" size="md" onClick={onExit} className="text-xs justify-center">
           <ArrowLeft className="w-3.5 h-3.5" />
           Cancelar
@@ -1392,16 +1392,16 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
             className="absolute inset-0 bg-black/70 backdrop-blur-xs"
             onClick={() => setSelectedProduct(null)}
           />
-          <div className="absolute inset-y-0 right-0 max-w-md w-full bg-[#070C18] border-l border-[#162340] shadow-2xl flex flex-col z-10 animate-in slide-in-from-right duration-250">
-            <div className="p-5 border-b border-[#14203B] bg-[#0A1020] flex items-center justify-between gap-4">
+          <div className="absolute inset-y-0 right-0 max-w-md w-full bg-[#FFFFFF] border-l border-[#E2E8F0] shadow-2xl flex flex-col z-10 animate-in slide-in-from-right duration-250">
+            <div className="p-5 border-b border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 min-w-0">
                 <img
                   src={selectedProduct.imageUrl}
                   alt=""
-                  className="w-10 h-10 rounded-lg object-cover bg-[#14203B] shrink-0"
+                  className="w-10 h-10 rounded-lg object-cover bg-[#E2E8F0] shrink-0"
                 />
                 <div className="min-w-0">
-                  <h2 className="text-sm font-bold text-[#E6E8EC] truncate">
+                  <h2 className="text-sm font-bold text-[#172033] truncate">
                     {selectedProduct.productName}
                   </h2>
                   <div className="flex items-center gap-2 mt-0.5">
@@ -1415,7 +1415,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
               <button
                 type="button"
                 onClick={() => setSelectedProduct(null)}
-                className="p-1.5 rounded-lg text-[#8E9BAE] hover:text-[#E6E8EC] hover:bg-[#121E38] transition-colors"
+                className="p-1.5 rounded-lg text-[#64748B] hover:text-[#172033] hover:bg-[#EFF6FF] transition-colors"
               >
                 <XCircle className="w-5 h-5" />
               </button>
@@ -1439,26 +1439,26 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                 ].map(([label, value]) => (
                   <div
                     key={label}
-                    className="flex flex-col gap-1 px-3 py-2.5 rounded-lg bg-[#080E1C] border border-[#14203B]"
+                    className="flex flex-col gap-1 px-3 py-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]"
                   >
-                    <span className="text-[10px] text-[#8E9BAE]">{label}</span>
-                    <span className="text-xs font-medium font-mono-numeric text-[#E6E8EC] break-words">
+                    <span className="text-[10px] text-[#64748B]">{label}</span>
+                    <span className="text-xs font-medium font-mono-numeric text-[#172033] break-words">
                       {value}
                     </span>
                   </div>
                 ))}
               </div>
 
-              <div className="p-3 bg-[#0B1324] border border-[#162340] rounded-xl space-y-2">
+              <div className="p-3 bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl space-y-2">
                 <div className="flex items-center gap-2">
-                  <Link2 className="w-4 h-4 text-[#00C2FF] shrink-0" />
-                  <span className="text-xs font-semibold text-[#E6E8EC]">
+                  <Link2 className="w-4 h-4 text-[#2563EB] shrink-0" />
+                  <span className="text-xs font-semibold text-[#172033]">
                     Short link afiliado (real)
                   </span>
                 </div>
                 {selectedProduct.affiliateUrl ? (
                   <div className="flex items-center gap-2">
-                    <span className="flex-1 text-[11px] text-[#00C2FF] truncate">
+                    <span className="flex-1 text-[11px] text-[#2563EB] truncate">
                       {selectedProduct.affiliateUrl}
                     </span>
                     <Button
@@ -1471,7 +1471,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                     </Button>
                   </div>
                 ) : (
-                  <span className="text-[11px] text-amber-400 block">
+                  <span className="text-[11px] text-amber-700 block">
                     {selectedProduct.linkError || 'Sem short link nesta execução.'}
                   </span>
                 )}
@@ -1479,17 +1479,17 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                   href={selectedProduct.productLink || selectedProduct.offerLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-[10px] text-[#8E9BAE] hover:text-[#E6E8EC] transition-colors"
+                  className="flex items-center gap-1 text-[10px] text-[#64748B] hover:text-[#172033] transition-colors"
                 >
                   Abrir produto na Shopee
                   <ChevronRight className="w-3 h-3" />
                 </a>
               </div>
 
-              <div className="p-3 bg-[#0B1324] border border-[#162340] rounded-xl space-y-2">
+              <div className="p-3 bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl space-y-2">
                 <div className="flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-[#00C2FF] shrink-0" />
-                  <span className="text-xs font-semibold text-[#E6E8EC]">Template final</span>
+                  <MessageSquare className="w-4 h-4 text-[#2563EB] shrink-0" />
+                  <span className="text-xs font-semibold text-[#172033]">Template final</span>
                 </div>
                 <pre className="whitespace-pre-wrap text-[11px] leading-relaxed text-[#94A3B8] font-sans">
                   {draft.messageTemplate
@@ -1500,7 +1500,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                   <img
                     src={selectedProduct.imageUrl}
                     alt=""
-                    className="w-full h-auto max-h-44 object-contain rounded-lg bg-[#080E1C] border border-[#14203B]"
+                    className="w-full h-auto max-h-44 object-contain rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]"
                   />
                 )}
               </div>
@@ -1509,7 +1509,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                 tabela de aprovados (ação explícita e manual).
               </p>
             </div>
-            <div className="p-4 border-t border-[#14203B] bg-[#0A1020] flex items-center gap-2">
+            <div className="p-4 border-t border-[#E2E8F0] bg-[#F8FAFC] flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -1532,14 +1532,14 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
               if (!sending) setSendTarget(null);
             }}
           />
-          <div className="relative z-10 w-full max-w-lg max-h-[85vh] overflow-y-auto bg-[#070C18] border border-[#1E3563] rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-5 border-b border-[#14203B] bg-[#0A1020] flex items-center justify-between gap-4">
+          <div className="relative z-10 w-full max-w-lg max-h-[85vh] overflow-y-auto bg-[#FFFFFF] border border-[#BFDBFE] rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-5 border-b border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 min-w-0">
-                <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-[#1E5EFF]/15 border border-[#1E3563]">
-                  <Send className="w-4 h-4 text-[#00C2FF]" />
+                <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-[#2563EB]/15 border border-[#BFDBFE]">
+                  <Send className="w-4 h-4 text-[#2563EB]" />
                 </span>
                 <div className="min-w-0">
-                  <h2 className="text-sm font-bold text-[#E6E8EC] truncate">
+                  <h2 className="text-sm font-bold text-[#172033] truncate">
                     Enviar teste para WhatsApp
                   </h2>
                   <span className="text-[10px] text-[#64748B] block mt-0.5">
@@ -1551,7 +1551,7 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                 type="button"
                 onClick={() => setSendTarget(null)}
                 disabled={sending}
-                className="p-1.5 rounded-lg text-[#8E9BAE] hover:text-[#E6E8EC] hover:bg-[#121E38] transition-colors disabled:opacity-40"
+                className="p-1.5 rounded-lg text-[#64748B] hover:text-[#172033] hover:bg-[#EFF6FF] transition-colors disabled:opacity-40"
               >
                 <XCircle className="w-5 h-5" />
               </button>
@@ -1560,11 +1560,11 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
             {sendResult && sendResult.status === 'sent' ? (
               <div className="p-5 space-y-4">
                 <div className="flex flex-col items-center gap-2 py-4 text-center">
-                  <CheckCircle2 className="w-8 h-8 text-emerald-400" />
-                  <p className="text-sm font-semibold text-[#E6E8EC]">
+                  <CheckCircle2 className="w-8 h-8 text-emerald-700" />
+                  <p className="text-sm font-semibold text-[#172033]">
                     Teste enviado com sucesso.
                   </p>
-                  <p className="text-[11px] text-[#8E9BAE]">
+                  <p className="text-[11px] text-[#64748B]">
                     A mensagem foi entregue ao grupo pelo WhatsApp real.
                   </p>
                 </div>
@@ -1580,10 +1580,10 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                 ].map(([label, value]) => (
                   <div
                     key={label}
-                    className="flex items-start justify-between gap-3 px-3 py-2.5 rounded-lg bg-[#080E1C] border border-[#14203B]"
+                    className="flex items-start justify-between gap-3 px-3 py-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]"
                   >
-                    <span className="text-[10px] text-[#8E9BAE]">{label}</span>
-                    <span className="text-[11px] font-medium text-[#E6E8EC] break-words text-right">
+                    <span className="text-[10px] text-[#64748B]">{label}</span>
+                    <span className="text-[11px] font-medium text-[#172033] break-words text-right">
                       {value}
                     </span>
                   </div>
@@ -1600,9 +1600,9 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
             ) : sendResult && sendResult.status === 'failed' ? (
               <div className="p-5 space-y-4">
                 <div className="flex items-center gap-3 py-3">
-                  <AlertTriangle className="w-6 h-6 text-amber-400 shrink-0" />
+                  <AlertTriangle className="w-6 h-6 text-amber-700 shrink-0" />
                   <div>
-                    <p className="text-sm font-semibold text-[#E6E8EC]">Falha no envio.</p>
+                    <p className="text-sm font-semibold text-[#172033]">Falha no envio.</p>
                     <p className="text-[11px] text-[#94A3B8] mt-1 break-words">
                       {sendResult.error || 'Erro sanitizado do servidor.'}
                     </p>
@@ -1633,15 +1633,15 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
             ) : (
               <div className="p-5 space-y-4">
                 <div>
-                  <label className="text-[11px] text-[#8E9BAE] block mb-1">
+                  <label className="text-[11px] text-[#64748B] block mb-1">
                     Conta WhatsApp (salva na automação)
                   </label>
-                  <span className="text-xs font-medium text-[#E6E8EC] block px-3 py-2.5 rounded-lg bg-[#080E1C] border border-[#14203B]">
+                  <span className="text-xs font-medium text-[#172033] block px-3 py-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
                     {selectedAccount?.name || sendTarget.automationId}
                   </span>
                 </div>
                 <div>
-                  <label className="text-[11px] text-[#8E9BAE] block mb-1">
+                  <label className="text-[11px] text-[#64748B] block mb-1">
                     Grupo de destino (grupo real)
                   </label>
                   <Select
@@ -1657,9 +1657,9 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                   />
                 </div>
 
-                <div className="p-3 bg-[#0B1324] border border-[#162340] rounded-xl space-y-2">
+                <div className="p-3 bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl space-y-2">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-semibold text-[#E6E8EC] truncate">
+                    <span className="text-[11px] font-semibold text-[#172033] truncate">
                       {sendTarget.product.productName}
                     </span>
                     <Badge variant="success" size="xs">
@@ -1667,20 +1667,20 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between gap-2 text-[11px]">
-                    <span className="text-[#8E9BAE]">
+                    <span className="text-[#64748B]">
                       {formatBRL(sendTarget.product.price)}{' '}
                       <span className="line-through text-[#64748B]">
                         {formatBRL(sendTarget.product.originalPrice)}
                       </span>
                     </span>
-                    <span className="text-[10px] text-[#00C2FF] truncate max-w-[180px]">
+                    <span className="text-[10px] text-[#2563EB] truncate max-w-[180px]">
                       {sendTarget.product.affiliateUrl}
                     </span>
                   </div>
                 </div>
 
-                <div className="p-3 bg-[#080E1C] border border-[#14203B] rounded-xl space-y-1.5">
-                  <span className="text-[11px] font-semibold text-[#E6E8EC] block">
+                <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-1.5">
+                  <span className="text-[11px] font-semibold text-[#172033] block">
                     Mensagem que será enviada
                   </span>
                   <pre className="whitespace-pre-wrap text-[11px] leading-relaxed text-[#94A3B8] font-sans">
@@ -1690,18 +1690,18 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                   </pre>
                 </div>
 
-                <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-[#1E5EFF]/10 border border-[#1E3563]">
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#00C2FF] shrink-0 mt-0.5" />
-                  <p className="text-[10px] leading-relaxed text-[#8E9BAE]">
-                    Nada é enviado até você clicar em <b className="text-[#E6E8EC]">Enviar agora</b>.
+                <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-[#2563EB]/10 border border-[#BFDBFE]">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#2563EB] shrink-0 mt-0.5" />
+                  <p className="text-[10px] leading-relaxed text-[#64748B]">
+                    Nada é enviado até você clicar em <b className="text-[#172033]">Enviar agora</b>.
                     O produto, o preço, o desconto e o short link vêm direto da Shopee (real).
                   </p>
                 </div>
 
                 {sendError && (
                   <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-red-500/10 border border-red-500/30">
-                    <AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0 mt-0.5" />
-                    <p className="text-[10px] leading-relaxed text-red-300 break-words">
+                    <AlertTriangle className="w-3.5 h-3.5 text-red-700 shrink-0 mt-0.5" />
+                    <p className="text-[10px] leading-relaxed text-red-700 break-words">
                       {sendError}
                     </p>
                   </div>
@@ -1736,11 +1736,11 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
       )}
 
       {toast && (
-        <div className="fixed bottom-6 right-6 z-[60] bg-[#0E172C] border border-[#1E3563] text-[#E6E8EC] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
+        <div className="fixed bottom-6 right-6 z-[60] bg-[#FFFFFF] border border-[#BFDBFE] text-[#172033] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
           {toast.type === 'success' ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
           ) : (
-            <Info className="w-4 h-4 text-[#00C2FF] shrink-0" />
+            <Info className="w-4 h-4 text-[#2563EB] shrink-0" />
           )}
           <span className="font-medium leading-relaxed">{toast.text}</span>
         </div>

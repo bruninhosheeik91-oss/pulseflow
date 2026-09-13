@@ -61,11 +61,11 @@ export const OffersTable: React.FC<OffersTableProps> = ({
     offers.some((o) => selectedIds.includes(o.id)) && !allSelected;
 
   return (
-    <div className="bg-[#0A0F1C] border border-[#162340] rounded-xl overflow-hidden shadow-xs">
+    <div className="bg-[#F4F7FB] border border-[#E2E8F0] rounded-xl overflow-hidden shadow-xs">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[1020px]">
           <thead>
-            <tr className="border-b border-[#162340] bg-[#070C18] text-xs font-semibold text-[#8E9BAE] uppercase tracking-wider">
+            <tr className="border-b border-[#E2E8F0] bg-[#FFFFFF] text-xs font-semibold text-[#64748B] uppercase tracking-wider">
               {/* Checkbox Header */}
               <th className="py-3 px-3 w-10 text-center">
                 <input
@@ -75,7 +75,7 @@ export const OffersTable: React.FC<OffersTableProps> = ({
                     if (el) el.indeterminate = someSelected;
                   }}
                   onChange={onToggleSelectAll}
-                  className="w-4 h-4 rounded bg-[#0A1020] border-[#1E3057] text-[#1E5EFF] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#1E5EFF]"
+                  className="w-4 h-4 rounded bg-[#F8FAFC] border-[#BFDBFE] text-[#2563EB] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#2563EB]"
                 />
               </th>
               <th className="py-3 px-4 min-w-[280px]">Produto</th>
@@ -90,7 +90,7 @@ export const OffersTable: React.FC<OffersTableProps> = ({
               <th className="py-3 px-4 text-right">Ações</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#131D33] text-xs">
+          <tbody className="divide-y divide-[#F1F5F9] text-xs">
             {offers.map((offer) => {
               const isSelected = selectedIds.includes(offer.id);
               const isMenuOpen = activeMenuId === offer.id;
@@ -100,8 +100,8 @@ export const OffersTable: React.FC<OffersTableProps> = ({
                   key={offer.id}
                   className={`group transition-colors duration-100 ${
                     isSelected
-                      ? 'bg-[#101E3D]/40 hover:bg-[#122347]/50'
-                      : 'hover:bg-[#0E172E]'
+                      ? 'bg-[#F8FAFC]/40 hover:bg-[#F8FAFC]/50'
+                      : 'hover:bg-[#F1F5F9]'
                   }`}
                 >
                   {/* Row Checkbox */}
@@ -110,7 +110,7 @@ export const OffersTable: React.FC<OffersTableProps> = ({
                       type="checkbox"
                       checked={isSelected}
                       onChange={() => onToggleSelect(offer.id)}
-                      className="w-4 h-4 rounded bg-[#0A1020] border-[#1E3057] text-[#1E5EFF] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#1E5EFF]"
+                      className="w-4 h-4 rounded bg-[#F8FAFC] border-[#BFDBFE] text-[#2563EB] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#2563EB]"
                     />
                   </td>
 
@@ -119,7 +119,7 @@ export const OffersTable: React.FC<OffersTableProps> = ({
                     <div className="flex items-center gap-3 min-w-0">
                       <div
                         onClick={() => onViewOffer(offer)}
-                        className="relative w-12 h-12 rounded-lg overflow-hidden bg-[#0A1020] border border-[#182647] shrink-0 cursor-pointer group/img hover:border-[#00C2FF] transition-colors"
+                        className="relative w-12 h-12 rounded-lg overflow-hidden bg-[#F8FAFC] border border-[#DCE3EC] shrink-0 cursor-pointer group/img hover:border-[#2563EB] transition-colors"
                       >
                         <img
                           src={offer.imageUrl}
@@ -132,17 +132,17 @@ export const OffersTable: React.FC<OffersTableProps> = ({
                         <p
                           onClick={() => onViewOffer(offer)}
                           title={offer.name}
-                          className="font-semibold text-xs text-[#E6E8EC] hover:text-[#00C2FF] cursor-pointer transition-colors leading-tight line-clamp-1"
+                          className="font-semibold text-xs text-[#172033] hover:text-[#2563EB] cursor-pointer transition-colors leading-tight line-clamp-1"
                         >
                           {offer.name}
                         </p>
-                        <div className="flex items-center gap-1.5 text-xs text-[#8E9BAE] mt-1 flex-wrap">
+                        <div className="flex items-center gap-1.5 text-xs text-[#64748B] mt-1 flex-wrap">
                           <MarketplaceBadge marketplace={offer.marketplace} size="sm" />
-                          <span className="text-[#5A6470]">•</span>
+                          <span className="text-[#94A3B8]">•</span>
                           <span className="truncate max-w-[105px]">
                             {offer.category}
                           </span>
-                          <span className="text-[#5A6470]">•</span>
+                          <span className="text-[#94A3B8]">•</span>
                           <span className="truncate text-[#64748B] max-w-[110px]" title={offer.storeName}>
                             {offer.storeName}
                           </span>
@@ -157,7 +157,7 @@ export const OffersTable: React.FC<OffersTableProps> = ({
                       <span className="text-[11px] font-mono-numeric text-[#64748B] line-through">
                         De R$ {offer.originalPrice.toFixed(2).replace('.', ',')}
                       </span>
-                      <span className="font-mono-numeric font-bold text-xs text-[#E6E8EC] mt-0.5">
+                      <span className="font-mono-numeric font-bold text-xs text-[#172033] mt-0.5">
                         Por R$ {offer.price.toFixed(2).replace('.', ',')}
                       </span>
                     </div>
@@ -165,22 +165,22 @@ export const OffersTable: React.FC<OffersTableProps> = ({
 
                   {/* Desconto */}
                   <td className="py-3 px-3 text-center">
-                    <span className="inline-block px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 font-mono-numeric font-semibold text-xs">
+                    <span className="inline-block px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 font-mono-numeric font-semibold text-xs">
                       -{offer.discountPercentage}%
                     </span>
                   </td>
 
                   {/* Avaliação */}
                   <td className="py-3 px-3 text-center">
-                    <div className="inline-flex items-center gap-1 font-mono-numeric font-medium text-xs text-amber-300">
-                      <Star className="w-3 h-3 fill-amber-400 text-amber-400 shrink-0" />
+                    <div className="inline-flex items-center gap-1 font-mono-numeric font-medium text-xs text-amber-700">
+                      <Star className="w-3 h-3 fill-amber-400 text-amber-700 shrink-0" />
                       <span>{offer.rating.toFixed(1).replace('.', ',')}</span>
                     </div>
                   </td>
 
                   {/* Vendas */}
                   <td className="py-3 px-3 text-center">
-                    <span className="font-mono-numeric text-xs text-[#C8D1DE]">
+                    <span className="font-mono-numeric text-xs text-[#334155]">
                       {offer.salesVolume}
                     </span>
                   </td>
@@ -188,10 +188,10 @@ export const OffersTable: React.FC<OffersTableProps> = ({
                   {/* Comissão */}
                   <td className="py-3 px-3 text-right">
                     <div className="flex flex-col items-end leading-tight">
-                      <span className="font-mono-numeric font-semibold text-xs text-emerald-400">
+                      <span className="font-mono-numeric font-semibold text-xs text-emerald-700">
                         R$ {offer.commissionAmount.toFixed(2).replace('.', ',')}
                       </span>
-                      <span className="text-[11px] font-mono-numeric text-[#8E9BAE]">
+                      <span className="text-[11px] font-mono-numeric text-[#64748B]">
                         ({offer.commissionPercentage}%)
                       </span>
                     </div>
@@ -208,7 +208,7 @@ export const OffersTable: React.FC<OffersTableProps> = ({
                   </td>
 
                   {/* Encontrada */}
-                  <td className="py-3 px-3 text-center text-xs text-[#8E9BAE] font-mono-numeric whitespace-nowrap">
+                  <td className="py-3 px-3 text-center text-xs text-[#64748B] font-mono-numeric whitespace-nowrap">
                     {offer.foundAt}
                   </td>
 
@@ -221,7 +221,7 @@ export const OffersTable: React.FC<OffersTableProps> = ({
                           size="xs"
                           variant="secondary"
                           onClick={() => onApproveOffer(offer.id)}
-                          leftIcon={<CheckCircle2 className="w-3 h-3 text-emerald-400" />}
+                          leftIcon={<CheckCircle2 className="w-3 h-3 text-emerald-700" />}
                           className="h-7 text-xs hover:border-emerald-500/40"
                         >
                           Aprovar
@@ -246,7 +246,7 @@ export const OffersTable: React.FC<OffersTableProps> = ({
                           size="xs"
                           variant="outline"
                           onClick={() => onViewOffer(offer)}
-                          leftIcon={<Eye className="w-3 h-3 text-[#8E9BAE]" />}
+                          leftIcon={<Eye className="w-3 h-3 text-[#64748B]" />}
                           className="h-7 text-xs"
                         >
                           Visualizar
@@ -258,7 +258,7 @@ export const OffersTable: React.FC<OffersTableProps> = ({
                           size="xs"
                           variant="ghost"
                           onClick={() => onApproveOffer(offer.id)}
-                          className="h-7 text-xs text-[#8E9BAE] hover:text-[#00C2FF]"
+                          className="h-7 text-xs text-[#64748B] hover:text-[#2563EB]"
                         >
                           Reavaliar
                         </Button>
@@ -273,8 +273,8 @@ export const OffersTable: React.FC<OffersTableProps> = ({
                         }}
                         className={`p-1.5 rounded-lg border transition-colors ${
                           isMenuOpen
-                            ? 'bg-[#152345] border-[#1E5EFF] text-white'
-                            : 'bg-transparent border-transparent text-[#8E9BAE] hover:text-[#E6E8EC] hover:bg-[#121E38]'
+                            ? 'bg-[#DBEAFE] border-[#2563EB] text-white'
+                            : 'bg-transparent border-transparent text-[#64748B] hover:text-[#172033] hover:bg-[#EFF6FF]'
                         }`}
                         title="Mais opções"
                       >
@@ -285,7 +285,7 @@ export const OffersTable: React.FC<OffersTableProps> = ({
                       {isMenuOpen && (
                         <div
                           ref={menuRef}
-                          className="absolute right-0 top-full mt-1 w-44 bg-[#0E172C] border border-[#1E3057] rounded-xl shadow-2xl shadow-black/80 py-1.5 z-30 text-left animate-in fade-in zoom-in-95 duration-100"
+                          className="absolute right-0 top-full mt-1 w-44 bg-[#FFFFFF] border border-[#BFDBFE] rounded-xl shadow-2xl shadow-black/80 py-1.5 z-30 text-left animate-in fade-in zoom-in-95 duration-100"
                         >
                           <button
                             type="button"
@@ -293,9 +293,9 @@ export const OffersTable: React.FC<OffersTableProps> = ({
                               setActiveMenuId(null);
                               onViewOffer(offer);
                             }}
-                            className="w-full px-3 py-1.5 text-xs text-[#E6E8EC] hover:bg-[#152345] flex items-center gap-2 transition-colors"
+                            className="w-full px-3 py-1.5 text-xs text-[#172033] hover:bg-[#DBEAFE] flex items-center gap-2 transition-colors"
                           >
-                            <Eye className="w-3.5 h-3.5 text-[#00C2FF]" />
+                            <Eye className="w-3.5 h-3.5 text-[#2563EB]" />
                             <span>Visualizar detalhes</span>
                           </button>
 
@@ -306,9 +306,9 @@ export const OffersTable: React.FC<OffersTableProps> = ({
                                 setActiveMenuId(null);
                                 onApproveOffer(offer.id);
                               }}
-                              className="w-full px-3 py-1.5 text-xs text-[#E6E8EC] hover:bg-[#152345] flex items-center gap-2 transition-colors"
+                              className="w-full px-3 py-1.5 text-xs text-[#172033] hover:bg-[#DBEAFE] flex items-center gap-2 transition-colors"
                             >
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
                               <span>Aprovar oferta</span>
                             </button>
                           )}
@@ -319,9 +319,9 @@ export const OffersTable: React.FC<OffersTableProps> = ({
                               setActiveMenuId(null);
                               onPublishOffer(offer);
                             }}
-                            className="w-full px-3 py-1.5 text-xs text-[#E6E8EC] hover:bg-[#152345] flex items-center gap-2 transition-colors"
+                            className="w-full px-3 py-1.5 text-xs text-[#172033] hover:bg-[#DBEAFE] flex items-center gap-2 transition-colors"
                           >
-                            <Send className="w-3.5 h-3.5 text-[#00C2FF]" />
+                            <Send className="w-3.5 h-3.5 text-[#2563EB]" />
                             <span>Publicar agora</span>
                           </button>
 
@@ -331,7 +331,7 @@ export const OffersTable: React.FC<OffersTableProps> = ({
                               setActiveMenuId(null);
                               onScheduleOffer(offer);
                             }}
-                            className="w-full px-3 py-1.5 text-xs text-[#E6E8EC] hover:bg-[#152345] flex items-center gap-2 transition-colors"
+                            className="w-full px-3 py-1.5 text-xs text-[#172033] hover:bg-[#DBEAFE] flex items-center gap-2 transition-colors"
                           >
                             <Clock className="w-3.5 h-3.5 text-indigo-400" />
                             <span>Agendar publicação</span>
@@ -343,21 +343,21 @@ export const OffersTable: React.FC<OffersTableProps> = ({
                               setActiveMenuId(null);
                               onCopyLink(offer.linkAfiliado);
                             }}
-                            className="w-full px-3 py-1.5 text-xs text-[#E6E8EC] hover:bg-[#152345] flex items-center gap-2 transition-colors"
+                            className="w-full px-3 py-1.5 text-xs text-[#172033] hover:bg-[#DBEAFE] flex items-center gap-2 transition-colors"
                           >
-                            <Copy className="w-3.5 h-3.5 text-[#8E9BAE]" />
+                            <Copy className="w-3.5 h-3.5 text-[#64748B]" />
                             <span>Copiar link</span>
                           </button>
 
                           {offer.status !== 'Rejeitada' && (
-                            <div className="pt-1 mt-1 border-t border-[#182745]">
+                            <div className="pt-1 mt-1 border-t border-[#DCE3EC]">
                               <button
                                 type="button"
                                 onClick={() => {
                                   setActiveMenuId(null);
                                   onRejectOffer(offer);
                                 }}
-                                className="w-full px-3 py-1.5 text-xs text-rose-400 hover:bg-rose-500/10 flex items-center gap-2 transition-colors"
+                                className="w-full px-3 py-1.5 text-xs text-rose-700 hover:bg-rose-500/10 flex items-center gap-2 transition-colors"
                               >
                                 <XCircle className="w-3.5 h-3.5" />
                                 <span>Rejeitar oferta</span>

@@ -131,8 +131,8 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
         className="space-y-4 max-h-[75vh] overflow-y-auto pr-1"
       >
         {/* 1. Escolha da Plataforma */}
-        <div className="space-y-3 p-3.5 bg-[#0A1020] border border-[#162340] rounded-xl">
-          <span className="text-xs font-semibold text-[#8E9BAE] uppercase tracking-wider block">
+        <div className="space-y-3 p-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl">
+          <span className="text-xs font-semibold text-[#64748B] uppercase tracking-wider block">
             1. Plataforma de Distribuição
           </span>
 
@@ -143,20 +143,20 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
               onClick={() => handlePlatformChange('WhatsApp')}
               className={`p-3 rounded-xl border text-left transition-colors cursor-pointer ${
                 platform === 'WhatsApp'
-                  ? 'bg-[#0E2620] border-emerald-500/50 text-white shadow-xs'
-                  : 'bg-[#070C18] border-[#162340] text-[#8E9BAE] hover:border-[#1E3360]'
+                  ? 'bg-[#F8FAFC] border-emerald-500/50 text-white shadow-xs'
+                  : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B] hover:border-[#BFDBFE]'
               }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 font-bold text-xs text-white">
-                  <MessageSquare className="w-4 h-4 text-emerald-400" />
+                  <MessageSquare className="w-4 h-4 text-emerald-700" />
                   <span>WhatsApp</span>
                 </div>
                 {platform === 'WhatsApp' && (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <CheckCircle2 className="w-4 h-4 text-emerald-700" />
                 )}
               </div>
-              <p className="text-[11px] text-[#8E9BAE] mt-1">
+              <p className="text-[11px] text-[#64748B] mt-1">
                 Grupos abertos/fechados ou canais de transmissão oficiais.
               </p>
             </button>
@@ -167,20 +167,20 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
               onClick={() => handlePlatformChange('Telegram')}
               className={`p-3 rounded-xl border text-left transition-colors cursor-pointer ${
                 platform === 'Telegram'
-                  ? 'bg-[#0E203B] border-[#00C2FF]/50 text-white shadow-xs'
-                  : 'bg-[#070C18] border-[#162340] text-[#8E9BAE] hover:border-[#1E3360]'
+                  ? 'bg-[#EFF6FF] border-[#2563EB]/50 text-white shadow-xs'
+                  : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B] hover:border-[#BFDBFE]'
               }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 font-bold text-xs text-white">
-                  <Send className="w-4 h-4 text-[#00C2FF]" />
+                  <Send className="w-4 h-4 text-[#2563EB]" />
                   <span>Telegram</span>
                 </div>
                 {platform === 'Telegram' && (
-                  <CheckCircle2 className="w-4 h-4 text-[#00C2FF]" />
+                  <CheckCircle2 className="w-4 h-4 text-[#2563EB]" />
                 )}
               </div>
-              <p className="text-[11px] text-[#8E9BAE] mt-1">
+              <p className="text-[11px] text-[#64748B] mt-1">
                 Canais públicos ou privados com bot administrativo.
               </p>
             </button>
@@ -188,7 +188,7 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
 
           {/* Tipo de Canal */}
           <div className="space-y-1.5 pt-1">
-            <label className="text-xs font-medium text-[#E6E8EC]">
+            <label className="text-xs font-medium text-[#172033]">
               Tipo de Comunidade
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -199,8 +199,8 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
                     onClick={() => setChannelType('Grupo WhatsApp')}
                     className={`px-3 py-2 rounded-lg border text-xs text-left transition-colors cursor-pointer ${
                       channelType === 'Grupo WhatsApp'
-                        ? 'bg-[#15254A] border-[#1E5EFF] text-white font-semibold'
-                        : 'bg-[#070C18] border-[#162340] text-[#8E9BAE]'
+                        ? 'bg-[#DBEAFE] border-[#2563EB] text-white font-semibold'
+                        : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B]'
                     }`}
                   >
                     Grupo do WhatsApp
@@ -210,8 +210,8 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
                     onClick={() => setChannelType('Canal WhatsApp')}
                     className={`px-3 py-2 rounded-lg border text-xs text-left transition-colors cursor-pointer ${
                       channelType === 'Canal WhatsApp'
-                        ? 'bg-[#15254A] border-[#1E5EFF] text-white font-semibold'
-                        : 'bg-[#070C18] border-[#162340] text-[#8E9BAE]'
+                        ? 'bg-[#DBEAFE] border-[#2563EB] text-white font-semibold'
+                        : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B]'
                     }`}
                   >
                     Canal (Newsletter)
@@ -224,8 +224,8 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
                     onClick={() => setChannelType('Canal Telegram')}
                     className={`px-3 py-2 rounded-lg border text-xs text-left transition-colors cursor-pointer ${
                       channelType === 'Canal Telegram'
-                        ? 'bg-[#15254A] border-[#1E5EFF] text-white font-semibold'
-                        : 'bg-[#070C18] border-[#162340] text-[#8E9BAE]'
+                        ? 'bg-[#DBEAFE] border-[#2563EB] text-white font-semibold'
+                        : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B]'
                     }`}
                   >
                     Canal Público / Privado
@@ -235,8 +235,8 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
                     onClick={() => setChannelType('Supergrupo Telegram')}
                     className={`px-3 py-2 rounded-lg border text-xs text-left transition-colors cursor-pointer ${
                       channelType === 'Supergrupo Telegram'
-                        ? 'bg-[#15254A] border-[#1E5EFF] text-white font-semibold'
-                        : 'bg-[#070C18] border-[#162340] text-[#8E9BAE]'
+                        ? 'bg-[#DBEAFE] border-[#2563EB] text-white font-semibold'
+                        : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B]'
                     }`}
                   >
                     Supergrupo
@@ -248,14 +248,14 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
         </div>
 
         {/* 2. Identificação e Endereçamento */}
-        <div className="space-y-3 p-3.5 bg-[#0A1020] border border-[#162340] rounded-xl">
-          <span className="text-xs font-semibold text-[#8E9BAE] uppercase tracking-wider block">
+        <div className="space-y-3 p-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl">
+          <span className="text-xs font-semibold text-[#64748B] uppercase tracking-wider block">
             2. Identificação do Canal
           </span>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium text-[#E6E8EC]">
-              Nome de Exibição <span className="text-rose-400">*</span>
+            <label className="text-xs font-medium text-[#172033]">
+              Nome de Exibição <span className="text-rose-700">*</span>
             </label>
             <input
               type="text"
@@ -267,13 +267,13 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
                   ? 'Ex: WhatsApp Ofertas Gamer & Hardware VIP'
                   : 'Ex: Telegram Radar de Ofertas Geral'
               }
-              className="w-full h-9 px-3 bg-[#070C18] border border-[#1A2C4E] rounded-lg text-xs text-[#E6E8EC] placeholder:text-[#64748B] focus:outline-none focus:border-[#1E5EFF]"
+              className="w-full h-9 px-3 bg-[#FFFFFF] border border-[#CBD5E1] rounded-lg text-xs text-[#172033] placeholder:text-[#64748B] focus:outline-none focus:border-[#2563EB]"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-[#E6E8EC]">
+              <label className="text-xs font-medium text-[#172033]">
                 Identificador / Link JID
               </label>
               <input
@@ -285,12 +285,12 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
                     ? '1203630...2910@g.us ou link do grupo'
                     : '@nome_do_canal'
                 }
-                className="w-full h-9 px-3 bg-[#070C18] border border-[#1A2C4E] rounded-lg text-xs text-[#E6E8EC] placeholder:text-[#64748B] focus:outline-none focus:border-[#1E5EFF]"
+                className="w-full h-9 px-3 bg-[#FFFFFF] border border-[#CBD5E1] rounded-lg text-xs text-[#172033] placeholder:text-[#64748B] focus:outline-none focus:border-[#2563EB]"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-[#E6E8EC]">
+              <label className="text-xs font-medium text-[#172033]">
                 Membros / Inscritos Estimados
               </label>
               <input
@@ -298,13 +298,13 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
                 value={membersCount}
                 onChange={(e) => setMembersCount(e.target.value)}
                 placeholder="Ex: 850"
-                className="w-full h-9 px-3 bg-[#070C18] border border-[#1A2C4E] rounded-lg text-xs text-[#E6E8EC] placeholder:text-[#64748B] focus:outline-none focus:border-[#1E5EFF]"
+                className="w-full h-9 px-3 bg-[#FFFFFF] border border-[#CBD5E1] rounded-lg text-xs text-[#172033] placeholder:text-[#64748B] focus:outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium text-[#E6E8EC]">
+            <label className="text-xs font-medium text-[#172033]">
               Descrição do Canal
             </label>
             <textarea
@@ -312,22 +312,22 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Descreva o público-alvo ou nicho de atuação deste canal..."
-              className="w-full p-2.5 bg-[#070C18] border border-[#1A2C4E] rounded-lg text-xs text-[#E6E8EC] placeholder:text-[#64748B] focus:outline-none focus:border-[#1E5EFF]"
+              className="w-full p-2.5 bg-[#FFFFFF] border border-[#CBD5E1] rounded-lg text-xs text-[#172033] placeholder:text-[#64748B] focus:outline-none focus:border-[#2563EB]"
             />
           </div>
         </div>
 
         {/* 3. Instância & Integração */}
-        <div className="space-y-3 p-3.5 bg-[#0A1020] border border-[#162340] rounded-xl">
+        <div className="space-y-3 p-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#8E9BAE] uppercase tracking-wider block">
+            <span className="text-xs font-semibold text-[#64748B] uppercase tracking-wider block">
               3. Instância & Conexão de Envio
             </span>
             {platform === 'WhatsApp' && (
               <button
                 type="button"
                 onClick={() => setShowQrSimulation(!showQrSimulation)}
-                className="text-[11px] text-[#00C2FF] hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-[11px] text-[#2563EB] hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <QrCode className="w-3.5 h-3.5" />
                 <span>
@@ -339,7 +339,7 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
 
           {/* QR Code Simulator if toggled */}
           {showQrSimulation && platform === 'WhatsApp' && (
-            <div className="p-4 bg-[#080E1C] border border-[#1B3666] rounded-xl text-center space-y-3 animate-in fade-in duration-200">
+            <div className="p-4 bg-[#F8FAFC] border border-[#93C5FD] rounded-xl text-center space-y-3 animate-in fade-in duration-200">
               <div className="w-32 h-32 bg-white p-2 rounded-xl mx-auto flex items-center justify-center shadow-lg">
                 <div className="w-full h-full border-4 border-black border-dashed flex items-center justify-center">
                   <QrCode className="w-20 h-20 text-black" />
@@ -349,11 +349,11 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
                 <p className="text-xs font-bold text-white">
                   Aponte a câmera do WhatsApp para escanear
                 </p>
-                <p className="text-[11px] text-[#8E9BAE] max-w-xs mx-auto">
+                <p className="text-[11px] text-[#64748B] max-w-xs mx-auto">
                   Abra o WhatsApp &gt; Aparelhos conectados &gt; Conectar um aparelho para vincular a esta instância.
                 </p>
               </div>
-              <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 font-semibold bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/25">
+              <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-semibold bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/25">
                 <CheckCircle2 className="w-3 h-3" />
                 <span>Sessão pronta para autenticação</span>
               </span>
@@ -362,14 +362,14 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-[#E6E8EC]">
+              <label className="text-xs font-medium text-[#172033]">
                 Instância Selecionada
               </label>
               {platform === 'WhatsApp' ? (
                 <select
                   value={instanceName}
                   onChange={(e) => setInstanceName(e.target.value)}
-                  className="w-full h-9 px-2 bg-[#070C18] border border-[#182747] rounded-lg text-xs text-[#E6E8EC] focus:outline-none focus:border-[#1E5EFF]"
+                  className="w-full h-9 px-2 bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg text-xs text-[#172033] focus:outline-none focus:border-[#2563EB]"
                 >
                   <option value="">Selecione uma instância</option>
                   <option value="Evolution Node BR #01">
@@ -386,9 +386,9 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
                   </option>
                 </select>
               ) : (
-                <div className="p-2.5 rounded-lg bg-[#070C18] border border-[#182747] text-xs text-[#E6E8EC] flex items-center justify-between">
+                <div className="p-2.5 rounded-lg bg-[#FFFFFF] border border-[#DCE3EC] text-xs text-[#172033] flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Bot className="w-4 h-4 text-[#00C2FF]" />
+                    <Bot className="w-4 h-4 text-[#2563EB]" />
                     <span>Bot @PulseFlowBot</span>
                   </div>
                   <span className="text-[10px] text-[#64748B] font-semibold">
@@ -401,10 +401,10 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
             {/* Anti-Flood Delay */}
             <div className="space-y-1">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-medium text-[#E6E8EC]">
+                <span className="font-medium text-[#172033]">
                   Anti-Flood (Delay Mínimo)
                 </span>
-                <span className="font-mono-numeric font-bold text-[#00C2FF]">
+                <span className="font-mono-numeric font-bold text-[#2563EB]">
                   {antiFloodDelay}s
                 </span>
               </div>
@@ -415,21 +415,21 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
                 step="5"
                 value={antiFloodDelay}
                 onChange={(e) => setAntiFloodDelay(Number(e.target.value))}
-                className="w-full h-1.5 bg-[#14203B] rounded-lg appearance-none cursor-pointer accent-[#1E5EFF] mt-2"
+                className="w-full h-1.5 bg-[#E2E8F0] rounded-lg appearance-none cursor-pointer accent-[#2563EB] mt-2"
               />
             </div>
           </div>
         </div>
 
         {/* 4. Campanhas Vinculadas */}
-        <div className="space-y-3 p-3.5 bg-[#0A1020] border border-[#162340] rounded-xl">
-          <span className="text-xs font-semibold text-[#8E9BAE] uppercase tracking-wider block">
+        <div className="space-y-3 p-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl">
+          <span className="text-xs font-semibold text-[#64748B] uppercase tracking-wider block">
             4. Vincular a Campanhas Existentes
           </span>
 
           <div className="space-y-1.5">
             {AVAILABLE_CAMPAIGNS.length === 0 && (
-              <div className="p-4 rounded-lg bg-[#070C18] border border-[#182747] text-xs text-[#8E9BAE]">
+              <div className="p-4 rounded-lg bg-[#FFFFFF] border border-[#DCE3EC] text-xs text-[#64748B]">
                 Nenhuma campanha criada ainda. Vincule este canal após criar
                 campanhas em Automações &gt; Campanhas.
               </div>
@@ -443,16 +443,16 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
                   onClick={() => toggleCampaign(camp)}
                   className={`w-full p-2.5 rounded-lg border text-left flex items-center justify-between text-xs transition-colors cursor-pointer ${
                     active
-                      ? 'bg-[#15254A] border-[#1E5EFF] text-white font-medium'
-                      : 'bg-[#070C18] border-[#162340] text-[#8E9BAE] hover:border-[#1E3360]'
+                      ? 'bg-[#DBEAFE] border-[#2563EB] text-white font-medium'
+                      : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B] hover:border-[#BFDBFE]'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <Layers className="w-3.5 h-3.5 text-[#70A1FF]" />
+                    <Layers className="w-3.5 h-3.5 text-[#2563EB]" />
                     <span>{camp}</span>
                   </div>
                   {active && (
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#00C2FF]" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#2563EB]" />
                   )}
                 </button>
               );
@@ -461,7 +461,7 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#14203B]">
+        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#E2E8F0]">
           <Button variant="ghost" size="sm" onClick={onClose}>
             Cancelar
           </Button>

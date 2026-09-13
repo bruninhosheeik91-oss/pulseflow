@@ -18,36 +18,36 @@ export const OfferScoreBadge: React.FC<OfferScoreBadgeProps> = ({
   const getScoreTheme = (val: number) => {
     if (val >= 90) {
       return {
-        bg: 'bg-[#102347]',
-        border: 'border-[#1E5EFF]/50',
-        text: 'text-[#00C2FF]',
-        labelColor: 'text-[#00C2FF]',
-        dot: 'bg-[#00C2FF]',
+        bg: 'bg-[#EFF6FF]',
+        border: 'border-[#2563EB]/50',
+        text: 'text-[#2563EB]',
+        labelColor: 'text-[#2563EB]',
+        dot: 'bg-[#2563EB]',
       };
     }
     if (val >= 80) {
       return {
-        bg: 'bg-[#0E203C]',
-        border: 'border-[#1B3E7A]/50',
-        text: 'text-[#38BDF8]',
-        labelColor: 'text-[#70A1FF]',
-        dot: 'bg-[#38BDF8]',
+        bg: 'bg-[#F8FAFC]',
+        border: 'border-[#E2E8F0]/50',
+        text: 'text-[#3B82F6]',
+        labelColor: 'text-[#2563EB]',
+        dot: 'bg-[#3B82F6]',
       };
     }
     if (val >= 70) {
       return {
-        bg: 'bg-[#2A2312]',
+        bg: 'bg-[#F8FAFC]',
         border: 'border-amber-500/40',
-        text: 'text-amber-400',
-        labelColor: 'text-amber-300',
+        text: 'text-amber-700',
+        labelColor: 'text-amber-700',
         dot: 'bg-amber-400',
       };
     }
     return {
-      bg: 'bg-[#21161A]',
+      bg: 'bg-[#F8FAFC]',
       border: 'border-rose-500/40',
-      text: 'text-rose-400',
-      labelColor: 'text-rose-300',
+      text: 'text-rose-700',
+      labelColor: 'text-rose-700',
       dot: 'bg-rose-400',
     };
   };
@@ -86,7 +86,7 @@ export const OfferScoreBadge: React.FC<OfferScoreBadgeProps> = ({
             <span className={`text-xs font-semibold ${theme.labelColor}`}>
               {label}
             </span>
-            <span className="text-[11px] text-[#8E9BAE]">Deal Score</span>
+            <span className="text-[11px] text-[#64748B]">Deal Score</span>
           </div>
         )}
       </div>
@@ -99,7 +99,7 @@ export const OfferScoreBadge: React.FC<OfferScoreBadgeProps> = ({
       className={`p-3.5 rounded-xl border flex items-center justify-between ${theme.bg} ${theme.border}`}
     >
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-lg bg-[#0A1020] border border-[#1E3360] flex items-center justify-center font-mono-numeric font-bold text-xl text-white">
+        <div className="w-12 h-12 rounded-lg bg-[#F8FAFC] border border-[#BFDBFE] flex items-center justify-center font-mono-numeric font-bold text-xl text-white">
           <span className={theme.text}>{total}</span>
         </div>
         <div>
@@ -108,12 +108,12 @@ export const OfferScoreBadge: React.FC<OfferScoreBadgeProps> = ({
               {total >= 90 ? 'Excelente oportunidade' : `${label} oportunidade`}
             </span>
           </div>
-          <p className="text-xs text-[#8E9BAE] mt-0.5">
+          <p className="text-xs text-[#64748B] mt-0.5">
             Classificado automaticamente pelos critérios do motor
           </p>
         </div>
       </div>
-      <span className="text-xs font-mono-numeric font-semibold text-[#8E9BAE] bg-[#0A1020] px-2.5 py-1 rounded-md border border-[#1B2B4E]">
+      <span className="text-xs font-mono-numeric font-semibold text-[#64748B] bg-[#F8FAFC] px-2.5 py-1 rounded-md border border-[#CBD5E1]">
         {total} / 100
       </span>
     </div>

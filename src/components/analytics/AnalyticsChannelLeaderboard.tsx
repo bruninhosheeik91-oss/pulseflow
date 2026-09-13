@@ -10,16 +10,16 @@ export const AnalyticsChannelLeaderboard: React.FC<AnalyticsChannelLeaderboardPr
   channels,
 }) => {
   return (
-    <div className="bg-[#0A1020] border border-[#16233B] rounded-xl p-4.5 space-y-4 shadow-sm">
-      <div className="flex items-center justify-between border-b border-[#14203B] pb-3">
+    <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-4.5 space-y-4 shadow-sm">
+      <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
         <div>
           <div className="flex items-center gap-2">
-            <Radio className="w-4 h-4 text-[#00C2FF]" />
+            <Radio className="w-4 h-4 text-[#2563EB]" />
             <h3 className="font-semibold text-white text-sm">
               Ranking de Performance dos Canais
             </h3>
           </div>
-          <p className="text-xs text-[#8E9BAE] mt-0.5">
+          <p className="text-xs text-[#64748B] mt-0.5">
             Engajamento e rentabilidade por grupo do WhatsApp e canais do Telegram
           </p>
         </div>
@@ -27,9 +27,9 @@ export const AnalyticsChannelLeaderboard: React.FC<AnalyticsChannelLeaderboardPr
 
       {/* Leaderboard list */}
       {channels.length === 0 ? (
-        <div className="h-40 rounded-xl bg-[#0B1324] border border-[#162340] flex flex-col items-center justify-center gap-2 text-center">
-          <Radio className="w-7 h-7 text-[#5A6470]" />
-          <p className="text-xs text-[#8E9BAE]">
+        <div className="h-40 rounded-xl bg-[#F1F5F9] border border-[#E2E8F0] flex flex-col items-center justify-center gap-2 text-center">
+          <Radio className="w-7 h-7 text-[#94A3B8]" />
+          <p className="text-xs text-[#64748B]">
             Sem canais monitorados
           </p>
           <p className="text-[11px] text-[#64748B] max-w-xs">
@@ -45,7 +45,7 @@ export const AnalyticsChannelLeaderboard: React.FC<AnalyticsChannelLeaderboardPr
           return (
             <div
               key={channel.id}
-              className="p-3 bg-[#0B1220] border border-[#16233B] rounded-xl hover:border-[#1E3A6D] transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+              className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl hover:border-[#93C5FD] transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
             >
               {/* Left: Position & Name */}
               <div className="flex items-center gap-3">
@@ -57,7 +57,7 @@ export const AnalyticsChannelLeaderboard: React.FC<AnalyticsChannelLeaderboardPr
                       ? 'bg-slate-300 text-slate-950'
                       : idx === 2
                       ? 'bg-amber-700 text-white'
-                      : 'bg-[#14203B] text-[#8E9BAE]'
+                      : 'bg-[#E2E8F0] text-[#64748B]'
                   }`}
                 >
                   {idx + 1}
@@ -74,7 +74,7 @@ export const AnalyticsChannelLeaderboard: React.FC<AnalyticsChannelLeaderboardPr
                       {channel.name}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 text-[11px] text-[#8E9BAE] mt-0.5">
+                  <div className="flex items-center gap-2 text-[11px] text-[#64748B] mt-0.5">
                     <span>{channel.platform}</span>
                     <span>&bull;</span>
                     <span>{channel.membersCount.toLocaleString()} membros</span>
@@ -85,31 +85,31 @@ export const AnalyticsChannelLeaderboard: React.FC<AnalyticsChannelLeaderboardPr
               </div>
 
               {/* Right: Metrics */}
-              <div className="flex items-center gap-4 sm:gap-6 shrink-0 border-t sm:border-t-0 border-[#14203B] pt-2 sm:pt-0">
+              <div className="flex items-center gap-4 sm:gap-6 shrink-0 border-t sm:border-t-0 border-[#E2E8F0] pt-2 sm:pt-0">
                 <div className="text-right">
-                  <span className="text-[10px] text-[#8E9BAE] block">Cliques:</span>
+                  <span className="text-[10px] text-[#64748B] block">Cliques:</span>
                   <span className="font-mono-numeric font-bold text-white text-xs">
                     {channel.clicks.toLocaleString()}
                   </span>
                 </div>
 
                 <div className="text-right">
-                  <span className="text-[10px] text-[#8E9BAE] block">CTR:</span>
-                  <span className="font-mono-numeric font-bold text-[#00C2FF] text-xs">
+                  <span className="text-[10px] text-[#64748B] block">CTR:</span>
+                  <span className="font-mono-numeric font-bold text-[#2563EB] text-xs">
                     {channel.ctr}%
                   </span>
                 </div>
 
                 <div className="text-right">
-                  <span className="text-[10px] text-[#8E9BAE] block">Pedidos:</span>
-                  <span className="font-mono-numeric font-bold text-indigo-300 text-xs">
+                  <span className="text-[10px] text-[#64748B] block">Pedidos:</span>
+                  <span className="font-mono-numeric font-bold text-indigo-700 text-xs">
                     {channel.orders}
                   </span>
                 </div>
 
                 <div className="text-right min-w-[90px]">
-                  <span className="text-[10px] text-[#8E9BAE] block">Comissão:</span>
-                  <span className="font-mono-numeric font-bold text-emerald-400 text-xs">
+                  <span className="text-[10px] text-[#64748B] block">Comissão:</span>
+                  <span className="font-mono-numeric font-bold text-emerald-700 text-xs">
                     R$ {channel.commission.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>

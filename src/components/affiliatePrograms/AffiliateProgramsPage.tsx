@@ -23,26 +23,26 @@ export const AffiliateProgramsPage: React.FC = () => {
     if (loading)
       return {
         label: 'Carregando…',
-        className: 'bg-[#0E1628] text-[#8E9BAE] border-[#182642]',
+        className: 'bg-[#FFFFFF] text-[#64748B] border-[#DCE3EC]',
       };
     if (!view || !view.configured)
       return {
         label: 'Não configurado',
-        className: 'bg-[#0E1628] text-[#8E9BAE] border-[#182642]',
+        className: 'bg-[#FFFFFF] text-[#64748B] border-[#DCE3EC]',
       };
     if (view.status === 'connected')
       return {
         label: 'Conectado',
-        className: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30',
+        className: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/30',
       };
     if (view.status === 'error')
       return {
         label: 'Erro',
-        className: 'bg-rose-500/10 text-rose-300 border-rose-500/30',
+        className: 'bg-rose-500/10 text-rose-700 border-rose-500/30',
       };
     return {
       label: 'Configurado',
-      className: 'bg-[#1E5EFF]/10 text-[#00C2FF] border-[#1E5EFF]/30',
+      className: 'bg-[#2563EB]/10 text-[#2563EB] border-[#2563EB]/30',
     };
   }, [loading, view]);
 
@@ -55,12 +55,12 @@ export const AffiliateProgramsPage: React.FC = () => {
   return (
     <div className="space-y-5">
       {/* Introdução */}
-      <div className="p-4 bg-[#0B1220] border border-[#16233B] rounded-xl flex items-start gap-3.5">
-        <div className="w-9 h-9 rounded-lg bg-[#131F3B] border border-[#1E2E52] flex items-center justify-center shrink-0">
-          <BadgePercent className="w-4.5 h-4.5 text-[#00C2FF]" />
+      <div className="p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl flex items-start gap-3.5">
+        <div className="w-9 h-9 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE] flex items-center justify-center shrink-0">
+          <BadgePercent className="w-4.5 h-4.5 text-[#2563EB]" />
         </div>
         <div className="text-xs leading-relaxed">
-          <p className="text-[#E6E8EC] font-semibold mb-0.5">
+          <p className="text-[#172033] font-semibold mb-0.5">
             Programas de Afiliados
           </p>
           <p className="text-[#64748B]">
@@ -74,12 +74,12 @@ export const AffiliateProgramsPage: React.FC = () => {
       {/* Sem fonte confiável de tenant no frontend */}
       {!tenantId && (
         <div className="p-4 bg-amber-500/[0.07] border border-amber-500/25 rounded-xl flex items-start gap-3">
-          <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+          <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
           <div className="text-xs leading-relaxed">
-            <p className="text-amber-300 font-semibold mb-0.5">
+            <p className="text-amber-700 font-semibold mb-0.5">
               Tenant não identificado
             </p>
-            <p className="text-amber-200/70">
+            <p className="text-amber-700/70">
               A integração com o backend aguarda uma fonte confiável de tenant
               (autenticação/sessão por cliente) no frontend. Nenhuma credencial
               será salva ou testada até que essa etapa exista — não se inventa
@@ -90,8 +90,8 @@ export const AffiliateProgramsPage: React.FC = () => {
       )}
 
       {loadError && (
-        <div className="p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-xl text-xs text-rose-300 flex items-center gap-2.5">
-          <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+        <div className="p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-xl text-xs text-rose-700 flex items-center gap-2.5">
+          <AlertTriangle className="w-4 h-4 text-rose-700 shrink-0" />
           <span className="font-medium">{loadError}</span>
         </div>
       )}

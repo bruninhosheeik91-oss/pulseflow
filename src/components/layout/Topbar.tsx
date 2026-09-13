@@ -104,7 +104,7 @@ export const Topbar: React.FC<TopbarProps> = ({
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {notifications.length === 0 && (
                   <div className="py-6 flex flex-col items-center justify-center gap-2 text-center">
-                    <Bell className="w-6 h-6 text-[#5A6470]" />
+                    <Bell className="w-6 h-6 text-[#94A3B8]" />
                     <p className="text-xs text-[#64748B]">
                       Nenhuma notificação
                     </p>
@@ -143,7 +143,7 @@ export const Topbar: React.FC<TopbarProps> = ({
           size="sm"
           variant="primary"
           leftIcon={<Plus className="w-4 h-4" />}
-          className="shadow-sm shadow-[#1E5EFF]/30 text-xs font-semibold"
+          className="shadow-sm shadow-[#2563EB]/30 text-xs font-semibold"
         >
           Nova campanha
         </Button>

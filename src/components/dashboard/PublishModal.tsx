@@ -62,22 +62,22 @@ export const PublishModal: React.FC<PublishModalProps> = ({
       <div className="space-y-4">
         {publishedDone ? (
           <div className="py-8 text-center space-y-3">
-            <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-400">
+            <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-700">
               <CheckCircle2 className="w-6 h-6" />
             </div>
-            <h4 className="text-sm font-semibold text-[#E6E8EC]">
+            <h4 className="text-sm font-semibold text-[#172033]">
               {mode === 'immediate'
                 ? 'Publicação disparada com sucesso!'
                 : `Oferta agendada para ${scheduledTime}!`}
             </h4>
-            <p className="text-xs text-[#8E9BAE]">
+            <p className="text-xs text-[#64748B]">
               Acompanhe o engajamento na aba de Analytics.
             </p>
           </div>
         ) : (
           <>
             {/* Offer Summary */}
-            <div className="p-3 bg-[#0A1020] border border-[#162340] rounded-lg flex items-center gap-3">
+            <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg flex items-center gap-3">
               <img
                 src={offer.imageUrl}
                 alt={offer.name}
@@ -85,15 +85,15 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                 className="w-11 h-11 rounded-md object-cover"
               />
               <div className="min-w-0">
-                <p className="text-xs font-semibold text-[#E6E8EC] truncate">
+                <p className="text-xs font-semibold text-[#172033] truncate">
                   {offer.name}
                 </p>
-                <div className="flex items-center gap-2 mt-0.5 text-xs text-[#8E9BAE]">
-                  <span className="font-mono-numeric font-medium text-[#E6E8EC]">
+                <div className="flex items-center gap-2 mt-0.5 text-xs text-[#64748B]">
+                  <span className="font-mono-numeric font-medium text-[#172033]">
                     R$ {offer.price.toFixed(2).replace('.', ',')}
                   </span>
                   <span>•</span>
-                  <span className="text-[#00C2FF] font-medium">
+                  <span className="text-[#2563EB] font-medium">
                     Deal Score {offer.score.total}
                   </span>
                 </div>
@@ -102,7 +102,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
 
             {/* Target Channel Selector */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#E6E8EC]">
+              <label className="text-xs font-semibold text-[#172033]">
                 Canal ou Grupo de Destino
               </label>
               <div className="grid grid-cols-1 gap-2">
@@ -113,29 +113,29 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                     onClick={() => setSelectedChannel(ch.id)}
                     className={`p-2.5 rounded-lg border text-left flex items-center justify-between transition-colors ${
                       selectedChannel === ch.id
-                        ? 'bg-[#152345] border-[#1E5EFF] text-[#E6E8EC]'
-                        : 'bg-[#0A1020] border-[#162340] text-[#8E9BAE] hover:border-[#22355C]'
+                        ? 'bg-[#DBEAFE] border-[#2563EB] text-[#172033]'
+                        : 'bg-[#F8FAFC] border-[#E2E8F0] text-[#64748B] hover:border-[#94A3B8]'
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
                       <Radio
                         className={`w-3.5 h-3.5 ${
                           selectedChannel === ch.id
-                            ? 'text-[#00C2FF]'
-                            : 'text-[#8E9BAE]'
+                            ? 'text-[#2563EB]'
+                            : 'text-[#64748B]'
                         }`}
                       />
                       <div>
-                        <div className="text-xs font-medium text-[#E6E8EC]">
+                        <div className="text-xs font-medium text-[#172033]">
                           {ch.name}
                         </div>
-                        <div className="text-xs text-[#8E9BAE]">
+                        <div className="text-xs text-[#64748B]">
                           {ch.platform} • {ch.members}
                         </div>
                       </div>
                     </div>
                     {selectedChannel === ch.id && (
-                      <span className="w-2 h-2 rounded-full bg-[#00C2FF]" />
+                      <span className="w-2 h-2 rounded-full bg-[#2563EB]" />
                     )}
                   </button>
                 ))}
@@ -144,7 +144,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
 
             {/* Publication Mode: Immediate vs Scheduled */}
             <div className="space-y-1.5 pt-1">
-              <label className="text-xs font-semibold text-[#E6E8EC]">
+              <label className="text-xs font-semibold text-[#172033]">
                 Momento do Disparo
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -153,11 +153,11 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                   onClick={() => setMode('immediate')}
                   className={`p-2 rounded-lg border text-xs font-medium flex items-center justify-center gap-2 transition-colors ${
                     mode === 'immediate'
-                      ? 'bg-[#152345] border-[#1E5EFF] text-[#E6E8EC]'
-                      : 'bg-[#0A1020] border-[#162340] text-[#8E9BAE]'
+                      ? 'bg-[#DBEAFE] border-[#2563EB] text-[#172033]'
+                      : 'bg-[#F8FAFC] border-[#E2E8F0] text-[#64748B]'
                   }`}
                 >
-                  <Send className="w-3.5 h-3.5 text-[#00C2FF]" />
+                  <Send className="w-3.5 h-3.5 text-[#2563EB]" />
                   Disparo Imediato
                 </button>
 
@@ -166,25 +166,25 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                   onClick={() => setMode('schedule')}
                   className={`p-2 rounded-lg border text-xs font-medium flex items-center justify-center gap-2 transition-colors ${
                     mode === 'schedule'
-                      ? 'bg-[#152345] border-[#1E5EFF] text-[#E6E8EC]'
-                      : 'bg-[#0A1020] border-[#162340] text-[#8E9BAE]'
+                      ? 'bg-[#DBEAFE] border-[#2563EB] text-[#172033]'
+                      : 'bg-[#F8FAFC] border-[#E2E8F0] text-[#64748B]'
                   }`}
                 >
-                  <Clock className="w-3.5 h-3.5 text-[#1E5EFF]" />
+                  <Clock className="w-3.5 h-3.5 text-[#2563EB]" />
                   Agendar Horário
                 </button>
               </div>
 
               {mode === 'schedule' && (
                 <div className="pt-2 flex items-center gap-2">
-                  <span className="text-xs text-[#8E9BAE]">Horário sugerido:</span>
+                  <span className="text-xs text-[#64748B]">Horário sugerido:</span>
                   <input
                     type="time"
                     value={scheduledTime}
                     onChange={(e) => setScheduledTime(e.target.value)}
-                    className="bg-[#0A1020] border border-[#1B2947] rounded-md px-2 py-1 text-xs text-[#E6E8EC] font-mono-numeric focus:outline-none focus:border-[#1E5EFF]"
+                    className="bg-[#F8FAFC] border border-[#DCE3EC] rounded-md px-2 py-1 text-xs text-[#172033] font-mono-numeric focus:outline-none focus:border-[#2563EB]"
                   />
-                  <span className="text-xs text-[#8E9BAE]">
+                  <span className="text-xs text-[#64748B]">
                     (Respeita intervalo anti-spam de 20 min)
                   </span>
                 </div>
@@ -192,7 +192,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#162340]">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#E2E8F0]">
               <Button variant="ghost" size="sm" onClick={onClose} disabled={isPublishing}>
                 Cancelar
               </Button>

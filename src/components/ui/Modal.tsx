@@ -48,7 +48,7 @@ export const Modal: React.FC<ModalProps> = ({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
             onClick={onClose}
-            className="fixed inset-0 bg-[#060A14]/80 backdrop-blur-xs"
+            className="fixed inset-0 bg-[#FFFFFF]/80 backdrop-blur-xs"
           />
 
           {/* Modal Card */}
@@ -57,21 +57,21 @@ export const Modal: React.FC<ModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
-            className={`relative w-full ${maxWidthClass} bg-[#0E1628] border border-[#1E2E50] rounded-xl shadow-2xl shadow-black/60 overflow-hidden z-10`}
+            className={`relative w-full ${maxWidthClass} bg-[#FFFFFF] border border-[#BFDBFE] rounded-xl shadow-2xl shadow-black/60 overflow-hidden z-10`}
           >
             {/* Modal Header */}
-            <div className="flex items-start justify-between p-5 border-b border-[#1A2846]">
+            <div className="flex items-start justify-between p-5 border-b border-[#CBD5E1]">
               <div>
-                <h3 className="text-base font-semibold text-[#E6E8EC] tracking-tight">
+                <h3 className="text-base font-semibold text-[#172033] tracking-tight">
                   {title}
                 </h3>
                 {subtitle && (
-                  <p className="text-xs text-[#8E9BAE] mt-0.5">{subtitle}</p>
+                  <p className="text-xs text-[#64748B] mt-0.5">{subtitle}</p>
                 )}
               </div>
               <button
                 onClick={onClose}
-                className="p-1 rounded-md text-[#8E9BAE] hover:text-[#E6E8EC] hover:bg-[#152345] transition-colors"
+                className="p-1 rounded-md text-[#64748B] hover:text-[#172033] hover:bg-[#DBEAFE] transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>

@@ -27,12 +27,12 @@ export const ProductsSearchBar: React.FC<ProductsSearchBarProps> = ({
   onOpenFiltersDrawer,
 }) => {
   return (
-    <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 p-3 bg-[#0C1324] border border-[#162340] rounded-xl">
+    <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl">
       {/* Search Input with Guaranteed Icon Alignment & Proper Padding */}
       <div className="relative flex-1 min-w-[260px]">
         <div
           aria-hidden="true"
-          className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center text-[#8E9BAE]"
+          className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center text-[#64748B]"
         >
           <Search className="w-4 h-4" />
         </div>
@@ -41,13 +41,13 @@ export const ProductsSearchBar: React.FC<ProductsSearchBarProps> = ({
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Buscar produto, marca, modelo ou categoria..."
-          className="w-full h-9.5 pl-10 pr-9 bg-[#080E1C] border border-[#1B2B4E] rounded-lg text-xs text-[#E6E8EC] placeholder:text-[#8E9BAE] focus:outline-none focus:border-[#1E5EFF] focus:ring-1 focus:ring-[#1E5EFF] transition-colors"
+          className="w-full h-9.5 pl-10 pr-9 bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg text-xs text-[#172033] placeholder:text-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors"
         />
         {searchQuery && (
           <button
             type="button"
             onClick={() => onSearchChange('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8E9BAE] hover:text-[#E6E8EC] p-0.5 rounded transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B] hover:text-[#172033] p-0.5 rounded transition-colors"
             title="Limpar busca"
           >
             <X className="w-3.5 h-3.5" />
@@ -62,67 +62,67 @@ export const ProductsSearchBar: React.FC<ProductsSearchBarProps> = ({
           variant="outline"
           size="sm"
           onClick={onOpenFiltersDrawer}
-          leftIcon={<SlidersHorizontal className="w-3.5 h-3.5 text-[#00C2FF]" />}
-          className={`h-9.5 text-xs border-[#1B2B4E] hover:border-[#263D6C] ${
+          leftIcon={<SlidersHorizontal className="w-3.5 h-3.5 text-[#2563EB]" />}
+          className={`h-9.5 text-xs border-[#CBD5E1] hover:border-[#93C5FD] ${
             activeFiltersCount > 0
-              ? 'bg-[#132247] text-[#00C2FF] border-[#1E5EFF]/60'
-              : 'text-[#E6E8EC]'
+              ? 'bg-[#DBEAFE] text-[#2563EB] border-[#2563EB]/60'
+              : 'text-[#172033]'
           }`}
         >
           <span>Filtros</span>
           {activeFiltersCount > 0 && (
-            <span className="ml-1.5 px-1.5 py-0.2 rounded-full bg-[#1E5EFF] text-white font-mono-numeric text-[11px] font-bold">
+            <span className="ml-1.5 px-1.5 py-0.2 rounded-full bg-[#2563EB] text-white font-mono-numeric text-[11px] font-bold">
               {activeFiltersCount}
             </span>
           )}
         </Button>
 
         {/* Sort Select with All 8 Specified Options */}
-        <div className="flex items-center gap-1.5 text-xs text-[#8E9BAE] bg-[#080E1C] border border-[#1B2B4E] rounded-lg px-2.5 h-9.5">
-          <span className="shrink-0 hidden sm:inline text-[#8E9BAE]">
+        <div className="flex items-center gap-1.5 text-xs text-[#64748B] bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg px-2.5 h-9.5">
+          <span className="shrink-0 hidden sm:inline text-[#64748B]">
             Ordenar por:
           </span>
           <select
             value={sortOption}
             onChange={(e) => onSortChange(e.target.value as ProductSortOption)}
-            className="bg-transparent text-xs font-semibold text-[#E6E8EC] focus:outline-none cursor-pointer pr-1"
+            className="bg-transparent text-xs font-semibold text-[#172033] focus:outline-none cursor-pointer pr-1"
           >
-            <option value="best_opportunity" className="bg-[#0E172C] text-[#E6E8EC]">
+            <option value="best_opportunity" className="bg-[#FFFFFF] text-[#172033]">
               Melhor oportunidade
             </option>
-            <option value="score" className="bg-[#0E172C] text-[#E6E8EC]">
+            <option value="score" className="bg-[#FFFFFF] text-[#172033]">
               Maior Deal Score
             </option>
-            <option value="price_asc" className="bg-[#0E172C] text-[#E6E8EC]">
+            <option value="price_asc" className="bg-[#FFFFFF] text-[#172033]">
               Menor preço
             </option>
-            <option value="offers_count" className="bg-[#0E172C] text-[#E6E8EC]">
+            <option value="offers_count" className="bg-[#FFFFFF] text-[#172033]">
               Mais ofertas
             </option>
-            <option value="sales" className="bg-[#0E172C] text-[#E6E8EC]">
+            <option value="sales" className="bg-[#FFFFFF] text-[#172033]">
               Mais vendidos
             </option>
-            <option value="publications" className="bg-[#0E172C] text-[#E6E8EC]">
+            <option value="publications" className="bg-[#FFFFFF] text-[#172033]">
               Mais publicados
             </option>
-            <option value="commission" className="bg-[#0E172C] text-[#E6E8EC]">
+            <option value="commission" className="bg-[#FFFFFF] text-[#172033]">
               Maior comissão
             </option>
-            <option value="recent" className="bg-[#0E172C] text-[#E6E8EC]">
+            <option value="recent" className="bg-[#FFFFFF] text-[#172033]">
               Mais recentes
             </option>
           </select>
         </div>
 
         {/* View Mode Toggle: [ Lista ] [ Grade ] */}
-        <div className="flex items-center bg-[#080E1C] border border-[#1B2B4E] rounded-lg p-0.5 h-9.5">
+        <div className="flex items-center bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg p-0.5 h-9.5">
           <button
             type="button"
             onClick={() => onViewModeChange('list')}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
               viewMode === 'list'
-                ? 'bg-[#152345] text-[#00C2FF] font-semibold shadow-xs'
-                : 'text-[#8E9BAE] hover:text-[#E6E8EC]'
+                ? 'bg-[#DBEAFE] text-[#2563EB] font-semibold shadow-xs'
+                : 'text-[#64748B] hover:text-[#172033]'
             }`}
             title="Visualização em Lista"
           >
@@ -134,8 +134,8 @@ export const ProductsSearchBar: React.FC<ProductsSearchBarProps> = ({
             onClick={() => onViewModeChange('grid')}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
               viewMode === 'grid'
-                ? 'bg-[#152345] text-[#00C2FF] font-semibold shadow-xs'
-                : 'text-[#8E9BAE] hover:text-[#E6E8EC]'
+                ? 'bg-[#DBEAFE] text-[#2563EB] font-semibold shadow-xs'
+                : 'text-[#64748B] hover:text-[#172033]'
             }`}
             title="Visualização em Grade"
           >

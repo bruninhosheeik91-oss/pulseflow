@@ -21,19 +21,19 @@ const STEPS = [
 
 export const WhatsAppFlowSteps: React.FC = () => {
   return (
-    <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-4">
+    <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-4">
       <div className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-2">
         {STEPS.map((step, index) => {
           const Icon = step.icon;
           return (
             <Fragment key={step.title}>
               <div className="flex items-start gap-3 flex-1 min-w-0">
-                <span className="w-7 h-7 rounded-lg bg-[#1E5EFF]/15 border border-[#1E5EFF]/30 text-[#00C2FF] text-xs font-bold flex items-center justify-center shrink-0">
+                <span className="w-7 h-7 rounded-lg bg-[#2563EB]/15 border border-[#2563EB]/30 text-[#2563EB] text-xs font-bold flex items-center justify-center shrink-0">
                   {index + 1}
                 </span>
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold text-[#E6E8EC] flex items-center gap-1.5">
-                    <Icon className="w-3.5 h-3.5 text-[#8E9BAE] shrink-0" />
+                  <p className="text-xs font-semibold text-[#172033] flex items-center gap-1.5">
+                    <Icon className="w-3.5 h-3.5 text-[#64748B] shrink-0" />
                     {step.title}
                   </p>
                   <p className="text-[10px] text-[#64748B] leading-relaxed mt-0.5">

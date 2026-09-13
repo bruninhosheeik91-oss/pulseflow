@@ -20,7 +20,7 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseClasses =
-    'inline-flex items-center justify-center font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#1E5EFF]/50 focus:ring-offset-2 focus:ring-offset-[#0A0F1C] disabled:opacity-45 disabled:pointer-events-none select-none';
+    'inline-flex items-center justify-center font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 focus:ring-offset-2 focus:ring-offset-[#F4F7FB] disabled:opacity-45 disabled:pointer-events-none select-none';
 
   const sizeClasses = {
     xs: 'h-7 px-2.5 text-xs rounded-md gap-1.5',
@@ -32,15 +32,15 @@ export const Button: React.FC<ButtonProps> = ({
 
   const variantClasses = {
     primary:
-      'bg-[#1E5EFF] text-white hover:bg-[#184FD6] active:bg-[#133FA8] border border-transparent shadow-sm shadow-[#1E5EFF]/20',
+      'bg-[#2563EB] text-white hover:bg-[#F8FAFC] active:bg-[#F8FAFC] border border-transparent shadow-sm shadow-[#2563EB]/20',
     secondary:
-      'bg-[#131E38] text-[#E6E8EC] hover:bg-[#18284B] active:bg-[#10192F] border border-[#22355F] hover:border-[#2C4378]',
+      'bg-[#EFF6FF] text-[#172033] hover:bg-[#F8FAFC] active:bg-[#F1F5F9] border border-[#94A3B8] hover:border-[#E2E8F0]',
     outline:
-      'bg-transparent text-[#E6E8EC] hover:bg-[#131F3B]/50 active:bg-[#131F3B] border border-[#1E2E52] hover:border-[#2A4072]',
+      'bg-transparent text-[#172033] hover:bg-[#EFF6FF]/50 active:bg-[#EFF6FF] border border-[#BFDBFE] hover:border-[#93C5FD]',
     ghost:
-      'bg-transparent text-[#8E9BAE] hover:text-[#E6E8EC] hover:bg-[#131E38]/80 active:bg-[#152345]',
+      'bg-transparent text-[#64748B] hover:text-[#172033] hover:bg-[#EFF6FF]/80 active:bg-[#DBEAFE]',
     danger:
-      'bg-red-500/10 text-red-400 hover:bg-red-500/20 active:bg-red-500/25 border border-red-500/25',
+      'bg-red-500/10 text-red-700 hover:bg-red-500/20 active:bg-red-500/25 border border-red-500/25',
   };
 
   return (

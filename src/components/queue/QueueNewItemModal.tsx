@@ -180,14 +180,14 @@ ${affiliateUrl}`;
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-xs">
         {/* Source Toggle: Selecionar de Ofertas Aprovadas vs Produto Avulso */}
-        <div className="flex items-center gap-2 p-1 bg-[#0A1020] border border-[#192747] rounded-lg">
+        <div className="flex items-center gap-2 p-1 bg-[#F8FAFC] border border-[#DCE3EC] rounded-lg">
           <button
             type="button"
             onClick={() => setUseCustomProduct(false)}
             className={`flex-1 py-1.5 rounded text-xs font-medium transition-colors ${
               !useCustomProduct
-                ? 'bg-[#1E5EFF] text-white shadow-xs'
-                : 'text-[#94A3B8] hover:text-[#E6E8EC]'
+                ? 'bg-[#2563EB] text-white shadow-xs'
+                : 'text-[#94A3B8] hover:text-[#172033]'
             }`}
           >
             Selecionar do Catálogo de Ofertas ({initialOffers.length})
@@ -197,8 +197,8 @@ ${affiliateUrl}`;
             onClick={() => setUseCustomProduct(true)}
             className={`flex-1 py-1.5 rounded text-xs font-medium transition-colors ${
               useCustomProduct
-                ? 'bg-[#1E5EFF] text-white shadow-xs'
-                : 'text-[#94A3B8] hover:text-[#E6E8EC]'
+                ? 'bg-[#2563EB] text-white shadow-xs'
+                : 'text-[#94A3B8] hover:text-[#172033]'
             }`}
           >
             Cadastrar Produto Avulso
@@ -212,29 +212,29 @@ ${affiliateUrl}`;
               <label className="font-medium text-[#CBD5E1]">
                 Escolha a Oferta para Disparo
               </label>
-              <span className="text-[11px] text-[#8E9BAE]">
+              <span className="text-[11px] text-[#64748B]">
                 Ordenado por maior Deal Score
               </span>
             </div>
 
             {/* Quick Search */}
             <div className="relative">
-              <Search className="w-3.5 h-3.5 text-[#8E9BAE] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Search className="w-3.5 h-3.5 text-[#64748B] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Filtrar ofertas por título ou loja..."
                 value={offerSearch}
                 onChange={(e) => setOfferSearch(e.target.value)}
-                className="w-full bg-[#0A1020] border border-[#192747] rounded-lg pl-8 pr-3 py-1.5 text-xs text-[#E6E8EC] focus:outline-none focus:border-[#1E5EFF]"
+                className="w-full bg-[#F8FAFC] border border-[#DCE3EC] rounded-lg pl-8 pr-3 py-1.5 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB]"
               />
             </div>
 
             {/* Offer List */}
-            <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1 border border-[#16233B] rounded-lg p-1.5 bg-[#0B1220]">
+            <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1 border border-[#E2E8F0] rounded-lg p-1.5 bg-[#F8FAFC]">
               {filteredOffers.length === 0 && (
                 <div className="py-6 flex flex-col items-center justify-center gap-2 text-center">
-                  <Tag className="w-5 h-5 text-[#5A6470]" />
-                  <p className="text-[11px] text-[#8E9BAE]">
+                  <Tag className="w-5 h-5 text-[#94A3B8]" />
+                  <p className="text-[11px] text-[#64748B]">
                     Nenhuma oferta disponível no catálogo
                   </p>
                 </div>
@@ -247,35 +247,35 @@ ${affiliateUrl}`;
                     onClick={() => setSelectedOfferId(off.id)}
                     className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors border ${
                       isSelected
-                        ? 'bg-[#142340] border-[#1E5EFF]'
-                        : 'hover:bg-[#111C35] border-transparent'
+                        ? 'bg-[#E2E8F0] border-[#2563EB]'
+                        : 'hover:bg-[#F1F5F9] border-transparent'
                     }`}
                   >
                     <img
                       src={off.imageUrl}
                       alt=""
-                      className="w-9 h-9 rounded object-cover bg-[#16233B] shrink-0"
+                      className="w-9 h-9 rounded object-cover bg-[#E2E8F0] shrink-0"
                       referrerPolicy="no-referrer"
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-[#E6E8EC] truncate">
+                      <p className="font-medium text-[#172033] truncate">
                         {off.name}
                       </p>
-                      <div className="flex items-center gap-2 text-[11px] text-[#8E9BAE]">
-                        <span className="text-[#00C2FF]">{off.marketplace}</span>
+                      <div className="flex items-center gap-2 text-[11px] text-[#64748B]">
+                        <span className="text-[#2563EB]">{off.marketplace}</span>
                         <span>&bull;</span>
                         <span className="font-semibold text-white">
                           R$ {off.price.toFixed(2).replace('.', ',')}
                         </span>
                         {off.discountPercentage && (
-                          <span className="text-[#1E5EFF] font-bold">
+                          <span className="text-[#2563EB] font-bold">
                             -{off.discountPercentage}%
                           </span>
                         )}
                       </div>
                     </div>
                     {isSelected && (
-                      <span className="w-5 h-5 rounded-full bg-[#1E5EFF] flex items-center justify-center text-white shrink-0">
+                      <span className="w-5 h-5 rounded-full bg-[#2563EB] flex items-center justify-center text-white shrink-0">
                         <Check className="w-3 h-3" />
                       </span>
                     )}
@@ -286,7 +286,7 @@ ${affiliateUrl}`;
           </div>
         ) : (
           /* Custom Product Inputs */
-          <div className="space-y-3 bg-[#0B1220] border border-[#16233B] rounded-xl p-3">
+          <div className="space-y-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-3">
             <div>
               <label className="block font-medium text-[#CBD5E1] mb-1">
                 Título do Produto
@@ -297,7 +297,7 @@ ${affiliateUrl}`;
                 value={customName}
                 onChange={(e) => setCustomName(e.target.value)}
                 required
-                className="w-full bg-[#0A1020] border border-[#192747] rounded-lg px-3 py-1.5 text-xs text-[#E6E8EC] focus:outline-none focus:border-[#1E5EFF]"
+                className="w-full bg-[#F8FAFC] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB]"
               />
             </div>
 
@@ -310,7 +310,7 @@ ${affiliateUrl}`;
                   type="text"
                   value={customPrice}
                   onChange={(e) => setCustomPrice(e.target.value)}
-                  className="w-full bg-[#0A1020] border border-[#192747] rounded-lg px-3 py-1.5 text-xs text-[#E6E8EC] font-mono focus:outline-none focus:border-[#1E5EFF]"
+                  className="w-full bg-[#F8FAFC] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] font-mono focus:outline-none focus:border-[#2563EB]"
                 />
               </div>
 
@@ -322,7 +322,7 @@ ${affiliateUrl}`;
                   type="text"
                   value={customOriginalPrice}
                   onChange={(e) => setCustomOriginalPrice(e.target.value)}
-                  className="w-full bg-[#0A1020] border border-[#192747] rounded-lg px-3 py-1.5 text-xs text-[#E6E8EC] font-mono focus:outline-none focus:border-[#1E5EFF]"
+                  className="w-full bg-[#F8FAFC] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] font-mono focus:outline-none focus:border-[#2563EB]"
                 />
               </div>
 
@@ -335,7 +335,7 @@ ${affiliateUrl}`;
                   onChange={(e) =>
                     setCustomMarketplace(e.target.value as Marketplace)
                   }
-                  className="w-full bg-[#0A1020] border border-[#192747] rounded-lg px-2.5 py-1.5 text-xs text-[#E6E8EC] focus:outline-none focus:border-[#1E5EFF]"
+                  className="w-full bg-[#F8FAFC] border border-[#DCE3EC] rounded-lg px-2.5 py-1.5 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB]"
                 >
                   <option value="Amazon">Amazon</option>
                   <option value="Mercado Livre">Mercado Livre</option>
@@ -356,7 +356,7 @@ ${affiliateUrl}`;
                   type="url"
                   value={customAffiliateUrl}
                   onChange={(e) => setCustomAffiliateUrl(e.target.value)}
-                  className="w-full bg-[#0A1020] border border-[#192747] rounded-lg px-3 py-1.5 text-xs text-[#E6E8EC] focus:outline-none focus:border-[#1E5EFF]"
+                  className="w-full bg-[#F8FAFC] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB]"
                 />
               </div>
 
@@ -369,7 +369,7 @@ ${affiliateUrl}`;
                   placeholder="Ex: PROMO15"
                   value={customCoupon}
                   onChange={(e) => setCustomCoupon(e.target.value)}
-                  className="w-full bg-[#0A1020] border border-[#192747] rounded-lg px-3 py-1.5 text-xs text-[#E6E8EC] font-mono focus:outline-none focus:border-[#1E5EFF]"
+                  className="w-full bg-[#F8FAFC] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] font-mono focus:outline-none focus:border-[#2563EB]"
                 />
               </div>
             </div>
@@ -384,7 +384,7 @@ ${affiliateUrl}`;
           <select
             value={selectedChannelId}
             onChange={(e) => setSelectedChannelId(e.target.value)}
-            className="w-full bg-[#0A1020] border border-[#192747] rounded-lg px-3 py-2 text-xs text-[#E6E8EC] focus:outline-none focus:border-[#1E5EFF]"
+            className="w-full bg-[#F8FAFC] border border-[#DCE3EC] rounded-lg px-3 py-2 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB]"
           >
             {initialChannels.length === 0 && (
               <option value="">Nenhum canal de destino configurado</option>
@@ -396,7 +396,7 @@ ${affiliateUrl}`;
             ))}
           </select>
           {initialChannels.length === 0 && (
-            <p className="text-[11px] text-amber-400/90 mt-1">
+            <p className="text-[11px] text-amber-700/90 mt-1">
               Cadastre um canal em Canais e Grupos antes de adicionar à fila.
             </p>
           )}
@@ -413,15 +413,15 @@ ${affiliateUrl}`;
               onClick={() => setScheduleType('auto_next')}
               className={`p-2.5 rounded-lg border text-left transition-all ${
                 scheduleType === 'auto_next'
-                  ? 'bg-[#142340] border-[#1E5EFF] text-white'
-                  : 'bg-[#0A1020] border-[#192747] text-[#94A3B8] hover:text-[#E6E8EC]'
+                  ? 'bg-[#E2E8F0] border-[#2563EB] text-white'
+                  : 'bg-[#F8FAFC] border-[#DCE3EC] text-[#94A3B8] hover:text-[#172033]'
               }`}
             >
-              <div className="flex items-center gap-1.5 font-semibold text-xs text-[#00C2FF]">
+              <div className="flex items-center gap-1.5 font-semibold text-xs text-[#2563EB]">
                 <Sparkles className="w-3.5 h-3.5" />
                 Slot Inteligente
               </div>
-              <p className="text-[10px] text-[#8E9BAE] mt-1">
+              <p className="text-[10px] text-[#64748B] mt-1">
                 Calcula o próximo intervalo seguro anti-ban (~15 min)
               </p>
             </button>
@@ -431,15 +431,15 @@ ${affiliateUrl}`;
               onClick={() => setScheduleType('immediate')}
               className={`p-2.5 rounded-lg border text-left transition-all ${
                 scheduleType === 'immediate'
-                  ? 'bg-[#142340] border-[#1E5EFF] text-white'
-                  : 'bg-[#0A1020] border-[#192747] text-[#94A3B8] hover:text-[#E6E8EC]'
+                  ? 'bg-[#E2E8F0] border-[#2563EB] text-white'
+                  : 'bg-[#F8FAFC] border-[#DCE3EC] text-[#94A3B8] hover:text-[#172033]'
               }`}
             >
-              <div className="flex items-center gap-1.5 font-semibold text-xs text-emerald-400">
+              <div className="flex items-center gap-1.5 font-semibold text-xs text-emerald-700">
                 <Zap className="w-3.5 h-3.5" />
                 Disparo Imediato
               </div>
-              <p className="text-[10px] text-[#8E9BAE] mt-1">
+              <p className="text-[10px] text-[#64748B] mt-1">
                 Envia instantaneamente para o canal conectado
               </p>
             </button>
@@ -449,15 +449,15 @@ ${affiliateUrl}`;
               onClick={() => setScheduleType('specific')}
               className={`p-2.5 rounded-lg border text-left transition-all ${
                 scheduleType === 'specific'
-                  ? 'bg-[#142340] border-[#1E5EFF] text-white'
-                  : 'bg-[#0A1020] border-[#192747] text-[#94A3B8] hover:text-[#E6E8EC]'
+                  ? 'bg-[#E2E8F0] border-[#2563EB] text-white'
+                  : 'bg-[#F8FAFC] border-[#DCE3EC] text-[#94A3B8] hover:text-[#172033]'
               }`}
             >
-              <div className="flex items-center gap-1.5 font-semibold text-xs text-[#E6E8EC]">
+              <div className="flex items-center gap-1.5 font-semibold text-xs text-[#172033]">
                 <Clock className="w-3.5 h-3.5" />
                 Horário Específico
               </div>
-              <p className="text-[10px] text-[#8E9BAE] mt-1">
+              <p className="text-[10px] text-[#64748B] mt-1">
                 Define uma hora fixa da grade de postagens
               </p>
             </button>
@@ -469,9 +469,9 @@ ${affiliateUrl}`;
                 type="time"
                 value={specificTime}
                 onChange={(e) => setSpecificTime(e.target.value)}
-                className="bg-[#0A1020] border border-[#192747] rounded-lg px-3 py-1.5 text-xs text-[#E6E8EC] font-mono focus:outline-none focus:border-[#1E5EFF]"
+                className="bg-[#F8FAFC] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] font-mono focus:outline-none focus:border-[#2563EB]"
               />
-              <span className="text-[11px] text-[#8E9BAE]">
+              <span className="text-[11px] text-[#64748B]">
                 Horário programado para hoje
               </span>
             </div>
@@ -487,7 +487,7 @@ ${affiliateUrl}`;
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value as QueuePriority)}
-              className="w-full bg-[#0A1020] border border-[#192747] rounded-lg px-3 py-1.5 text-xs text-[#E6E8EC] focus:outline-none focus:border-[#1E5EFF]"
+              className="w-full bg-[#F8FAFC] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB]"
             >
               <option value="Normal">Normal</option>
               <option value="Alta">Alta (Pula na frente de ofertas comuns)</option>
@@ -497,11 +497,11 @@ ${affiliateUrl}`;
         </div>
 
         {/* Modal Buttons */}
-        <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#16233B]">
+        <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#E2E8F0]">
           <Button variant="ghost" size="sm" onClick={onClose}>
             Cancelar
           </Button>
-          <Button variant="primary" size="sm" type="submit" disabled={!selectedChannel && initialChannels.length === 0} className="shadow-lg shadow-[#1E5EFF]/15">
+          <Button variant="primary" size="sm" type="submit" disabled={!selectedChannel && initialChannels.length === 0} className="shadow-lg shadow-[#2563EB]/15">
             Adicionar à Fila de Disparos
           </Button>
         </div>

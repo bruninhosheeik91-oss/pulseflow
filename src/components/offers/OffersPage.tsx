@@ -497,19 +497,19 @@ export const OffersPage: React.FC = () => {
             key={toast.id}
             className={`pointer-events-auto flex items-center justify-between gap-3 px-4 py-3 rounded-xl border text-xs font-medium shadow-2xl backdrop-blur-md animate-in slide-in-from-top-2 fade-in duration-200 ${
               toast.type === 'warning'
-                ? 'bg-[#1D1418]/95 border-rose-500/40 text-rose-200'
+                ? 'bg-[#F8FAFC]/95 border-rose-500/40 text-rose-700'
                 : toast.type === 'info'
-                ? 'bg-[#0B172C]/95 border-[#1E5EFF]/40 text-[#70A1FF]'
-                : 'bg-[#0A1A24]/95 border-emerald-500/40 text-emerald-200'
+                ? 'bg-[#F8FAFC]/95 border-[#2563EB]/40 text-[#2563EB]'
+                : 'bg-[#F8FAFC]/95 border-emerald-500/40 text-emerald-700'
             }`}
           >
             <div className="flex items-center gap-2">
               {toast.type === 'warning' ? (
-                <Info className="w-4 h-4 text-rose-400 shrink-0" />
+                <Info className="w-4 h-4 text-rose-700 shrink-0" />
               ) : toast.type === 'info' ? (
-                <Sparkles className="w-4 h-4 text-[#00C2FF] shrink-0" />
+                <Sparkles className="w-4 h-4 text-[#2563EB] shrink-0" />
               ) : (
-                <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                <Check className="w-4 h-4 text-emerald-700 shrink-0" />
               )}
               <span>{toast.message}</span>
             </div>

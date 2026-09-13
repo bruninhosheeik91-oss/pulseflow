@@ -45,7 +45,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Brand */}
       <div className="h-12 px-3 flex items-center border-b border-[#E2E8F0] shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-[#1E5EFF] flex items-center justify-center shrink-0">
+          <div className="w-6 h-6 rounded-md bg-[#2563EB] flex items-center justify-center shrink-0">
             <span className="font-extrabold text-white text-[9px] tracking-wider">
               PF
             </span>

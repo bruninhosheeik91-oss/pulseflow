@@ -79,10 +79,10 @@ export const AnalyticsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-[#00C2FF]" />
+            <BarChart3 className="w-5 h-5 text-[#2563EB]" />
             <span>Analytics & Inteligência de Conversão</span>
           </h2>
-          <p className="text-xs text-[#8E9BAE] mt-0.5">
+          <p className="text-xs text-[#64748B] mt-0.5">
             Métricas de comissões, faturamento GMV, engajamento por canal e horários nobres de compra
           </p>
         </div>
@@ -90,7 +90,7 @@ export const AnalyticsPage: React.FC = () => {
         {/* Action Controls */}
         <div className="flex items-center gap-2.5 flex-wrap">
           {/* Timeframe Selector */}
-          <div className="flex items-center gap-1 bg-[#0A1020] border border-[#16233B] p-1 rounded-lg">
+          <div className="flex items-center gap-1 bg-[#F8FAFC] border border-[#E2E8F0] p-1 rounded-lg">
             {(
               [
                 { id: '7d', label: '7 Dias' },
@@ -105,8 +105,8 @@ export const AnalyticsPage: React.FC = () => {
                 onClick={() => setTimeframe(tf.id)}
                 className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
                   timeframe === tf.id
-                    ? 'bg-[#1E5EFF] text-white'
-                    : 'text-[#8E9BAE] hover:text-[#E6E8EC]'
+                    ? 'bg-[#2563EB] text-white'
+                    : 'text-[#64748B] hover:text-[#172033]'
                 }`}
               >
                 {tf.label}
@@ -119,10 +119,10 @@ export const AnalyticsPage: React.FC = () => {
             type="button"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0E1B33] hover:bg-[#162A50] border border-[#1E3B70] text-[#93C5FD] text-xs font-medium rounded-lg transition-colors shadow-xs"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F1F5F9] hover:bg-[#CBD5E1] border border-[#93C5FD] text-[#93C5FD] text-xs font-medium rounded-lg transition-colors shadow-xs"
           >
             <RefreshCw
-              className={`w-3.5 h-3.5 text-[#00C2FF] ${
+              className={`w-3.5 h-3.5 text-[#2563EB] ${
                 isRefreshing ? 'animate-spin' : ''
               }`}
             />
@@ -133,9 +133,9 @@ export const AnalyticsPage: React.FC = () => {
           <button
             type="button"
             onClick={handleExportData}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0A1020] hover:bg-[#14203B] border border-[#182642] text-[#E6E8EC] text-xs font-medium rounded-lg transition-colors shadow-xs"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F8FAFC] hover:bg-[#E2E8F0] border border-[#DCE3EC] text-[#172033] text-xs font-medium rounded-lg transition-colors shadow-xs"
           >
-            <Download className="w-3.5 h-3.5 text-[#8E9BAE]" />
+            <Download className="w-3.5 h-3.5 text-[#64748B]" />
             <span>Exportar Dados</span>
           </button>
         </div>
@@ -168,8 +168,8 @@ export const AnalyticsPage: React.FC = () => {
 
       {/* Toast Notification */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#0E172C] border border-[#1E3563] text-[#E6E8EC] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+        <div className="fixed bottom-6 right-6 z-50 bg-[#FFFFFF] border border-[#BFDBFE] text-[#172033] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
           <span className="font-medium leading-relaxed">{toast}</span>
         </div>
       )}

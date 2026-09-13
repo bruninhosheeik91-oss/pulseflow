@@ -46,10 +46,10 @@ export const MarketplaceBadge: React.FC<MarketplaceBadgeProps> = ({
         };
       case 'Magalu':
         return {
-          bg: 'bg-[#0086FF]/10',
-          border: 'border-[#0086FF]/25',
-          text: 'text-[#38BDF8]',
-          dot: 'bg-[#0086FF]',
+          bg: 'bg-[#F8FAFC]/10',
+          border: 'border-[#E2E8F0]/25',
+          text: 'text-[#3B82F6]',
+          dot: 'bg-[#F8FAFC]',
         };
       case 'TikTok Shop':
         return {
@@ -60,8 +60,8 @@ export const MarketplaceBadge: React.FC<MarketplaceBadgeProps> = ({
         };
       default:
         return {
-          bg: 'bg-[#131D33]',
-          border: 'border-[#1C2C4E]',
+          bg: 'bg-[#F1F5F9]',
+          border: 'border-[#E2E8F0]',
           text: 'text-[#94A3B8]',
           dot: 'bg-[#94A3B8]',
         };

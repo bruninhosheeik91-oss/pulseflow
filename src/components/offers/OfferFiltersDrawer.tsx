@@ -140,21 +140,21 @@ export const OfferFiltersDrawer: React.FC<OfferFiltersDrawerProps> = ({
       />
 
       {/* Drawer Panel */}
-      <div className="relative w-full max-w-md bg-[#0A0F1C] border-l border-[#1B2947] h-full flex flex-col z-10 shadow-2xl animate-in slide-in-from-right duration-250">
+      <div className="relative w-full max-w-md bg-[#F4F7FB] border-l border-[#DCE3EC] h-full flex flex-col z-10 shadow-2xl animate-in slide-in-from-right duration-250">
         {/* Header */}
-        <div className="h-16 px-6 border-b border-[#14203B] flex items-center justify-between shrink-0 bg-[#070C18]">
+        <div className="h-16 px-6 border-b border-[#E2E8F0] flex items-center justify-between shrink-0 bg-[#FFFFFF]">
           <div className="flex items-center gap-2.5">
-            <h3 className="text-base font-bold text-[#E6E8EC]">
+            <h3 className="text-base font-bold text-[#172033]">
               Filtros de ofertas
             </h3>
-            <span className="text-xs font-mono-numeric text-[#8E9BAE] bg-[#121D38] px-2 py-0.5 rounded border border-[#1C2F57]">
+            <span className="text-xs font-mono-numeric text-[#64748B] bg-[#F8FAFC] px-2 py-0.5 rounded border border-[#E2E8F0]">
               Refine a busca
             </span>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#8E9BAE] hover:text-[#E6E8EC] hover:bg-[#14203B] transition-colors"
+            className="p-1.5 rounded-lg text-[#64748B] hover:text-[#172033] hover:bg-[#E2E8F0] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -165,15 +165,15 @@ export const OfferFiltersDrawer: React.FC<OfferFiltersDrawerProps> = ({
           {/* MARKETPLACE (MULTIMARKETPLACE SUPPORT) */}
           <div className="space-y-2.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-[#E6E8EC] uppercase tracking-wider block">
+              <label className="text-xs font-bold text-[#172033] uppercase tracking-wider block">
                 Marketplace
               </label>
               {draft.marketplaces.length > 0 ? (
-                <span className="text-[11px] font-mono-numeric text-[#00C2FF] font-medium bg-[#121E38] px-2 py-0.5 rounded border border-[#1E3360]">
+                <span className="text-[11px] font-mono-numeric text-[#2563EB] font-medium bg-[#EFF6FF] px-2 py-0.5 rounded border border-[#BFDBFE]">
                   {draft.marketplaces.length} selecionado{draft.marketplaces.length > 1 ? 's' : ''}
                 </span>
               ) : (
-                <span className="text-[11px] text-[#8E9BAE]">Todos ativos</span>
+                <span className="text-[11px] text-[#64748B]">Todos ativos</span>
               )}
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -182,8 +182,8 @@ export const OfferFiltersDrawer: React.FC<OfferFiltersDrawerProps> = ({
                 onClick={selectAllMarketplaces}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                   draft.marketplaces.length === 0
-                    ? 'bg-[#152345] border-[#1E5EFF] text-[#00C2FF] shadow-xs'
-                    : 'bg-[#0B1224] border-[#162340] text-[#8E9BAE] hover:border-[#22355C] hover:text-[#E6E8EC]'
+                    ? 'bg-[#DBEAFE] border-[#2563EB] text-[#2563EB] shadow-xs'
+                    : 'bg-[#F8FAFC] border-[#E2E8F0] text-[#64748B] hover:border-[#94A3B8] hover:text-[#172033]'
                 }`}
               >
                 Todos
@@ -197,8 +197,8 @@ export const OfferFiltersDrawer: React.FC<OfferFiltersDrawerProps> = ({
                     onClick={() => toggleMarketplace(mp)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                       active
-                        ? 'bg-[#152345] border-[#1E5EFF] text-[#00C2FF] shadow-xs'
-                        : 'bg-[#0B1224] border-[#162340] text-[#8E9BAE] hover:border-[#22355C] hover:text-[#E6E8EC]'
+                        ? 'bg-[#DBEAFE] border-[#2563EB] text-[#2563EB] shadow-xs'
+                        : 'bg-[#F8FAFC] border-[#E2E8F0] text-[#64748B] hover:border-[#94A3B8] hover:text-[#172033]'
                     }`}
                   >
                     {mp}
@@ -210,7 +210,7 @@ export const OfferFiltersDrawer: React.FC<OfferFiltersDrawerProps> = ({
 
           {/* CATEGORIA */}
           <div className="space-y-2.5">
-            <label className="text-xs font-bold text-[#E6E8EC] uppercase tracking-wider block">
+            <label className="text-xs font-bold text-[#172033] uppercase tracking-wider block">
               Categoria
             </label>
             <div className="flex flex-wrap gap-1.5">
@@ -223,8 +223,8 @@ export const OfferFiltersDrawer: React.FC<OfferFiltersDrawerProps> = ({
                     onClick={() => setDraft({ ...draft, category: cat })}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                       active
-                        ? 'bg-[#152345] border-[#1E5EFF] text-[#00C2FF] shadow-xs'
-                        : 'bg-[#0B1224] border-[#162340] text-[#8E9BAE] hover:border-[#22355C] hover:text-[#E6E8EC]'
+                        ? 'bg-[#DBEAFE] border-[#2563EB] text-[#2563EB] shadow-xs'
+                        : 'bg-[#F8FAFC] border-[#E2E8F0] text-[#64748B] hover:border-[#94A3B8] hover:text-[#172033]'
                     }`}
                   >
                     {cat}
@@ -236,16 +236,16 @@ export const OfferFiltersDrawer: React.FC<OfferFiltersDrawerProps> = ({
 
           {/* PREÇO */}
           <div className="space-y-2.5">
-            <label className="text-xs font-bold text-[#E6E8EC] uppercase tracking-wider block">
+            <label className="text-xs font-bold text-[#172033] uppercase tracking-wider block">
               Faixa de Preço
             </label>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <span className="text-xs text-[#8E9BAE] block mb-1">
+                <span className="text-xs text-[#64748B] block mb-1">
                   Preço mínimo
                 </span>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[#5A6470] font-mono-numeric">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[#94A3B8] font-mono-numeric">
                     R$
                   </span>
                   <input
@@ -255,16 +255,16 @@ export const OfferFiltersDrawer: React.FC<OfferFiltersDrawerProps> = ({
                     onChange={(e) =>
                       setDraft({ ...draft, minPrice: e.target.value })
                     }
-                    className="w-full h-9 pl-9 pr-3 bg-[#0B1224] border border-[#162340] rounded-lg text-xs font-mono-numeric text-[#E6E8EC] placeholder:text-[#5A6470] focus:outline-none focus:border-[#1E5EFF]"
+                    className="w-full h-9 pl-9 pr-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-xs font-mono-numeric text-[#172033] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB]"
                   />
                 </div>
               </div>
               <div>
-                <span className="text-xs text-[#8E9BAE] block mb-1">
+                <span className="text-xs text-[#64748B] block mb-1">
                   Preço máximo
                 </span>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[#5A6470] font-mono-numeric">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[#94A3B8] font-mono-numeric">
                     R$
                   </span>
                   <input
@@ -274,7 +274,7 @@ export const OfferFiltersDrawer: React.FC<OfferFiltersDrawerProps> = ({
                     onChange={(e) =>
                       setDraft({ ...draft, maxPrice: e.target.value })
                     }
-                    className="w-full h-9 pl-9 pr-3 bg-[#0B1224] border border-[#162340] rounded-lg text-xs font-mono-numeric text-[#E6E8EC] placeholder:text-[#5A6470] focus:outline-none focus:border-[#1E5EFF]"
+                    className="w-full h-9 pl-9 pr-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-xs font-mono-numeric text-[#172033] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB]"
                   />
                 </div>
               </div>
@@ -284,10 +284,10 @@ export const OfferFiltersDrawer: React.FC<OfferFiltersDrawerProps> = ({
           {/* DESCONTO MÍNIMO */}
           <div className="space-y-2.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-[#E6E8EC] uppercase tracking-wider">
+              <label className="text-xs font-bold text-[#172033] uppercase tracking-wider">
                 Desconto Mínimo
               </label>
-              <span className="text-xs font-mono-numeric text-[#00C2FF] font-semibold">
+              <span className="text-xs font-mono-numeric text-[#2563EB] font-semibold">
                 {draft.minDiscount > 0 ? `${draft.minDiscount}% ou mais` : 'Qualquer'}
               </span>
             </div>
@@ -301,8 +301,8 @@ export const OfferFiltersDrawer: React.FC<OfferFiltersDrawerProps> = ({
                     onClick={() => setDraft({ ...draft, minDiscount: disc })}
                     className={`py-1.5 rounded-lg text-xs font-mono-numeric font-medium border text-center transition-all ${
                       active
-                        ? 'bg-[#152345] border-[#1E5EFF] text-[#00C2FF]'
-                        : 'bg-[#0B1224] border-[#162340] text-[#8E9BAE] hover:border-[#22355C]'
+                        ? 'bg-[#DBEAFE] border-[#2563EB] text-[#2563EB]'
+                        : 'bg-[#F8FAFC] border-[#E2E8F0] text-[#64748B] hover:border-[#94A3B8]'
                     }`}
                   >
                     {disc === 0 ? '0%' : `${disc}%`}
@@ -314,7 +314,7 @@ export const OfferFiltersDrawer: React.FC<OfferFiltersDrawerProps> = ({
 
           {/* AVALIAÇÃO MÍNIMA */}
           <div className="space-y-2.5">
-            <label className="text-xs font-bold text-[#E6E8EC] uppercase tracking-wider block">
+            <label className="text-xs font-bold text-[#172033] uppercase tracking-wider block">
               Avaliação Mínima
             </label>
             <div className="grid grid-cols-5 gap-1.5">
@@ -327,8 +327,8 @@ export const OfferFiltersDrawer: React.FC<OfferFiltersDrawerProps> = ({
                     onClick={() => setDraft({ ...draft, minRating: rat.value })}
                     className={`py-1.5 rounded-lg text-xs font-medium border text-center transition-all ${
                       active
-                        ? 'bg-[#152345] border-[#1E5EFF] text-[#00C2FF]'
-                        : 'bg-[#0B1224] border-[#162340] text-[#8E9BAE] hover:border-[#22355C]'
+                        ? 'bg-[#DBEAFE] border-[#2563EB] text-[#2563EB]'
+                        : 'bg-[#F8FAFC] border-[#E2E8F0] text-[#64748B] hover:border-[#94A3B8]'
                     }`}
                   >
                     {rat.label}
@@ -340,7 +340,7 @@ export const OfferFiltersDrawer: React.FC<OfferFiltersDrawerProps> = ({
 
           {/* VENDAS MÍNIMAS */}
           <div className="space-y-2.5">
-            <label className="text-xs font-bold text-[#E6E8EC] uppercase tracking-wider block">
+            <label className="text-xs font-bold text-[#172033] uppercase tracking-wider block">
               Vendas Mínimas
             </label>
             <div className="grid grid-cols-5 gap-1.5">
@@ -353,8 +353,8 @@ export const OfferFiltersDrawer: React.FC<OfferFiltersDrawerProps> = ({
                     onClick={() => setDraft({ ...draft, minSales: sal.value })}
                     className={`py-1.5 rounded-lg text-xs font-mono-numeric font-medium border text-center transition-all ${
                       active
-                        ? 'bg-[#152345] border-[#1E5EFF] text-[#00C2FF]'
-                        : 'bg-[#0B1224] border-[#162340] text-[#8E9BAE] hover:border-[#22355C]'
+                        ? 'bg-[#DBEAFE] border-[#2563EB] text-[#2563EB]'
+                        : 'bg-[#F8FAFC] border-[#E2E8F0] text-[#64748B] hover:border-[#94A3B8]'
                     }`}
                   >
                     {sal.label}
@@ -366,11 +366,11 @@ export const OfferFiltersDrawer: React.FC<OfferFiltersDrawerProps> = ({
 
           {/* COMISSÃO MÍNIMA */}
           <div className="space-y-2.5">
-            <label className="text-xs font-bold text-[#E6E8EC] uppercase tracking-wider block">
+            <label className="text-xs font-bold text-[#172033] uppercase tracking-wider block">
               Comissão Mínima Estimada
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[#5A6470] font-mono-numeric">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[#94A3B8] font-mono-numeric">
                 R$
               </span>
               <input
@@ -380,18 +380,18 @@ export const OfferFiltersDrawer: React.FC<OfferFiltersDrawerProps> = ({
                 onChange={(e) =>
                   setDraft({ ...draft, minCommission: e.target.value })
                 }
-                className="w-full h-9 pl-9 pr-3 bg-[#0B1224] border border-[#162340] rounded-lg text-xs font-mono-numeric text-[#E6E8EC] placeholder:text-[#5A6470] focus:outline-none focus:border-[#1E5EFF]"
+                className="w-full h-9 pl-9 pr-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-xs font-mono-numeric text-[#172033] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
 
           {/* DEAL SCORE SLIDER */}
-          <div className="space-y-2.5 p-3.5 bg-[#0B1224] border border-[#162340] rounded-xl">
+          <div className="space-y-2.5 p-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-[#E6E8EC] uppercase tracking-wider">
+              <label className="text-xs font-bold text-[#172033] uppercase tracking-wider">
                 Deal Score Mínimo
               </label>
-              <span className="font-mono-numeric font-bold text-xs text-[#00C2FF] bg-[#121E38] px-2.5 py-0.5 rounded border border-[#1E3360]">
+              <span className="font-mono-numeric font-bold text-xs text-[#2563EB] bg-[#EFF6FF] px-2.5 py-0.5 rounded border border-[#BFDBFE]">
                 {draft.minScore === 0 ? 'Qualquer' : `${draft.minScore} pts`}
               </span>
             </div>
@@ -404,9 +404,9 @@ export const OfferFiltersDrawer: React.FC<OfferFiltersDrawerProps> = ({
               onChange={(e) =>
                 setDraft({ ...draft, minScore: Number(e.target.value) })
               }
-              className="w-full h-1.5 bg-[#14203B] rounded-lg appearance-none cursor-pointer accent-[#1E5EFF]"
+              className="w-full h-1.5 bg-[#E2E8F0] rounded-lg appearance-none cursor-pointer accent-[#2563EB]"
             />
-            <div className="flex justify-between text-[11px] text-[#5A6470] font-mono-numeric">
+            <div className="flex justify-between text-[11px] text-[#94A3B8] font-mono-numeric">
               <span>0 (Todos)</span>
               <span>70 (Bom)</span>
               <span>80 (Muito bom)</span>
@@ -416,7 +416,7 @@ export const OfferFiltersDrawer: React.FC<OfferFiltersDrawerProps> = ({
 
           {/* STATUS */}
           <div className="space-y-2.5">
-            <label className="text-xs font-bold text-[#E6E8EC] uppercase tracking-wider block">
+            <label className="text-xs font-bold text-[#172033] uppercase tracking-wider block">
               Status da Oferta
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -429,16 +429,16 @@ export const OfferFiltersDrawer: React.FC<OfferFiltersDrawerProps> = ({
                     onClick={() => toggleStatus(st)}
                     className={`flex items-center justify-between p-2.5 rounded-lg border text-xs font-medium transition-all ${
                       active
-                        ? 'bg-[#152345] border-[#1E5EFF] text-[#E6E8EC]'
-                        : 'bg-[#0B1224] border-[#162340] text-[#8E9BAE] hover:border-[#22355C]'
+                        ? 'bg-[#DBEAFE] border-[#2563EB] text-[#172033]'
+                        : 'bg-[#F8FAFC] border-[#E2E8F0] text-[#64748B] hover:border-[#94A3B8]'
                     }`}
                   >
                     <span>{st}</span>
                     <div
                       className={`w-4 h-4 rounded flex items-center justify-center border transition-colors ${
                         active
-                          ? 'bg-[#1E5EFF] border-[#1E5EFF] text-white'
-                          : 'border-[#26375E] bg-[#0A1020]'
+                          ? 'bg-[#2563EB] border-[#2563EB] text-white'
+                          : 'border-[#93C5FD] bg-[#F8FAFC]'
                       }`}
                     >
                       {active && <Check className="w-3 h-3" />}
@@ -451,13 +451,13 @@ export const OfferFiltersDrawer: React.FC<OfferFiltersDrawerProps> = ({
         </div>
 
         {/* Sticky Drawer Footer */}
-        <div className="p-4 border-t border-[#14203B] bg-[#070C18] flex items-center justify-between gap-3 shrink-0">
+        <div className="p-4 border-t border-[#E2E8F0] bg-[#FFFFFF] flex items-center justify-between gap-3 shrink-0">
           <Button
             variant="ghost"
             size="sm"
             onClick={handleReset}
             leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
-            className="text-xs text-[#8E9BAE] hover:text-[#E6E8EC]"
+            className="text-xs text-[#64748B] hover:text-[#172033]"
           >
             Limpar filtros
           </Button>
@@ -465,7 +465,7 @@ export const OfferFiltersDrawer: React.FC<OfferFiltersDrawerProps> = ({
             variant="primary"
             size="sm"
             onClick={handleApply}
-            className="text-xs font-semibold px-6 shadow-sm shadow-[#1E5EFF]/30"
+            className="text-xs font-semibold px-6 shadow-sm shadow-[#2563EB]/30"
           >
             Aplicar filtros
           </Button>

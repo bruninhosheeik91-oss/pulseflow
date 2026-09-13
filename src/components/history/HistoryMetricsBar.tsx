@@ -20,54 +20,54 @@ export const HistoryMetricsBar: React.FC<HistoryMetricsBarProps> = ({ historyIte
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
       {/* 1. Total Disparos */}
-      <div className="bg-[#0E1628] border border-[#182642] rounded-xl p-3.5 flex flex-col justify-between">
-        <div className="flex items-center justify-between text-[#8E9BAE]">
+      <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-3.5 flex flex-col justify-between">
+        <div className="flex items-center justify-between text-[#64748B]">
           <span className="text-xs font-medium">Disparos Registrados</span>
-          <Send className="w-3.5 h-3.5 text-[#1E5EFF]" />
+          <Send className="w-3.5 h-3.5 text-[#2563EB]" />
         </div>
         <div className="mt-2">
           <span className="text-xl font-bold text-white font-mono-numeric">
             {totalDispatches}
           </span>
-          <p className="text-[11px] text-[#8E9BAE] mt-0.5">no período selecionado</p>
+          <p className="text-[11px] text-[#64748B] mt-0.5">no período selecionado</p>
         </div>
       </div>
 
       {/* 2. Taxa de Entrega */}
-      <div className="bg-[#0E1628] border border-[#182642] rounded-xl p-3.5 flex flex-col justify-between">
-        <div className="flex items-center justify-between text-[#8E9BAE]">
+      <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-3.5 flex flex-col justify-between">
+        <div className="flex items-center justify-between text-[#64748B]">
           <span className="text-xs font-medium">Taxa de Entrega</span>
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
         </div>
         <div className="mt-2">
           <div className="flex items-baseline gap-1.5">
-            <span className="text-xl font-bold text-emerald-400 font-mono-numeric">
+            <span className="text-xl font-bold text-emerald-700 font-mono-numeric">
               {deliveryRate}%
             </span>
           </div>
-          <p className="text-[11px] text-[#8E9BAE] mt-0.5">
+          <p className="text-[11px] text-[#64748B] mt-0.5">
             {deliveredCount} sucesso &bull; {failedCount} falhas
           </p>
         </div>
       </div>
 
       {/* 3. Cliques Gerados */}
-      <div className="bg-[#0E1628] border border-[#182642] rounded-xl p-3.5 flex flex-col justify-between">
-        <div className="flex items-center justify-between text-[#8E9BAE]">
+      <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-3.5 flex flex-col justify-between">
+        <div className="flex items-center justify-between text-[#64748B]">
           <span className="text-xs font-medium">Cliques Gerados</span>
-          <MousePointerClick className="w-3.5 h-3.5 text-[#00C2FF]" />
+          <MousePointerClick className="w-3.5 h-3.5 text-[#2563EB]" />
         </div>
         <div className="mt-2">
           <span className="text-xl font-bold text-white font-mono-numeric">
             {totalClicks.toLocaleString()}
           </span>
-          <p className="text-[11px] text-[#8E9BAE] mt-0.5">tráfego qualificado</p>
+          <p className="text-[11px] text-[#64748B] mt-0.5">tráfego qualificado</p>
         </div>
       </div>
 
       {/* 4. Pedidos Concretizados */}
-      <div className="bg-[#0E1628] border border-[#182642] rounded-xl p-3.5 flex flex-col justify-between">
-        <div className="flex items-center justify-between text-[#8E9BAE]">
+      <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-3.5 flex flex-col justify-between">
+        <div className="flex items-center justify-between text-[#64748B]">
           <span className="text-xs font-medium">Pedidos Atribuídos</span>
           <ShoppingCart className="w-3.5 h-3.5 text-indigo-400" />
         </div>
@@ -75,21 +75,21 @@ export const HistoryMetricsBar: React.FC<HistoryMetricsBarProps> = ({ historyIte
           <span className="text-xl font-bold text-white font-mono-numeric">
             {totalOrders}
           </span>
-          <p className="text-[11px] text-[#8E9BAE] mt-0.5">
-            Conv. média: <strong className="text-indigo-300">{avgConversion}%</strong>
+          <p className="text-[11px] text-[#64748B] mt-0.5">
+            Conv. média: <strong className="text-indigo-700">{avgConversion}%</strong>
           </p>
         </div>
       </div>
 
       {/* 5. Comissões Acumuladas */}
-      <div className="bg-[#0E1628] border border-[#182642] rounded-xl p-3.5 flex flex-col justify-between col-span-2 md:col-span-1 lg:col-span-2 bg-gradient-to-br from-[#0E1628] to-[#122244]">
-        <div className="flex items-center justify-between text-[#8E9BAE]">
+      <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-3.5 flex flex-col justify-between col-span-2 md:col-span-1 lg:col-span-2 bg-gradient-to-br from-[#FFFFFF] to-[#E2E8F0]">
+        <div className="flex items-center justify-between text-[#64748B]">
           <span className="text-xs font-medium">Comissões Acumuladas</span>
-          <DollarSign className="w-4 h-4 text-emerald-400" />
+          <DollarSign className="w-4 h-4 text-emerald-700" />
         </div>
         <div className="mt-2 flex items-baseline justify-between">
           <div>
-            <span className="text-2xl font-black text-emerald-400 font-mono-numeric">
+            <span className="text-2xl font-black text-emerald-700 font-mono-numeric">
               R$ {totalCommission.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
             <p className="text-[11px] text-[#CBD5E1] mt-0.5">

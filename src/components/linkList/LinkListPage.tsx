@@ -241,7 +241,7 @@ export const LinkListPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-bold text-[#E6E8EC] tracking-tight">
+            <h1 className="text-xl font-bold text-[#172033] tracking-tight">
               Lista de Links
             </h1>
             {activeList && (
@@ -255,7 +255,7 @@ export const LinkListPage: React.FC = () => {
               </div>
             )}
           </div>
-          <p className="text-xs text-[#8E9BAE] mt-1">
+          <p className="text-xs text-[#64748B] mt-1">
             Organize links de ofertas e prepare sua distribuição.
           </p>
         </div>
@@ -283,15 +283,15 @@ export const LinkListPage: React.FC = () => {
 
       {lists.length === 0 ? (
         /* Empty state: nenhuma lista criada */
-        <div className="py-10 px-6 bg-[#0E1628] border border-[#1B2947] rounded-xl flex flex-col items-center gap-4 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-[#14203B] border border-[#1E3057] flex items-center justify-center">
-            <ListChecks className="w-7 h-7 text-[#38BDF8]" />
+        <div className="py-10 px-6 bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl flex flex-col items-center gap-4 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-[#E2E8F0] border border-[#BFDBFE] flex items-center justify-center">
+            <ListChecks className="w-7 h-7 text-[#3B82F6]" />
           </div>
           <div className="space-y-1.5">
-            <h3 className="text-base font-semibold text-[#E6E8EC] tracking-tight">
+            <h3 className="text-base font-semibold text-[#172033] tracking-tight">
               Nenhuma lista criada
             </h3>
-            <p className="text-xs text-[#8E9BAE] max-w-sm">
+            <p className="text-xs text-[#64748B] max-w-sm">
               Crie uma lista para adicionar ofertas e preparar o envio para a fila.
             </p>
           </div>
@@ -320,13 +320,13 @@ export const LinkListPage: React.FC = () => {
                   onClick={() => setActiveListId(list.id)}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer border ${
                     isActive
-                      ? 'bg-[#142340] text-white border-[#1E5EFF]'
-                      : 'bg-[#0E1628] text-[#8E9BAE] border-[#1B2947] hover:text-[#E6E8EC] hover:border-[#283C66]'
+                      ? 'bg-[#E2E8F0] text-white border-[#2563EB]'
+                      : 'bg-[#FFFFFF] text-[#64748B] border-[#DCE3EC] hover:text-[#172033] hover:border-[#93C5FD]'
                   }`}
                 >
-                  <Link2 className={`w-3.5 h-3.5 ${isActive ? 'text-[#00C2FF]' : 'text-[#64748B]'}`} />
+                  <Link2 className={`w-3.5 h-3.5 ${isActive ? 'text-[#2563EB]' : 'text-[#64748B]'}`} />
                   <span className="truncate max-w-[180px]">{list.name}</span>
-                  <span className={`text-[10px] font-mono-numeric ${isActive ? 'text-[#70A1FF]' : 'text-[#64748B]'}`}>
+                  <span className={`text-[10px] font-mono-numeric ${isActive ? 'text-[#2563EB]' : 'text-[#64748B]'}`}>
                     {list.links.length}
                   </span>
                   {pend > 0 && (
@@ -338,7 +338,7 @@ export const LinkListPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsNewListOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#8E9BAE] hover:text-[#E6E8EC] hover:bg-[#0D162B] border border-dashed border-[#1B2947] transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-[#172033] hover:bg-[#F1F5F9] border border-dashed border-[#DCE3EC] transition-colors cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               Nova lista
@@ -350,13 +350,13 @@ export const LinkListPage: React.FC = () => {
               {/* Left column: lista + links */}
               <div className="lg:col-span-8 space-y-4">
                 {/* List summary */}
-                <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-5 space-y-4">
+                <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-5 space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                     <div className="min-w-0 space-y-1">
-                      <h3 className="text-sm font-bold text-[#E6E8EC] tracking-tight">
+                      <h3 className="text-sm font-bold text-[#172033] tracking-tight">
                         {activeList.name}
                       </h3>
-                      <p className="text-xs text-[#8E9BAE]">
+                      <p className="text-xs text-[#64748B]">
                         {activeList.description || 'Sem descrição'} · criada em{' '}
                         {activeList.createdAt}
                       </p>
@@ -364,7 +364,7 @@ export const LinkListPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleDeleteList(activeList.id)}
-                      className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] text-[#8E9BAE] hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                      className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] text-[#64748B] hover:text-rose-700 hover:bg-rose-500/10 transition-colors cursor-pointer"
                     >
                       <Trash2 className="w-3 h-3" />
                       Excluir lista
@@ -372,33 +372,33 @@ export const LinkListPage: React.FC = () => {
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px]">
-                    <div className="p-2.5 bg-[#0A1020] border border-[#162340] rounded-lg">
+                    <div className="p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
                       <span className="text-[10px] text-[#64748B] block">Campanha</span>
-                      <span className="text-xs font-medium text-[#E6E8EC] mt-0.5 block truncate">
+                      <span className="text-xs font-medium text-[#172033] mt-0.5 block truncate">
                         {activeList.campaignName || '—'}
                       </span>
                     </div>
-                    <div className="p-2.5 bg-[#0A1020] border border-[#162340] rounded-lg">
+                    <div className="p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
                       <span className="text-[10px] text-[#64748B] block">Destino</span>
-                      <span className="text-xs font-medium text-[#00C2FF] mt-0.5 block">
+                      <span className="text-xs font-medium text-[#2563EB] mt-0.5 block">
                         {DESTINATION_LABELS[activeList.destination]}
                       </span>
                     </div>
-                    <div className="p-2.5 bg-[#0A1020] border border-[#162340] rounded-lg">
+                    <div className="p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
                       <span className="text-[10px] text-[#64748B] block">Rotação</span>
-                      <span className="text-xs font-medium text-[#E6E8EC] mt-0.5 block">
+                      <span className="text-xs font-medium text-[#172033] mt-0.5 block">
                         {ROTATION_LABELS[activeList.rotation]}
                       </span>
                     </div>
-                    <div className="p-2.5 bg-[#0A1020] border border-[#162340] rounded-lg">
+                    <div className="p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
                       <span className="text-[10px] text-[#64748B] block">Pendentes</span>
-                      <span className="text-xs font-medium text-amber-400 mt-0.5 block">
+                      <span className="text-xs font-medium text-amber-700 mt-0.5 block">
                         {pendingCount}
                       </span>
                     </div>
                   </div>
 
-                  <div className="p-2.5 bg-[#0A1020] border border-[#162340] rounded-lg text-[11px] text-[#8E9BAE]">
+                  <div className="p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-[11px] text-[#64748B]">
                     Frequência: {frequencyLabel(activeList.frequency)}
                   </div>
 
@@ -433,14 +433,14 @@ export const LinkListPage: React.FC = () => {
                   </div>
 
                   {processingNotice && (
-                    <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-amber-500/10 border border-amber-500/25 text-[11px] text-amber-300">
+                    <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-amber-500/10 border border-amber-500/25 text-[11px] text-amber-700">
                       <Info className="w-4 h-4 shrink-0 mt-0.5" />
                       <span>
                         Processamento disponível após integração com os marketplaces.{' '}
                         <button
                           type="button"
                           onClick={() => setProcessingNotice(false)}
-                          className="underline hover:text-amber-200 cursor-pointer"
+                          className="underline hover:text-amber-700 cursor-pointer"
                         >
                           Dispensar
                         </button>
@@ -450,13 +450,13 @@ export const LinkListPage: React.FC = () => {
                 </div>
 
                 {/* Links table */}
-                <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl">
-                  <div className="px-5 py-4 border-b border-[#162442] flex items-center justify-between">
+                <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl">
+                  <div className="px-5 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
                     <div>
-                      <h4 className="text-sm font-semibold text-[#E6E8EC] tracking-tight">
+                      <h4 className="text-sm font-semibold text-[#172033] tracking-tight">
                         Links adicionados
                       </h4>
-                      <p className="text-xs text-[#8E9BAE] mt-0.5">
+                      <p className="text-xs text-[#64748B] mt-0.5">
                         Marketplace e produto são preenchidos após o processamento.
                       </p>
                     </div>
@@ -471,10 +471,10 @@ export const LinkListPage: React.FC = () => {
                     <div className="py-8 px-6 flex flex-col items-center gap-3 text-center">
                       <Link2 className="w-8 h-8 text-[#475569]" />
                       <div className="space-y-1">
-                        <p className="text-sm font-semibold text-[#E6E8EC]">
+                        <p className="text-sm font-semibold text-[#172033]">
                           Nenhum link na lista ainda
                         </p>
-                        <p className="text-xs text-[#8E9BAE] max-w-sm">
+                        <p className="text-xs text-[#64748B] max-w-sm">
                           Adicione links manualmente ou importe um arquivo TXT/CSV
                           para começar a preparar o envio.
                         </p>
@@ -492,16 +492,16 @@ export const LinkListPage: React.FC = () => {
                   ) : (
                     <>
                       {selectedIds.length > 0 && (
-                        <div className="px-5 py-2.5 border-b border-[#162442] flex items-center justify-between gap-3 bg-[#101F3D]/60">
-                          <span className="text-xs text-[#8E9BAE]">
-                            <strong className="text-[#E6E8EC]">{selectedPending}</strong> link(s)
+                        <div className="px-5 py-2.5 border-b border-[#E2E8F0] flex items-center justify-between gap-3 bg-[#EFF6FF]/60">
+                          <span className="text-xs text-[#64748B]">
+                            <strong className="text-[#172033]">{selectedPending}</strong> link(s)
                             pendente(s) selecionado(s)
                           </span>
                           <div className="flex items-center gap-2">
                             <button
                               type="button"
                               onClick={() => setSelectedIds([])}
-                              className="text-[11px] text-[#8E9BAE] hover:text-[#E6E8EC] transition-colors cursor-pointer"
+                              className="text-[11px] text-[#64748B] hover:text-[#172033] transition-colors cursor-pointer"
                             >
                               Limpar seleção
                             </button>
@@ -522,7 +522,7 @@ export const LinkListPage: React.FC = () => {
                       <div className="overflow-x-auto">
                         <table className="w-full text-xs">
                           <thead>
-                            <tr className="border-b border-[#162442]">
+                            <tr className="border-b border-[#E2E8F0]">
                               <th className="px-3 py-2.5 w-9">
                                 <input
                                   type="checkbox"
@@ -543,7 +543,7 @@ export const LinkListPage: React.FC = () => {
                                       setSelectedIds([]);
                                     }
                                   }}
-                                  className="w-3.5 h-3.5 rounded border-[#374151] bg-[#0A1020] text-[#1E5EFF] focus:ring-0 cursor-pointer"
+                                  className="w-3.5 h-3.5 rounded border-[#374151] bg-[#F8FAFC] text-[#2563EB] focus:ring-0 cursor-pointer"
                                 />
                               </th>
                               {['Link', 'Marketplace', 'Produto', 'Status', 'Campanha', 'Fila', 'Ações'].map(
@@ -562,7 +562,7 @@ export const LinkListPage: React.FC = () => {
                             {activeList.links.map((link) => (
                               <tr
                                 key={link.id}
-                                className="border-b border-[#14203B] last:border-0 hover:bg-[#0A1020] transition-colors"
+                                className="border-b border-[#E2E8F0] last:border-0 hover:bg-[#F8FAFC] transition-colors"
                               >
                                 <td className="px-3 py-2.5">
                                   {link.status === 'Pendente' ? (
@@ -576,7 +576,7 @@ export const LinkListPage: React.FC = () => {
                                             : prev.filter((id) => id !== link.id)
                                         )
                                       }
-                                      className="w-3.5 h-3.5 rounded border-[#374151] bg-[#0A1020] text-[#1E5EFF] focus:ring-0 cursor-pointer"
+                                      className="w-3.5 h-3.5 rounded border-[#374151] bg-[#F8FAFC] text-[#2563EB] focus:ring-0 cursor-pointer"
                                     />
                                   ) : (
                                     <span className="inline-block w-3.5" />
@@ -588,18 +588,18 @@ export const LinkListPage: React.FC = () => {
                                       href={link.url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="font-mono text-[11px] text-[#00C2FF] truncate hover:underline"
+                                      className="font-mono text-[11px] text-[#2563EB] truncate hover:underline"
                                     >
                                       {link.url}
                                     </a>
                                     <button
                                       type="button"
                                       onClick={() => handleCopyLink(link)}
-                                      className="text-[#64748B] hover:text-[#E6E8EC] transition-colors shrink-0 cursor-pointer"
+                                      className="text-[#64748B] hover:text-[#172033] transition-colors shrink-0 cursor-pointer"
                                       title="Copiar link"
                                     >
                                       {copiedId === link.id ? (
-                                        <Check className="w-3 h-3 text-emerald-400" />
+                                        <Check className="w-3 h-3 text-emerald-700" />
                                       ) : (
                                         <Copy className="w-3 h-3" />
                                       )}
@@ -608,7 +608,7 @@ export const LinkListPage: React.FC = () => {
                                       href={link.url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-[#64748B] hover:text-[#00C2FF] transition-colors shrink-0"
+                                      className="text-[#64748B] hover:text-[#2563EB] transition-colors shrink-0"
                                       title="Abrir link"
                                     >
                                       <ExternalLink className="w-3 h-3" />
@@ -650,7 +650,7 @@ export const LinkListPage: React.FC = () => {
                                   <button
                                     type="button"
                                     onClick={() => handleRemoveLink(link.id)}
-                                    className="text-[#64748B] hover:text-rose-400 transition-colors cursor-pointer"
+                                    className="text-[#64748B] hover:text-rose-700 transition-colors cursor-pointer"
                                     title="Remover link"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
@@ -669,14 +669,14 @@ export const LinkListPage: React.FC = () => {
               {/* Right column: configurações */}
               <div className="lg:col-span-4 space-y-4">
                 {/* Deduplicação */}
-                <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-5 space-y-3.5">
+                <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-5 space-y-3.5">
                   <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-[#00C2FF]" />
-                    <h4 className="text-sm font-semibold text-[#E6E8EC] tracking-tight">
+                    <ShieldCheck className="w-4 h-4 text-[#2563EB]" />
+                    <h4 className="text-sm font-semibold text-[#172033] tracking-tight">
                       Proteção contra duplicidade
                     </h4>
                   </div>
-                  <p className="text-xs text-[#8E9BAE] leading-relaxed">
+                  <p className="text-xs text-[#64748B] leading-relaxed">
                     Antes de enviar para a fila, os links podem ser comparados com os
                     destinos abaixo.
                   </p>
@@ -684,7 +684,7 @@ export const LinkListPage: React.FC = () => {
                     {DEDUP_OPTIONS.map((opt) => (
                       <label
                         key={opt.key}
-                        className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-[#0A1020] border border-[#162340] cursor-pointer"
+                        className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] cursor-pointer"
                       >
                         <input
                           type="checkbox"
@@ -695,9 +695,9 @@ export const LinkListPage: React.FC = () => {
                               [opt.key]: e.target.checked,
                             }))
                           }
-                          className="w-4 h-4 rounded border-[#374151] bg-[#0A1020] text-[#1E5EFF] focus:ring-0 cursor-pointer"
+                          className="w-4 h-4 rounded border-[#374151] bg-[#F8FAFC] text-[#2563EB] focus:ring-0 cursor-pointer"
                         />
-                        <span className="text-xs text-[#E6E8EC]">{opt.label}</span>
+                        <span className="text-xs text-[#172033]">{opt.label}</span>
                       </label>
                     ))}
                   </div>
@@ -708,9 +708,9 @@ export const LinkListPage: React.FC = () => {
                 </div>
 
                 {/* Processamento info (agrupado) */}
-                <div className="bg-[#0B1220] border border-[#16233B] rounded-xl p-4 flex items-start gap-2.5">
-                  <Info className="w-4 h-4 text-[#00C2FF] shrink-0 mt-0.5" />
-                  <p className="text-[11px] text-[#8E9BAE] leading-relaxed">
+                <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-4 flex items-start gap-2.5">
+                  <Info className="w-4 h-4 text-[#2563EB] shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-[#64748B] leading-relaxed">
                     Cada link adicionado entra com status{' '}
                     <Badge variant="neutral" size="xs">Pendente</Badge>. Ao clicar em
                     "Processar links", o marketplace e o produto serão identificados —
@@ -742,11 +742,11 @@ export const LinkListPage: React.FC = () => {
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#0E172C] border border-[#1E3563] text-[#E6E8EC] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
+        <div className="fixed bottom-6 right-6 z-50 bg-[#FFFFFF] border border-[#BFDBFE] text-[#172033] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
           {toast.type === 'info' ? (
-            <Sparkles className="w-4 h-4 text-[#00C2FF] shrink-0" />
+            <Sparkles className="w-4 h-4 text-[#2563EB] shrink-0" />
           ) : (
-            <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
+            <Sparkles className="w-4 h-4 text-emerald-700 shrink-0" />
           )}
           <span className="font-medium leading-relaxed">{toast.text}</span>
         </div>

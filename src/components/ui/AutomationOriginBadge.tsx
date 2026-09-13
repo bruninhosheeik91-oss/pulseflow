@@ -16,11 +16,11 @@ const SOURCE_META: Record<
   AUTO_SEARCH: {
     icon: Radar,
     className:
-      'bg-[#1E5EFF]/10 text-[#00C2FF] border-[#1E5EFF]/25',
+      'bg-[#2563EB]/10 text-[#2563EB] border-[#2563EB]/25',
   },
   LINK_LIST: {
     icon: ListChecks,
-    className: 'bg-[#0E7490]/10 text-[#22D3EE] border-[#0E7490]/25',
+    className: 'bg-[#F8FAFC]/10 text-[#22D3EE] border-[#E2E8F0]/25',
   },
   MIRROR: {
     icon: RefreshCw,
@@ -28,7 +28,7 @@ const SOURCE_META: Record<
   },
   MONITOR_GROUP: {
     icon: Share2,
-    className: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25',
+    className: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/25',
   },
 };
 

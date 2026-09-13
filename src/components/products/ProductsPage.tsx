@@ -252,8 +252,8 @@ export const ProductsPage: React.FC = () => {
     <div className="space-y-4">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-[#0C1B3B] border border-[#1E5EFF]/50 text-white px-4 py-3 rounded-xl shadow-2xl animate-in slide-in-from-bottom-3 duration-200">
-          <CheckCircle2 className="w-4 h-4 text-[#00C2FF] shrink-0" />
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-[#EFF6FF] border border-[#2563EB]/50 text-white px-4 py-3 rounded-xl shadow-2xl animate-in slide-in-from-bottom-3 duration-200">
+          <CheckCircle2 className="w-4 h-4 text-[#2563EB] shrink-0" />
           <span className="text-xs font-semibold">{toastMessage.text}</span>
         </div>
       )}
@@ -316,18 +316,18 @@ export const ProductsPage: React.FC = () => {
 
           {/* Paginação Operacional */}
           {filteredProducts.length > itemsPerPage && (
-            <div className="flex items-center justify-between p-3 bg-[#0B1324] border border-[#162340] rounded-xl text-xs text-[#8E9BAE]">
+            <div className="flex items-center justify-between p-3 bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl text-xs text-[#64748B]">
               <div className="font-mono-numeric">
                 Mostrando{' '}
-                <span className="text-[#E6E8EC] font-semibold">
+                <span className="text-[#172033] font-semibold">
                   {(currentPage - 1) * itemsPerPage + 1}
                 </span>{' '}
                 a{' '}
-                <span className="text-[#E6E8EC] font-semibold">
+                <span className="text-[#172033] font-semibold">
                   {Math.min(currentPage * itemsPerPage, filteredProducts.length)}
                 </span>{' '}
                 de{' '}
-                <span className="text-[#E6E8EC] font-semibold">
+                <span className="text-[#172033] font-semibold">
                   {filteredProducts.length}
                 </span>{' '}
                 produtos
@@ -338,7 +338,7 @@ export const ProductsPage: React.FC = () => {
                   type="button"
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="p-1.5 rounded-lg border border-[#1B2B4E] bg-[#080E1C] text-[#8E9BAE] hover:text-[#E6E8EC] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="p-1.5 rounded-lg border border-[#CBD5E1] bg-[#F8FAFC] text-[#64748B] hover:text-[#172033] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -353,8 +353,8 @@ export const ProductsPage: React.FC = () => {
                         onClick={() => handlePageChange(pageNum)}
                         className={`w-7 h-7 rounded-lg text-xs font-mono-numeric font-semibold transition-colors cursor-pointer ${
                           currentPage === pageNum
-                            ? 'bg-[#15254A] text-[#00C2FF] border border-[#1E5EFF]/50'
-                            : 'text-[#8E9BAE] hover:text-[#E6E8EC] hover:bg-[#0E172C]'
+                            ? 'bg-[#DBEAFE] text-[#2563EB] border border-[#2563EB]/50'
+                            : 'text-[#64748B] hover:text-[#172033] hover:bg-[#FFFFFF]'
                         }`}
                       >
                         {pageNum}
@@ -367,7 +367,7 @@ export const ProductsPage: React.FC = () => {
                   type="button"
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="p-1.5 rounded-lg border border-[#1B2B4E] bg-[#080E1C] text-[#8E9BAE] hover:text-[#E6E8EC] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="p-1.5 rounded-lg border border-[#CBD5E1] bg-[#F8FAFC] text-[#64748B] hover:text-[#172033] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>

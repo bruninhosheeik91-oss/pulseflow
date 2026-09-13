@@ -217,14 +217,14 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
         {/* Identificação */}
-        <div className="space-y-3 p-3.5 bg-[#0A1020] border border-[#162340] rounded-xl">
-          <span className="text-xs font-semibold text-[#8E9BAE] uppercase tracking-wider block">
+        <div className="space-y-3 p-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl">
+          <span className="text-xs font-semibold text-[#64748B] uppercase tracking-wider block">
             1. Identificação da Campanha
           </span>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium text-[#E6E8EC]">
-              Nome da Campanha <span className="text-rose-400">*</span>
+            <label className="text-xs font-medium text-[#172033]">
+              Nome da Campanha <span className="text-rose-700">*</span>
             </label>
             <input
               type="text"
@@ -232,12 +232,12 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: Achadinhos Tech Shopee & Amazon 40% OFF"
-              className="w-full h-9 px-3 bg-[#070C18] border border-[#1A2C4E] rounded-lg text-xs text-[#E6E8EC] placeholder:text-[#64748B] focus:outline-none focus:border-[#1E5EFF]"
+              className="w-full h-9 px-3 bg-[#FFFFFF] border border-[#CBD5E1] rounded-lg text-xs text-[#172033] placeholder:text-[#64748B] focus:outline-none focus:border-[#2563EB]"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium text-[#E6E8EC]">
+            <label className="text-xs font-medium text-[#172033]">
               Descrição / Objetivo
             </label>
             <textarea
@@ -245,13 +245,13 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Descreva a finalidade desta campanha..."
-              className="w-full p-2.5 bg-[#070C18] border border-[#1A2C4E] rounded-lg text-xs text-[#E6E8EC] placeholder:text-[#64748B] focus:outline-none focus:border-[#1E5EFF]"
+              className="w-full p-2.5 bg-[#FFFFFF] border border-[#CBD5E1] rounded-lg text-xs text-[#172033] placeholder:text-[#64748B] focus:outline-none focus:border-[#2563EB]"
             />
           </div>
 
           {/* Modo de Execução */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[#E6E8EC]">
+            <label className="text-xs font-medium text-[#172033]">
               Modo de Operação
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -260,17 +260,17 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
                 onClick={() => setExecutionMode('Automático')}
                 className={`p-2.5 rounded-lg border text-left transition-colors cursor-pointer ${
                   executionMode === 'Automático'
-                    ? 'bg-[#102345] border-[#1E5EFF] text-white'
-                    : 'bg-[#070C18] border-[#162340] text-[#8E9BAE] hover:border-[#1E3360]'
+                    ? 'bg-[#EFF6FF] border-[#2563EB] text-white'
+                    : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B] hover:border-[#BFDBFE]'
                 }`}
               >
-                <div className="flex items-center justify-between text-xs font-bold text-[#E6E8EC]">
+                <div className="flex items-center justify-between text-xs font-bold text-[#172033]">
                   <span>Automático Direto</span>
                   {executionMode === 'Automático' && (
-                    <span className="w-2 h-2 rounded-full bg-[#00C2FF]" />
+                    <span className="w-2 h-2 rounded-full bg-[#2563EB]" />
                   )}
                 </div>
-                <p className="text-[11px] text-[#8E9BAE] mt-0.5">
+                <p className="text-[11px] text-[#64748B] mt-0.5">
                   Ofertas aprovadas são disparadas automaticamente para os canais.
                 </p>
               </button>
@@ -280,17 +280,17 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
                 onClick={() => setExecutionMode('Revisão Manual')}
                 className={`p-2.5 rounded-lg border text-left transition-colors cursor-pointer ${
                   executionMode === 'Revisão Manual'
-                    ? 'bg-[#102345] border-[#1E5EFF] text-white'
-                    : 'bg-[#070C18] border-[#162340] text-[#8E9BAE] hover:border-[#1E3360]'
+                    ? 'bg-[#EFF6FF] border-[#2563EB] text-white'
+                    : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B] hover:border-[#BFDBFE]'
                 }`}
               >
-                <div className="flex items-center justify-between text-xs font-bold text-[#E6E8EC]">
+                <div className="flex items-center justify-between text-xs font-bold text-[#172033]">
                   <span>Fila de Revisão Manual</span>
                   {executionMode === 'Revisão Manual' && (
-                    <span className="w-2 h-2 rounded-full bg-[#00C2FF]" />
+                    <span className="w-2 h-2 rounded-full bg-[#2563EB]" />
                   )}
                 </div>
-                <p className="text-[11px] text-[#8E9BAE] mt-0.5">
+                <p className="text-[11px] text-[#64748B] mt-0.5">
                   Ofertas encontradas vão para a fila aguardando aprovação do operador.
                 </p>
               </button>
@@ -299,11 +299,11 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
         </div>
 
         {/* Origens de Automação */}
-        <div className="space-y-3 p-3.5 bg-[#0A1020] border border-[#162340] rounded-xl">
-          <span className="text-xs font-semibold text-[#8E9BAE] uppercase tracking-wider block">
+        <div className="space-y-3 p-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl">
+          <span className="text-xs font-semibold text-[#64748B] uppercase tracking-wider block">
             2. Origens de Automação (Como as ofertas entram)
           </span>
-          <p className="text-[11px] text-[#8E9BAE] leading-relaxed -mt-1">
+          <p className="text-[11px] text-[#64748B] leading-relaxed -mt-1">
             Esta campanha recebe entradas das automações selecionadas e aplica
             as regras abaixo. Automação define <strong>como</strong> entra;
             campanha define <strong>quais regras</strong> serão aplicadas.
@@ -319,14 +319,14 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
                   onClick={() => toggleAutomation(auto.id)}
                   className={`p-2.5 rounded-lg border text-left transition-colors cursor-pointer ${
                     active
-                      ? 'bg-[#15254A] border-[#1E5EFF] text-white'
-                      : 'bg-[#070C18] border-[#162340] text-[#8E9BAE] hover:border-[#1E3360]'
+                      ? 'bg-[#DBEAFE] border-[#2563EB] text-white'
+                      : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B] hover:border-[#BFDBFE]'
                   }`}
                 >
-                  <div className="flex items-center justify-between text-xs font-semibold text-[#E6E8EC]">
+                  <div className="flex items-center justify-between text-xs font-semibold text-[#172033]">
                     <span>{auto.label}</span>
                     {active && (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[#00C2FF]" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#2563EB]" />
                     )}
                   </div>
                 </button>
@@ -336,13 +336,13 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
         </div>
 
         {/* Marketplaces & Categorias */}
-        <div className="space-y-3 p-3.5 bg-[#0A1020] border border-[#162340] rounded-xl">
-          <span className="text-xs font-semibold text-[#8E9BAE] uppercase tracking-wider block">
+        <div className="space-y-3 p-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl">
+          <span className="text-xs font-semibold text-[#64748B] uppercase tracking-wider block">
             3. Marketplaces & Categorias
           </span>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[#E6E8EC]">
+            <label className="text-xs font-medium text-[#172033]">
               Marketplaces Monitorados
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -355,12 +355,12 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
                     onClick={() => toggleMarketplace(mp)}
                     className={`px-3 py-2 rounded-lg border text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
                       active
-                        ? 'bg-[#15254A] border-[#1E5EFF] text-[#E6E8EC]'
-                        : 'bg-[#070C18] border-[#162340] text-[#8E9BAE] hover:border-[#1E3360]'
+                        ? 'bg-[#DBEAFE] border-[#2563EB] text-[#172033]'
+                        : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B] hover:border-[#BFDBFE]'
                     }`}
                   >
                     <span>{mp}</span>
-                    {active && <CheckCircle2 className="w-3.5 h-3.5 text-[#00C2FF]" />}
+                    {active && <CheckCircle2 className="w-3.5 h-3.5 text-[#2563EB]" />}
                   </button>
                 );
               })}
@@ -368,7 +368,7 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
           </div>
 
           <div className="space-y-1.5 pt-1">
-            <label className="text-xs font-medium text-[#E6E8EC]">
+            <label className="text-xs font-medium text-[#172033]">
               Categorias Alvo
             </label>
             <div className="flex flex-wrap gap-1.5">
@@ -381,8 +381,8 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
                     onClick={() => toggleCategory(cat)}
                     className={`px-2.5 py-1 rounded-lg border text-xs transition-colors cursor-pointer ${
                       active
-                        ? 'bg-[#15254A] border-[#1E5EFF] text-[#00C2FF]'
-                        : 'bg-[#070C18] border-[#162340] text-[#8E9BAE] hover:border-[#1E3360]'
+                        ? 'bg-[#DBEAFE] border-[#2563EB] text-[#2563EB]'
+                        : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B] hover:border-[#BFDBFE]'
                     }`}
                   >
                     {cat}
@@ -394,18 +394,18 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
         </div>
 
         {/* Critérios do Deal Score e Filtros */}
-        <div className="space-y-3 p-3.5 bg-[#0A1020] border border-[#162340] rounded-xl">
-          <span className="text-xs font-semibold text-[#8E9BAE] uppercase tracking-wider block">
+        <div className="space-y-3 p-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl">
+          <span className="text-xs font-semibold text-[#64748B] uppercase tracking-wider block">
             4. Critérios do Motor & Deal Score
           </span>
 
           {/* Slider Min Score */}
-          <div className="space-y-1.5 p-3 bg-[#070C18] border border-[#14203B] rounded-lg">
+          <div className="space-y-1.5 p-3 bg-[#FFFFFF] border border-[#E2E8F0] rounded-lg">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-[#E6E8EC]">
+              <span className="font-semibold text-[#172033]">
                 Deal Score Mínimo
               </span>
-              <span className="font-mono-numeric font-bold text-[#00C2FF] bg-[#101F3D] px-2 py-0.5 rounded border border-[#1A386E]">
+              <span className="font-mono-numeric font-bold text-[#2563EB] bg-[#EFF6FF] px-2 py-0.5 rounded border border-[#93C5FD]">
                 {minScore} pts ({minScore >= 90 ? 'Excelente' : minScore >= 80 ? 'Muito Bom' : 'Bom'})
               </span>
             </div>
@@ -416,17 +416,17 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
               step="1"
               value={minScore}
               onChange={(e) => setMinScore(Number(e.target.value))}
-              className="w-full h-1.5 bg-[#14203B] rounded-lg appearance-none cursor-pointer accent-[#1E5EFF]"
+              className="w-full h-1.5 bg-[#E2E8F0] rounded-lg appearance-none cursor-pointer accent-[#2563EB]"
             />
           </div>
 
           {/* Slider Desconto Mínimo */}
-          <div className="space-y-1.5 p-3 bg-[#070C18] border border-[#14203B] rounded-lg">
+          <div className="space-y-1.5 p-3 bg-[#FFFFFF] border border-[#E2E8F0] rounded-lg">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-[#E6E8EC]">
+              <span className="font-semibold text-[#172033]">
                 Desconto Mínimo Exigido
               </span>
-              <span className="font-mono-numeric font-bold text-[#38BDF8] bg-[#101F3D] px-2 py-0.5 rounded border border-[#1A386E]">
+              <span className="font-mono-numeric font-bold text-[#3B82F6] bg-[#EFF6FF] px-2 py-0.5 rounded border border-[#93C5FD]">
                 {minDiscount}% OFF
               </span>
             </div>
@@ -437,52 +437,52 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
               step="5"
               value={minDiscount}
               onChange={(e) => setMinDiscount(Number(e.target.value))}
-              className="w-full h-1.5 bg-[#14203B] rounded-lg appearance-none cursor-pointer accent-[#00C2FF]"
+              className="w-full h-1.5 bg-[#E2E8F0] rounded-lg appearance-none cursor-pointer accent-[#2563EB]"
             />
           </div>
 
           {/* Faixa de Preço */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs text-[#8E9BAE]">Preço Mínimo (R$)</label>
+              <label className="text-xs text-[#64748B]">Preço Mínimo (R$)</label>
               <input
                 type="number"
                 value={minPrice}
                 onChange={(e) => setMinPrice(e.target.value)}
                 placeholder="Ex: 50"
-                className="w-full h-8 px-3 bg-[#070C18] border border-[#182747] rounded-lg text-xs text-[#E6E8EC] placeholder:text-[#64748B] focus:outline-none focus:border-[#1E5EFF]"
+                className="w-full h-8 px-3 bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg text-xs text-[#172033] placeholder:text-[#64748B] focus:outline-none focus:border-[#2563EB]"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-[#8E9BAE]">Preço Máximo (R$)</label>
+              <label className="text-xs text-[#64748B]">Preço Máximo (R$)</label>
               <input
                 type="number"
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
                 placeholder="Ex: 2500"
-                className="w-full h-8 px-3 bg-[#070C18] border border-[#182747] rounded-lg text-xs text-[#E6E8EC] placeholder:text-[#64748B] focus:outline-none focus:border-[#1E5EFF]"
+                className="w-full h-8 px-3 bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg text-xs text-[#172033] placeholder:text-[#64748B] focus:outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
 
           {/* Booleans */}
           <div className="grid grid-cols-2 gap-3 pt-1">
-            <label className="flex items-center gap-2 p-2 bg-[#070C18] border border-[#14203B] rounded-lg cursor-pointer text-xs text-[#C8D1DE]">
+            <label className="flex items-center gap-2 p-2 bg-[#FFFFFF] border border-[#E2E8F0] rounded-lg cursor-pointer text-xs text-[#334155]">
               <input
                 type="checkbox"
                 checked={requireFreeShipping}
                 onChange={(e) => setRequireFreeShipping(e.target.checked)}
-                className="rounded border-[#1B2B4E] bg-[#0A1020] text-[#1E5EFF] focus:ring-0"
+                className="rounded border-[#CBD5E1] bg-[#F8FAFC] text-[#2563EB] focus:ring-0"
               />
               <span>Frete grátis obrigatório</span>
             </label>
 
-            <label className="flex items-center gap-2 p-2 bg-[#070C18] border border-[#14203B] rounded-lg cursor-pointer text-xs text-[#C8D1DE]">
+            <label className="flex items-center gap-2 p-2 bg-[#FFFFFF] border border-[#E2E8F0] rounded-lg cursor-pointer text-xs text-[#334155]">
               <input
                 type="checkbox"
                 checked={requireCoupon}
                 onChange={(e) => setRequireCoupon(e.target.checked)}
-                className="rounded border-[#1B2B4E] bg-[#0A1020] text-[#1E5EFF] focus:ring-0"
+                className="rounded border-[#CBD5E1] bg-[#F8FAFC] text-[#2563EB] focus:ring-0"
               />
               <span>Cupom de desconto ativo</span>
             </label>
@@ -490,13 +490,13 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
         </div>
 
         {/* Canais e Frequência */}
-        <div className="space-y-3 p-3.5 bg-[#0A1020] border border-[#162340] rounded-xl">
-          <span className="text-xs font-semibold text-[#8E9BAE] uppercase tracking-wider block">
+        <div className="space-y-3 p-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl">
+          <span className="text-xs font-semibold text-[#64748B] uppercase tracking-wider block">
             5. Distribuição & Anti-Spam
           </span>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[#E6E8EC]">
+            <label className="text-xs font-medium text-[#172033]">
               Canais de Envio
             </label>
             <div className="space-y-1.5">
@@ -509,15 +509,15 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
                     onClick={() => toggleChannel(ch)}
                     className={`w-full p-2.5 rounded-lg border text-left flex items-center justify-between text-xs transition-colors cursor-pointer ${
                       active
-                        ? 'bg-[#15254A] border-[#1E5EFF] text-white'
-                        : 'bg-[#070C18] border-[#162340] text-[#8E9BAE] hover:border-[#1E3360]'
+                        ? 'bg-[#DBEAFE] border-[#2563EB] text-white'
+                        : 'bg-[#FFFFFF] border-[#E2E8F0] text-[#64748B] hover:border-[#BFDBFE]'
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <Radio className="w-3.5 h-3.5 text-[#00C2FF]" />
+                      <Radio className="w-3.5 h-3.5 text-[#2563EB]" />
                       <span>{ch}</span>
                     </div>
-                    {active && <CheckCircle2 className="w-3.5 h-3.5 text-[#00C2FF]" />}
+                    {active && <CheckCircle2 className="w-3.5 h-3.5 text-[#2563EB]" />}
                   </button>
                 );
               })}
@@ -526,13 +526,13 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <div className="space-y-1">
-              <label className="text-xs text-[#8E9BAE]">
+              <label className="text-xs text-[#64748B]">
                 Intervalo entre disparos (Anti-Spam)
               </label>
               <select
                 value={frequency}
                 onChange={(e) => setFrequency(e.target.value)}
-                className="w-full h-8 px-2 bg-[#070C18] border border-[#182747] rounded-lg text-xs text-[#E6E8EC] focus:outline-none focus:border-[#1E5EFF]"
+                className="w-full h-8 px-2 bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg text-xs text-[#172033] focus:outline-none focus:border-[#2563EB]"
               >
                 <option value="15m">A cada 15 minutos</option>
                 <option value="20m">A cada 20 minutos</option>
@@ -544,13 +544,13 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs text-[#8E9BAE]">Template de Copy</label>
+              <label className="text-xs text-[#64748B]">Template de Copy</label>
               <select
                 value={copyTemplate}
                 onChange={(e) =>
                   setCopyTemplate(e.target.value as CampaignCopyTemplate)
                 }
-                className="w-full h-8 px-2 bg-[#070C18] border border-[#182747] rounded-lg text-xs text-[#E6E8EC] focus:outline-none focus:border-[#1E5EFF]"
+                className="w-full h-8 px-2 bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg text-xs text-[#172033] focus:outline-none focus:border-[#2563EB]"
               >
                 <option value="Urgência / Fogo">Urgência / Fogo 🔥</option>
                 <option value="Padrão com Emojis">Padrão com Emojis ⭐</option>
@@ -562,7 +562,7 @@ export const CampaignFormModal: React.FC<CampaignFormModalProps> = ({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#14203B]">
+        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#E2E8F0]">
           <Button variant="ghost" size="sm" onClick={onClose}>
             Cancelar
           </Button>

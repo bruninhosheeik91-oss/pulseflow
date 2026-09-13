@@ -89,7 +89,7 @@ export const QueueFilterBar: React.FC<QueueFilterBarProps> = ({
   return (
     <div className="space-y-3">
       {/* Top row: Status Tabs & View Mode Switcher */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#16233B] pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E2E8F0] pb-3">
         {/* Status Tabs */}
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
           {tabs.map((tab) => {
@@ -101,8 +101,8 @@ export const QueueFilterBar: React.FC<QueueFilterBarProps> = ({
                 onClick={() => onTabChange(tab.id)}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
                   isActive
-                    ? 'bg-[#1E5EFF] text-white shadow-sm shadow-[#1E5EFF]/20 font-semibold'
-                    : 'text-[#94A3B8] hover:text-[#E6E8EC] hover:bg-[#0E1628]'
+                    ? 'bg-[#2563EB] text-white shadow-sm shadow-[#2563EB]/20 font-semibold'
+                    : 'text-[#94A3B8] hover:text-[#172033] hover:bg-[#FFFFFF]'
                 }`}
               >
                 <span>{tab.label}</span>
@@ -110,7 +110,7 @@ export const QueueFilterBar: React.FC<QueueFilterBarProps> = ({
                   className={`text-[10px] px-1.5 py-0.2 rounded font-mono-numeric ${
                     isActive
                       ? 'bg-white/20 text-white'
-                      : 'bg-[#142038] text-[#8E9BAE] border border-[#1E3054]'
+                      : 'bg-[#F8FAFC] text-[#64748B] border border-[#E2E8F0]'
                   }`}
                 >
                   {tab.count}
@@ -121,14 +121,14 @@ export const QueueFilterBar: React.FC<QueueFilterBarProps> = ({
         </div>
 
         {/* View Mode Toggle */}
-        <div className="flex items-center gap-1 bg-[#0E1628] border border-[#1B2947] p-1 rounded-lg shrink-0 self-end sm:self-auto">
+        <div className="flex items-center gap-1 bg-[#FFFFFF] border border-[#DCE3EC] p-1 rounded-lg shrink-0 self-end sm:self-auto">
           <button
             type="button"
             onClick={() => onViewModeChange('timeline')}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs transition-colors ${
               viewMode === 'timeline'
-                ? 'bg-[#1B2947] text-white font-medium shadow-xs'
-                : 'text-[#94A3B8] hover:text-[#E6E8EC]'
+                ? 'bg-[#DCE3EC] text-white font-medium shadow-xs'
+                : 'text-[#94A3B8] hover:text-[#172033]'
             }`}
             title="Visualização em Linha do Tempo e Cards"
           >
@@ -140,8 +140,8 @@ export const QueueFilterBar: React.FC<QueueFilterBarProps> = ({
             onClick={() => onViewModeChange('table')}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs transition-colors ${
               viewMode === 'table'
-                ? 'bg-[#1B2947] text-white font-medium shadow-xs'
-                : 'text-[#94A3B8] hover:text-[#E6E8EC]'
+                ? 'bg-[#DCE3EC] text-white font-medium shadow-xs'
+                : 'text-[#94A3B8] hover:text-[#172033]'
             }`}
             title="Visualização em Tabela Densa"
           >
@@ -155,19 +155,19 @@ export const QueueFilterBar: React.FC<QueueFilterBarProps> = ({
       <div className="flex flex-wrap items-center gap-2.5">
         {/* Search */}
         <div className="relative flex-1 min-w-[220px]">
-          <Search className="w-4 h-4 text-[#8E9BAE] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 text-[#64748B] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             placeholder="Buscar por produto, canal, cupom ou campanha..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full bg-[#0E1628] border border-[#1B2947] rounded-lg pl-9 pr-8 py-1.5 text-xs text-[#E6E8EC] placeholder-[#8E9BAE] focus:outline-none focus:border-[#1E5EFF] transition-colors"
+            className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg pl-9 pr-8 py-1.5 text-xs text-[#172033] placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] transition-colors"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => onSearchChange('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#8E9BAE] hover:text-white"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#64748B] hover:text-white"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -179,7 +179,7 @@ export const QueueFilterBar: React.FC<QueueFilterBarProps> = ({
           <select
             value={selectedChannel}
             onChange={(e) => onChannelChange(e.target.value)}
-            className="w-full bg-[#0E1628] border border-[#1B2947] rounded-lg px-2.5 py-1.5 text-xs text-[#E6E8EC] focus:outline-none focus:border-[#1E5EFF] transition-colors"
+            className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-2.5 py-1.5 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB] transition-colors"
           >
             <option value="Todos">Todos os Canais</option>
             {availableChannels.map((c) => (
@@ -195,7 +195,7 @@ export const QueueFilterBar: React.FC<QueueFilterBarProps> = ({
           <select
             value={selectedMarketplace}
             onChange={(e) => onMarketplaceChange(e.target.value)}
-            className="w-full bg-[#0E1628] border border-[#1B2947] rounded-lg px-2.5 py-1.5 text-xs text-[#E6E8EC] focus:outline-none focus:border-[#1E5EFF] transition-colors"
+            className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-2.5 py-1.5 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB] transition-colors"
           >
             <option value="Todos">Marketplaces</option>
             {availableMarketplaces.map((m) => (
@@ -211,7 +211,7 @@ export const QueueFilterBar: React.FC<QueueFilterBarProps> = ({
           <select
             value={selectedAutomation}
             onChange={(e) => onAutomationChange(e.target.value)}
-            className="w-full bg-[#0E1628] border border-[#1B2947] rounded-lg px-2.5 py-1.5 text-xs text-[#E6E8EC] focus:outline-none focus:border-[#1E5EFF] transition-colors"
+            className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-2.5 py-1.5 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB] transition-colors"
           >
             <option value="Todos">Origens</option>
             {AUTOMATION_OPTIONS.filter((o) =>
@@ -229,7 +229,7 @@ export const QueueFilterBar: React.FC<QueueFilterBarProps> = ({
           <select
             value={selectedCampaign}
             onChange={(e) => onCampaignChange(e.target.value)}
-            className="w-full bg-[#0E1628] border border-[#1B2947] rounded-lg px-2.5 py-1.5 text-xs text-[#E6E8EC] focus:outline-none focus:border-[#1E5EFF] transition-colors"
+            className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-2.5 py-1.5 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB] transition-colors"
           >
             <option value="Todos">Todas Campanhas</option>
             {availableCampaigns.map((camp) => (
@@ -245,7 +245,7 @@ export const QueueFilterBar: React.FC<QueueFilterBarProps> = ({
           <select
             value={sortOption}
             onChange={(e) => onSortChange(e.target.value as QueueSortOption)}
-            className="w-full bg-[#0E1628] border border-[#1B2947] rounded-lg px-2.5 py-1.5 text-xs text-[#E6E8EC] focus:outline-none focus:border-[#1E5EFF] transition-colors"
+            className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-2.5 py-1.5 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB] transition-colors"
           >
             <option value="time-asc">Horário: Próximos</option>
             <option value="time-desc">Horário: Tardios</option>

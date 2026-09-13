@@ -254,8 +254,8 @@ export const CampaignsPage: React.FC = () => {
     <div className="space-y-5">
       {/* Toast Feedback */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-[#0C1B3B] border border-[#1E5EFF]/50 text-white px-4 py-3 rounded-xl shadow-2xl animate-in slide-in-from-bottom-3 duration-200">
-          <CheckCircle2 className="w-4 h-4 text-[#00C2FF] shrink-0" />
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-[#EFF6FF] border border-[#2563EB]/50 text-white px-4 py-3 rounded-xl shadow-2xl animate-in slide-in-from-bottom-3 duration-200">
+          <CheckCircle2 className="w-4 h-4 text-[#2563EB] shrink-0" />
           <span className="text-xs font-semibold">{toast.text}</span>
         </div>
       )}
@@ -291,14 +291,14 @@ export const CampaignsPage: React.FC = () => {
 
       {/* 4. Campaigns List (Cards or Table) */}
       {filteredCampaigns.length === 0 ? (
-        <div className="bg-[#0B1324] border border-[#162340] rounded-xl p-8 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-[#101A33] border border-[#1B2F5C] flex items-center justify-center mx-auto text-[#00C2FF] mb-4">
+        <div className="bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl p-8 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-[#F1F5F9] border border-[#BFDBFE] flex items-center justify-center mx-auto text-[#2563EB] mb-4">
             <Megaphone className="w-7 h-7" />
           </div>
-          <h3 className="text-base font-bold text-[#E6E8EC]">
+          <h3 className="text-base font-bold text-[#172033]">
             Nenhuma campanha encontrada
           </h3>
-          <p className="text-xs text-[#8E9BAE] max-w-sm mx-auto mt-1 mb-6">
+          <p className="text-xs text-[#64748B] max-w-sm mx-auto mt-1 mb-6">
             Não encontramos campanhas correspondentes aos filtros atuais. Experimente ajustar os termos de busca ou crie uma nova campanha.
           </p>
           <div className="flex items-center justify-center gap-3">
@@ -307,7 +307,7 @@ export const CampaignsPage: React.FC = () => {
               size="sm"
               onClick={handleResetFilters}
               leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
-              className="text-xs border-[#182747] text-[#E6E8EC]"
+              className="text-xs border-[#DCE3EC] text-[#172033]"
             >
               Restaurar filtros
             </Button>

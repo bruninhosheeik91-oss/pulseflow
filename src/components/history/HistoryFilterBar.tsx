@@ -58,21 +58,21 @@ export const HistoryFilterBar: React.FC<HistoryFilterBarProps> = ({
       label: 'Entregues com Sucesso',
       count: counts.entregues,
       icon: CheckCircle2,
-      color: 'text-emerald-400',
+      color: 'text-emerald-700',
     },
     {
       id: 'Falha',
       label: 'Falhas & Bloqueios',
       count: counts.falhas,
       icon: AlertTriangle,
-      color: 'text-rose-400',
+      color: 'text-rose-700',
     },
     {
       id: 'Re-enviado',
       label: 'Re-enviados',
       count: counts.reenviados,
       icon: RotateCcw,
-      color: 'text-[#00C2FF]',
+      color: 'text-[#2563EB]',
     },
   ];
 
@@ -87,7 +87,7 @@ export const HistoryFilterBar: React.FC<HistoryFilterBarProps> = ({
   return (
     <div className="space-y-3">
       {/* 1. Status Filter Tabs */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#14203B] pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E2E8F0] pb-3">
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
           {statusTabs.map((tab) => {
             const Icon = tab.icon;
@@ -99,8 +99,8 @@ export const HistoryFilterBar: React.FC<HistoryFilterBarProps> = ({
                 onClick={() => onStatusChange(tab.id)}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   isActive
-                    ? 'bg-[#142340] text-white border border-[#1E5EFF] shadow-xs'
-                    : 'text-[#8E9BAE] hover:text-[#E6E8EC] hover:bg-[#0D162B] border border-transparent'
+                    ? 'bg-[#E2E8F0] text-white border border-[#2563EB] shadow-xs'
+                    : 'text-[#64748B] hover:text-[#172033] hover:bg-[#F1F5F9] border border-transparent'
                 }`}
               >
                 {Icon && <Icon className={`w-3.5 h-3.5 ${tab.color}`} />}
@@ -108,8 +108,8 @@ export const HistoryFilterBar: React.FC<HistoryFilterBarProps> = ({
                 <span
                   className={`text-[11px] px-1.5 py-0.2 rounded-full font-mono ${
                     isActive
-                      ? 'bg-[#1E5EFF]/30 text-[#8EC5FC]'
-                      : 'bg-[#101A2E] text-[#64748B]'
+                      ? 'bg-[#2563EB]/30 text-[#8EC5FC]'
+                      : 'bg-[#F8FAFC] text-[#64748B]'
                   }`}
                 >
                   {tab.count}
@@ -123,9 +123,9 @@ export const HistoryFilterBar: React.FC<HistoryFilterBarProps> = ({
         <button
           type="button"
           onClick={onExportCsv}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0E1B33] hover:bg-[#162A50] border border-[#1E3B70] text-[#93C5FD] text-xs font-medium rounded-lg transition-colors shrink-0 shadow-xs"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F1F5F9] hover:bg-[#CBD5E1] border border-[#93C5FD] text-[#93C5FD] text-xs font-medium rounded-lg transition-colors shrink-0 shadow-xs"
         >
-          <Download className="w-3.5 h-3.5 text-[#00C2FF]" />
+          <Download className="w-3.5 h-3.5 text-[#2563EB]" />
           <span>Exportar Relatório CSV</span>
         </button>
       </div>
@@ -134,24 +134,24 @@ export const HistoryFilterBar: React.FC<HistoryFilterBarProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-2.5">
         {/* Search */}
         <div className="lg:col-span-4 relative">
-          <Search className="w-3.5 h-3.5 text-[#8E9BAE] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-3.5 h-3.5 text-[#64748B] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             placeholder="Buscar por produto, canal, cupom ou campanha..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full bg-[#0A1020] border border-[#182642] rounded-lg pl-9 pr-3 py-2 text-xs text-[#E6E8EC] placeholder-[#64748B] focus:outline-none focus:border-[#1E5EFF] transition-colors"
+            className="w-full bg-[#F8FAFC] border border-[#DCE3EC] rounded-lg pl-9 pr-3 py-2 text-xs text-[#172033] placeholder-[#64748B] focus:outline-none focus:border-[#2563EB] transition-colors"
           />
         </div>
 
         {/* Period Selector */}
         <div className="lg:col-span-3">
           <div className="relative">
-            <Calendar className="w-3.5 h-3.5 text-[#8E9BAE] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Calendar className="w-3.5 h-3.5 text-[#64748B] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <select
               value={periodFilter}
               onChange={(e) => onPeriodChange(e.target.value as HistoryFilterPeriod)}
-              className="w-full bg-[#0A1020] border border-[#182642] rounded-lg pl-9 pr-3 py-2 text-xs text-[#E6E8EC] focus:outline-none focus:border-[#1E5EFF] transition-colors"
+              className="w-full bg-[#F8FAFC] border border-[#DCE3EC] rounded-lg pl-9 pr-3 py-2 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB] transition-colors"
             >
               {periodOptions.map((opt) => (
                 <option key={opt.id} value={opt.id}>
@@ -165,11 +165,11 @@ export const HistoryFilterBar: React.FC<HistoryFilterBarProps> = ({
         {/* Channel Selector */}
         <div className="lg:col-span-3">
           <div className="relative">
-            <Radio className="w-3.5 h-3.5 text-[#8E9BAE] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Radio className="w-3.5 h-3.5 text-[#64748B] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <select
               value={channelFilter}
               onChange={(e) => onChannelChange(e.target.value)}
-              className="w-full bg-[#0A1020] border border-[#182642] rounded-lg pl-9 pr-3 py-2 text-xs text-[#E6E8EC] focus:outline-none focus:border-[#1E5EFF] transition-colors"
+              className="w-full bg-[#F8FAFC] border border-[#DCE3EC] rounded-lg pl-9 pr-3 py-2 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB] transition-colors"
             >
               <option value="Todos">Todos os Canais de Destino</option>
               {availableChannels.map((c) => (
@@ -184,11 +184,11 @@ export const HistoryFilterBar: React.FC<HistoryFilterBarProps> = ({
         {/* Marketplace Selector */}
         <div className="lg:col-span-2">
           <div className="relative">
-            <Store className="w-3.5 h-3.5 text-[#8E9BAE] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Store className="w-3.5 h-3.5 text-[#64748B] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <select
               value={marketplaceFilter}
               onChange={(e) => onMarketplaceChange(e.target.value)}
-              className="w-full bg-[#0A1020] border border-[#182642] rounded-lg pl-9 pr-3 py-2 text-xs text-[#E6E8EC] focus:outline-none focus:border-[#1E5EFF] transition-colors"
+              className="w-full bg-[#F8FAFC] border border-[#DCE3EC] rounded-lg pl-9 pr-3 py-2 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB] transition-colors"
             >
               <option value="Todos">Todos Marketplaces</option>
               {availableMarketplaces.map((m) => (

@@ -44,15 +44,15 @@ export const FullQueueModal: React.FC<FullQueueModalProps> = ({
     >
       <div className="space-y-4">
         {statusMessage && (
-          <div className="p-2.5 bg-[#122240] border border-[#1E3A6D] text-xs text-[#00C2FF] rounded-lg flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <div className="p-2.5 bg-[#F8FAFC] border border-[#93C5FD] text-xs text-[#2563EB] rounded-lg flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
             <span>{statusMessage}</span>
           </div>
         )}
 
-        <div className="divide-y divide-[#162340] max-h-96 overflow-y-auto">
+        <div className="divide-y divide-[#E2E8F0] max-h-96 overflow-y-auto">
           {queue.length === 0 ? (
-            <div className="py-8 text-center text-xs text-[#8E9BAE]">
+            <div className="py-8 text-center text-xs text-[#64748B]">
               Nenhuma postagem na fila no momento.
             </div>
           ) : (
@@ -62,21 +62,21 @@ export const FullQueueModal: React.FC<FullQueueModalProps> = ({
                 className="py-3 flex items-center justify-between gap-3"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className="text-xs font-mono-numeric font-bold text-[#00C2FF] bg-[#0A1020] px-2.5 py-1 rounded border border-[#182647] shrink-0">
+                  <span className="text-xs font-mono-numeric font-bold text-[#2563EB] bg-[#F8FAFC] px-2.5 py-1 rounded border border-[#DCE3EC] shrink-0">
                     {item.time}
                   </span>
                   <img
                     src={item.productImage}
                     alt={item.productName}
                     referrerPolicy="no-referrer"
-                    className="w-9 h-9 rounded object-cover border border-[#182647]"
+                    className="w-9 h-9 rounded object-cover border border-[#DCE3EC]"
                   />
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold text-[#E6E8EC] truncate">
+                    <p className="text-xs font-semibold text-[#172033] truncate">
                       {item.productName}
                     </p>
-                    <div className="flex items-center gap-2 text-xs text-[#8E9BAE] mt-0.5">
-                      <Radio className="w-3 h-3 text-[#1E5EFF]" />
+                    <div className="flex items-center gap-2 text-xs text-[#64748B] mt-0.5">
+                      <Radio className="w-3 h-3 text-[#2563EB]" />
                       <span>{item.channel}</span>
                       <span>•</span>
                       <span className="font-mono-numeric">
@@ -99,7 +99,7 @@ export const FullQueueModal: React.FC<FullQueueModalProps> = ({
                       <button
                         type="button"
                         onClick={() => handleDispatchNow(item.id)}
-                        className="p-1.5 text-[#00C2FF] hover:bg-[#152345] rounded transition-colors"
+                        className="p-1.5 text-[#2563EB] hover:bg-[#DBEAFE] rounded transition-colors"
                         title="Disparar agora"
                       >
                         <Send className="w-3.5 h-3.5" />
@@ -107,7 +107,7 @@ export const FullQueueModal: React.FC<FullQueueModalProps> = ({
                       <button
                         type="button"
                         onClick={() => handleRemove(item.id)}
-                        className="p-1.5 text-[#8E9BAE] hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                        className="p-1.5 text-[#64748B] hover:text-red-700 hover:bg-red-500/10 rounded transition-colors"
                         title="Remover da fila"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -120,8 +120,8 @@ export const FullQueueModal: React.FC<FullQueueModalProps> = ({
           )}
         </div>
 
-        <div className="flex items-center justify-between pt-3 border-t border-[#162340]">
-          <span className="text-xs text-[#8E9BAE]">
+        <div className="flex items-center justify-between pt-3 border-t border-[#E2E8F0]">
+          <span className="text-xs text-[#64748B]">
             Total agendado: {queue.filter((q) => q.status !== 'Publicado').length} itens
           </span>
           <Button variant="ghost" size="sm" onClick={onClose}>

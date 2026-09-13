@@ -48,21 +48,21 @@ export const OffersMetricsBar: React.FC<OffersMetricsBarProps> = ({
       label: 'Encontradas',
       count: counts.total.toLocaleString('pt-BR'),
       icon: Tag,
-      accentColor: '#00C2FF',
+      accentColor: '#2563EB',
     },
     {
       id: 'Excelentes',
       label: 'Excelentes',
       count: counts.excellent,
       icon: Sparkles,
-      accentColor: '#00C2FF',
+      accentColor: '#2563EB',
     },
     {
       id: 'Em análise',
       label: 'Em análise',
       count: counts.inReview,
       icon: Clock,
-      accentColor: '#70A1FF',
+      accentColor: '#2563EB',
     },
     {
       id: 'Aprovadas hoje',
@@ -76,7 +76,7 @@ export const OffersMetricsBar: React.FC<OffersMetricsBarProps> = ({
       label: 'Publicadas hoje',
       count: counts.publishedToday,
       icon: Send,
-      accentColor: '#38BDF8',
+      accentColor: '#3B82F6',
     },
     {
       id: 'Rejeitadas',
@@ -100,22 +100,22 @@ export const OffersMetricsBar: React.FC<OffersMetricsBarProps> = ({
             onClick={() => onSelectFilter(metric.id)}
             className={`flex items-center justify-between p-3 rounded-xl border text-left transition-all duration-150 relative overflow-hidden group ${
               isSelected
-                ? 'bg-[#101C38] border-[#1E5EFF] shadow-sm shadow-[#1E5EFF]/15'
-                : 'bg-[#0B1224] border-[#162340] hover:bg-[#0E172E] hover:border-[#22355C]'
+                ? 'bg-[#EFF6FF] border-[#2563EB] shadow-sm shadow-[#2563EB]/15'
+                : 'bg-[#F8FAFC] border-[#E2E8F0] hover:bg-[#F1F5F9] hover:border-[#94A3B8]'
             }`}
           >
             {/* Active top line accent */}
             {isSelected && (
-              <span className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#1E5EFF] to-[#00C2FF]" />
+              <span className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#2563EB] to-[#2563EB]" />
             )}
 
             <div className="min-w-0 pr-2">
-              <span className="text-xs font-medium text-[#8E9BAE] block truncate">
+              <span className="text-xs font-medium text-[#64748B] block truncate">
                 {metric.label}
               </span>
               <span
                 className={`text-lg font-bold font-mono-numeric block mt-0.5 leading-tight ${
-                  isSelected ? 'text-white' : 'text-[#E6E8EC]'
+                  isSelected ? 'text-white' : 'text-[#172033]'
                 }`}
               >
                 {metric.count}
@@ -125,14 +125,14 @@ export const OffersMetricsBar: React.FC<OffersMetricsBarProps> = ({
             <div
               className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border transition-colors ${
                 isSelected
-                  ? 'bg-[#15274D] border-[#1E5EFF]/50'
-                  : 'bg-[#0E162B] border-[#1B2947] group-hover:border-[#283C66]'
+                  ? 'bg-[#DCE3EC] border-[#2563EB]/50'
+                  : 'bg-[#F1F5F9] border-[#DCE3EC] group-hover:border-[#93C5FD]'
               }`}
             >
               <Icon
                 className="w-4 h-4"
                 style={{
-                  color: isSelected ? metric.accentColor : '#8E9BAE',
+                  color: isSelected ? metric.accentColor : '#64748B',
                 }}
               />
             </div>

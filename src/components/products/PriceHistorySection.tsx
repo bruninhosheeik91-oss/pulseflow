@@ -81,20 +81,20 @@ export const PriceHistorySection: React.FC<PriceHistorySectionProps> = ({
       {/* Header with Title & Marketplace Filter Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div>
-          <h4 className="text-sm font-bold text-[#E6E8EC] flex items-center gap-1.5">
+          <h4 className="text-sm font-bold text-[#172033] flex items-center gap-1.5">
             <span>Histórico de Preço</span>
-            <span className="text-[11px] font-normal text-[#8E9BAE]">
+            <span className="text-[11px] font-normal text-[#64748B]">
               (últimos 30 dias)
             </span>
           </h4>
-          <p className="text-[11px] text-[#8E9BAE]">
+          <p className="text-[11px] text-[#64748B]">
             Acompanhe a variação e oscilações do produto no mercado
           </p>
         </div>
 
         {/* Channels / Marketplaces Switcher */}
         {historySeries.length > 0 && (
-          <div className="flex items-center gap-1 bg-[#080E1C] p-1 rounded-lg border border-[#162340] overflow-x-auto">
+          <div className="flex items-center gap-1 bg-[#F8FAFC] p-1 rounded-lg border border-[#E2E8F0] overflow-x-auto">
             {historySeries.map((series) => (
               <button
                 key={series.marketplace}
@@ -102,8 +102,8 @@ export const PriceHistorySection: React.FC<PriceHistorySectionProps> = ({
                 onClick={() => setSelectedChannel(series.marketplace)}
                 className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap cursor-pointer ${
                   selectedChannel === series.marketplace
-                    ? 'bg-[#15254A] text-[#00C2FF] font-semibold border border-[#1E5EFF]/40'
-                    : 'text-[#8E9BAE] hover:text-[#E6E8EC]'
+                    ? 'bg-[#DBEAFE] text-[#2563EB] font-semibold border border-[#2563EB]/40'
+                    : 'text-[#64748B] hover:text-[#172033]'
                 }`}
               >
                 {series.marketplace}
@@ -115,35 +115,35 @@ export const PriceHistorySection: React.FC<PriceHistorySectionProps> = ({
 
       {/* 3 Metric Summary Boxes */}
       <div className="grid grid-cols-3 gap-2.5">
-        <div className="p-2.5 rounded-lg bg-[#080E1C] border border-[#162340]">
-          <span className="text-[10px] uppercase font-bold text-[#8E9BAE] tracking-wider block">
+        <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
+          <span className="text-[10px] uppercase font-bold text-[#64748B] tracking-wider block">
             Menor Preço
           </span>
           <div className="flex items-center gap-1 mt-0.5">
-            <TrendingDown className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-            <span className="text-xs font-bold font-mono-numeric text-emerald-400">
+            <TrendingDown className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+            <span className="text-xs font-bold font-mono-numeric text-emerald-700">
               {formatCurrency(activeSeries.minPrice)}
             </span>
           </div>
         </div>
 
-        <div className="p-2.5 rounded-lg bg-[#080E1C] border border-[#162340]">
-          <span className="text-[10px] uppercase font-bold text-[#8E9BAE] tracking-wider block">
+        <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
+          <span className="text-[10px] uppercase font-bold text-[#64748B] tracking-wider block">
             Preço Atual
           </span>
           <div className="flex items-center gap-1 mt-0.5">
-            <span className="text-xs font-bold font-mono-numeric text-[#00C2FF]">
+            <span className="text-xs font-bold font-mono-numeric text-[#2563EB]">
               {formatCurrency(activeSeries.currentPrice)}
             </span>
           </div>
         </div>
 
-        <div className="p-2.5 rounded-lg bg-[#080E1C] border border-[#162340]">
-          <span className="text-[10px] uppercase font-bold text-[#8E9BAE] tracking-wider block">
+        <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
+          <span className="text-[10px] uppercase font-bold text-[#64748B] tracking-wider block">
             Média 30 Dias
           </span>
           <div className="flex items-center gap-1 mt-0.5">
-            <span className="text-xs font-bold font-mono-numeric text-[#C4CDD8]">
+            <span className="text-xs font-bold font-mono-numeric text-[#475569]">
               {formatCurrency(activeSeries.avg30Days)}
             </span>
           </div>
@@ -151,14 +151,14 @@ export const PriceHistorySection: React.FC<PriceHistorySectionProps> = ({
       </div>
 
       {/* Trajectory / Curve Chart */}
-      <div className="p-3 rounded-xl bg-[#080E1C] border border-[#162340] relative">
-        <div className="flex items-center justify-between text-[11px] text-[#8E9BAE] mb-2">
+      <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] relative">
+        <div className="flex items-center justify-between text-[11px] text-[#64748B] mb-2">
           <span className="flex items-center gap-1">
-            <Calendar className="w-3 h-3 text-[#00C2FF]" />
+            <Calendar className="w-3 h-3 text-[#2563EB]" />
             <span>Variação diária</span>
           </span>
           {hoveredPoint ? (
-            <span className="text-[#00C2FF] font-mono-numeric font-semibold">
+            <span className="text-[#2563EB] font-mono-numeric font-semibold">
               {hoveredPoint.date}: {formatCurrency(hoveredPoint.price)}
             </span>
           ) : (
@@ -180,8 +180,8 @@ export const PriceHistorySection: React.FC<PriceHistorySectionProps> = ({
                 x2="0"
                 y2="1"
               >
-                <stop offset="0%" stopColor="#00C2FF" stopOpacity="0.25" />
-                <stop offset="100%" stopColor="#1E5EFF" stopOpacity="0.0" />
+                <stop offset="0%" stopColor="#2563EB" stopOpacity="0.25" />
+                <stop offset="100%" stopColor="#2563EB" stopOpacity="0.0" />
               </linearGradient>
             </defs>
 
@@ -191,7 +191,7 @@ export const PriceHistorySection: React.FC<PriceHistorySectionProps> = ({
               y1={paddingY}
               x2={chartWidth - paddingX}
               y2={paddingY}
-              stroke="#162340"
+              stroke="#E2E8F0"
               strokeDasharray="3 3"
             />
             <line
@@ -199,7 +199,7 @@ export const PriceHistorySection: React.FC<PriceHistorySectionProps> = ({
               y1={chartHeight / 2}
               x2={chartWidth - paddingX}
               y2={chartHeight / 2}
-              stroke="#162340"
+              stroke="#E2E8F0"
               strokeDasharray="3 3"
             />
             <line
@@ -207,7 +207,7 @@ export const PriceHistorySection: React.FC<PriceHistorySectionProps> = ({
               y1={chartHeight - paddingY}
               x2={chartWidth - paddingX}
               y2={chartHeight - paddingY}
-              stroke="#162340"
+              stroke="#E2E8F0"
               strokeDasharray="3 3"
             />
 
@@ -225,7 +225,7 @@ export const PriceHistorySection: React.FC<PriceHistorySectionProps> = ({
               <path
                 d={pathD}
                 fill="none"
-                stroke="#00C2FF"
+                stroke="#2563EB"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -244,7 +244,7 @@ export const PriceHistorySection: React.FC<PriceHistorySectionProps> = ({
                   cx={pt.x}
                   cy={pt.y}
                   r="5"
-                  className="fill-[#080E1C] stroke-[#00C2FF] stroke-[2] hover:r-7 hover:fill-[#00C2FF] transition-all"
+                  className="fill-[#F8FAFC] stroke-[#2563EB] stroke-[2] hover:r-7 hover:fill-[#2563EB] transition-all"
                 />
               </g>
             ))}

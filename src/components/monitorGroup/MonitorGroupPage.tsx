@@ -290,7 +290,7 @@ export const MonitorGroupPage: React.FC = () => {
       className="w-full flex items-start justify-between gap-3 py-2 text-left cursor-pointer group"
     >
       <div className="min-w-0">
-        <span className="text-xs font-medium text-[#E6E8EC] block group-hover:text-white">
+        <span className="text-xs font-medium text-[#172033] block group-hover:text-white">
           {label}
         </span>
         {description && (
@@ -301,12 +301,12 @@ export const MonitorGroupPage: React.FC = () => {
       </div>
       <span
         className={`relative w-9 h-5 rounded-full shrink-0 transition-colors mt-0.5 ${
-          checked ? 'bg-[#1E5EFF]' : 'bg-[#1C2C50]'
+          checked ? 'bg-[#2563EB]' : 'bg-[#CBD5E1]'
         }`}
       >
         <span
           className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${
-            checked ? 'left-[18px]' : 'left-0.5 bg-[#8E9BAE]'
+            checked ? 'left-[18px]' : 'left-0.5 bg-[#64748B]'
           }`}
         />
       </span>
@@ -323,10 +323,10 @@ export const MonitorGroupPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div>
-          <h1 className="text-xl font-bold text-[#E6E8EC] tracking-tight">
+          <h1 className="text-xl font-bold text-[#172033] tracking-tight">
             Grupo Monitor
           </h1>
-          <p className="text-xs text-[#8E9BAE] mt-1">
+          <p className="text-xs text-[#64748B] mt-1">
             Use um grupo central para distribuir automaticamente suas ofertas
             aos grupos vinculados.
           </p>
@@ -335,14 +335,14 @@ export const MonitorGroupPage: React.FC = () => {
 
       {/* Empty state */}
       {!config ? (
-        <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl py-10 px-6 flex flex-col items-center text-center">
-          <div className="w-12 h-12 rounded-xl bg-[#14203B] border border-[#1E3057] flex items-center justify-center mb-4">
-            <Users className="w-5 h-5 text-[#00C2FF]" />
+        <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl py-10 px-6 flex flex-col items-center text-center">
+          <div className="w-12 h-12 rounded-xl bg-[#E2E8F0] border border-[#BFDBFE] flex items-center justify-center mb-4">
+            <Users className="w-5 h-5 text-[#2563EB]" />
           </div>
-          <h2 className="text-sm font-semibold text-[#E6E8EC]">
+          <h2 className="text-sm font-semibold text-[#172033]">
             Grupo Monitor não configurado
           </h2>
-<p className="text-xs text-[#8E9BAE] mt-1.5 max-w-sm leading-relaxed">
+<p className="text-xs text-[#64748B] mt-1.5 max-w-sm leading-relaxed">
               Sincronize seus grupos na aba WhatsApp, defina o Grupo Mãe e
               vincule os destinos que receberão suas publicações.
             </p>
@@ -360,9 +360,9 @@ export const MonitorGroupPage: React.FC = () => {
         <>
           {/* Integration banner */}
           <div className="flex items-start gap-2.5 px-3.5 py-3 rounded-lg bg-amber-500/[0.07] border border-amber-500/20">
-            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-            <p className="text-[11px] text-amber-200/90 leading-relaxed">
-              <span className="font-semibold text-amber-300">
+            <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+            <p className="text-[11px] text-amber-700/90 leading-relaxed">
+              <span className="font-semibold text-amber-700">
                 Requer integração.
               </span>{' '}
               As mensagens enviadas ao grupo central serão capturadas e
@@ -372,11 +372,11 @@ export const MonitorGroupPage: React.FC = () => {
           </div>
 
           {/* Monitor real (backend) */}
-          <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-5">
+          <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-5">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
               <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-[#00C2FF]" />
-                <h2 className="text-sm font-semibold text-[#E6E8EC] tracking-tight">
+                <Activity className="w-4 h-4 text-[#2563EB]" />
+                <h2 className="text-sm font-semibold text-[#172033] tracking-tight">
                   Monitor
                 </h2>
                 {parentGroup?.sessionId && (
@@ -397,21 +397,21 @@ export const MonitorGroupPage: React.FC = () => {
               </Badge>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 text-xs">
-              <div className="rounded-lg border border-[#1B2947] bg-[#0A1020] px-3 py-2.5">
-                <span className="text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider block">
+              <div className="rounded-lg border border-[#DCE3EC] bg-[#F8FAFC] px-3 py-2.5">
+                <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider block">
                   Última mensagem recebida
                 </span>
-                <span className="text-sm text-[#E6E8EC] mt-0.5 block font-mono-numeric">
+                <span className="text-sm text-[#172033] mt-0.5 block font-mono-numeric">
                   {monitorReachable === false
                     ? '—'
                     : formatTimestamp(monitor?.lastMessageAt ?? null)}
                 </span>
               </div>
-              <div className="rounded-lg border border-[#1B2947] bg-[#0A1020] px-3 py-2.5">
-                <span className="text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider block">
+              <div className="rounded-lg border border-[#DCE3EC] bg-[#F8FAFC] px-3 py-2.5">
+                <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider block">
                   Último envio
                 </span>
-                <span className="text-sm text-[#E6E8EC] mt-0.5 block font-mono-numeric">
+                <span className="text-sm text-[#172033] mt-0.5 block font-mono-numeric">
                   {monitorReachable === false
                     ? '—'
                     : formatTimestamp(monitor?.lastSendAt ?? null)}
@@ -419,11 +419,11 @@ export const MonitorGroupPage: React.FC = () => {
               </div>
             </div>
             {monitorReachable === false ? (
-              <p className="text-[10px] text-amber-200/80 pt-2">
+              <p className="text-[10px] text-amber-700/80 pt-2">
                 Servidor de conexão offline — indicadores indisponíveis.
               </p>
             ) : monitor?.lastError ? (
-              <p className="text-[10px] text-red-300/90 pt-2">
+              <p className="text-[10px] text-red-700/90 pt-2">
                 Último erro: {monitor.lastError}
               </p>
             ) : (
@@ -435,24 +435,24 @@ export const MonitorGroupPage: React.FC = () => {
           </div>
 
           {/* Grupo Mãe */}
-          <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-5">
+          <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-start gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-xl bg-[#14203B] border border-[#1E3057] flex items-center justify-center shrink-0">
-                  <Users className="w-5 h-5 text-[#00C2FF]" />
+                <div className="w-10 h-10 rounded-xl bg-[#E2E8F0] border border-[#BFDBFE] flex items-center justify-center shrink-0">
+                  <Users className="w-5 h-5 text-[#2563EB]" />
                 </div>
                 <div className="min-w-0">
-                  <span className="text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider block">
+                  <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider block">
                     Grupo Mãe
                   </span>
-                  <h2 className="text-sm font-bold text-[#E6E8EC] tracking-tight truncate">
+                  <h2 className="text-sm font-bold text-[#172033] tracking-tight truncate">
                     {config.name}
                   </h2>
                   <div className="flex items-center gap-1.5 flex-wrap mt-1">
                     {(() => {
                       const Icon = PLATFORM_ICONS[config.platform];
                       return (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-[#101B33] border border-[#1C2C50] text-[#C8D1DE]">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-[#F1F5F9] border border-[#CBD5E1] text-[#334155]">
                           <Icon className="w-3 h-3" />
                           {config.platform}
                         </span>
@@ -512,13 +512,13 @@ export const MonitorGroupPage: React.FC = () => {
           </div>
 
           {/* Grupos vinculados */}
-          <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-5">
-            <div className="flex items-center justify-between gap-3 border-b border-[#162340] pb-3">
+          <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-5">
+            <div className="flex items-center justify-between gap-3 border-b border-[#E2E8F0] pb-3">
               <div>
-                <h2 className="text-sm font-semibold text-[#E6E8EC] tracking-tight">
+                <h2 className="text-sm font-semibold text-[#172033] tracking-tight">
                   Grupos vinculados
                 </h2>
-                <p className="text-[11px] text-[#8E9BAE] mt-0.5">
+                <p className="text-[11px] text-[#64748B] mt-0.5">
                   Tudo que for enviado ao Grupo Monitor será preparado para
                   distribuição aos grupos vinculados.
                 </p>
@@ -536,11 +536,11 @@ export const MonitorGroupPage: React.FC = () => {
 
             {/* Visual map */}
             <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-stretch gap-3 pt-3">
-              <div className="rounded-lg border border-[#1B2947] bg-[#0A1020] p-3 flex flex-col items-center justify-center text-center">
-                <span className="text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider">
+              <div className="rounded-lg border border-[#DCE3EC] bg-[#F8FAFC] p-3 flex flex-col items-center justify-center text-center">
+                <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">
                   Grupo Mãe
                 </span>
-                <span className="text-xs font-bold text-[#E6E8EC] mt-0.5 truncate max-w-full">
+                <span className="text-xs font-bold text-[#172033] mt-0.5 truncate max-w-full">
                   {config.name}
                 </span>
                 {parentGroup?.sessionId && (
@@ -549,7 +549,7 @@ export const MonitorGroupPage: React.FC = () => {
                   </span>
                 )}
               </div>
-              <div className="flex sm:flex-col items-center justify-center gap-0.5 text-[#2A3E6D] px-1">
+              <div className="flex sm:flex-col items-center justify-center gap-0.5 text-[#93C5FD] px-1">
                 <ArrowRight className="w-4 h-4 sm:hidden" />
                 <ArrowDown className="w-4 h-4 hidden sm:block" />
                 <span className="text-[9px] font-semibold uppercase tracking-wider text-[#475569] text-center">
@@ -559,8 +559,8 @@ export const MonitorGroupPage: React.FC = () => {
                   {linkedChannels.length} destino(s)
                 </span>
               </div>
-              <div className="rounded-lg border border-[#1B2947] bg-[#0A1020] p-3">
-                <span className="text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider block text-center sm:text-left">
+              <div className="rounded-lg border border-[#DCE3EC] bg-[#F8FAFC] p-3">
+                <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider block text-center sm:text-left">
                   Destinos
                 </span>
                 {linkedChannels.length === 0 ? (
@@ -572,7 +572,7 @@ export const MonitorGroupPage: React.FC = () => {
                     {linkedChannels.map((ch) => (
                       <span
                         key={ch.id}
-                        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#101B33] border border-[#1C2C50] text-[10px] font-medium text-[#C8D1DE]"
+                        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#F1F5F9] border border-[#CBD5E1] text-[10px] font-medium text-[#334155]"
                       >
                         {ch.name}
                       </span>
@@ -588,18 +588,18 @@ export const MonitorGroupPage: React.FC = () => {
                 {linkedChannels.map((ch) => (
                   <div
                     key={ch.id}
-                    className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-[#0A1020] border border-[#162340]"
+                    className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-7 h-7 rounded-md bg-[#14203B] border border-[#1E3057] flex items-center justify-center shrink-0">
+                      <div className="w-7 h-7 rounded-md bg-[#E2E8F0] border border-[#BFDBFE] flex items-center justify-center shrink-0">
                         {ch.platform === 'WhatsApp' ? (
-                          <MessageSquare className="w-3 h-3 text-emerald-400" />
+                          <MessageSquare className="w-3 h-3 text-emerald-700" />
                         ) : (
-                          <Send className="w-3 h-3 text-[#38BDF8]" />
+                          <Send className="w-3 h-3 text-[#3B82F6]" />
                         )}
                       </div>
                       <div className="min-w-0">
-                        <span className="text-xs font-medium text-[#E6E8EC] block truncate">
+                        <span className="text-xs font-medium text-[#172033] block truncate">
                           {ch.name}
                         </span>
                         <span className="text-[10px] text-[#64748B] block truncate">
@@ -611,7 +611,7 @@ export const MonitorGroupPage: React.FC = () => {
                       type="button"
                       onClick={() => unlinkChannel(ch.id)}
                       title="Desvincular grupo"
-                      className="w-7 h-7 rounded-md flex items-center justify-center text-[#8E9BAE] hover:bg-red-500/10 hover:text-red-400 transition-colors shrink-0 cursor-pointer"
+                      className="w-7 h-7 rounded-md flex items-center justify-center text-[#64748B] hover:bg-red-500/10 hover:text-red-700 transition-colors shrink-0 cursor-pointer"
                     >
                       <Unlink className="w-3.5 h-3.5" />
                     </button>
@@ -622,10 +622,10 @@ export const MonitorGroupPage: React.FC = () => {
           </div>
 
           {/* Regras de distribuição */}
-          <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-5">
-            <div className="flex items-center gap-2 pb-3 border-b border-[#162340]">
-              <Repeat className="w-4 h-4 text-[#00C2FF]" />
-              <h2 className="text-sm font-semibold text-[#E6E8EC] tracking-tight">
+          <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-5">
+            <div className="flex items-center gap-2 pb-3 border-b border-[#E2E8F0]">
+              <Repeat className="w-4 h-4 text-[#2563EB]" />
+              <h2 className="text-sm font-semibold text-[#172033] tracking-tight">
                 Regras de distribuição
               </h2>
             </div>
@@ -633,7 +633,7 @@ export const MonitorGroupPage: React.FC = () => {
             <div className="pt-4 grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-3">
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <span className="text-xs font-medium text-[#E6E8EC]">
+                  <span className="text-xs font-medium text-[#172033]">
                     Distribuir para
                   </span>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
@@ -663,13 +663,13 @@ export const MonitorGroupPage: React.FC = () => {
                           onClick={() => updateRules({ target: opt.value })}
                           className={`px-3 py-2.5 rounded-lg border text-left transition-colors cursor-pointer ${
                             active
-                              ? 'bg-[#121E38] border-[#1E325C]'
-                              : 'bg-[#070C18] border-[#162340] hover:border-[#1E3360]'
+                              ? 'bg-[#EFF6FF] border-[#BFDBFE]'
+                              : 'bg-[#FFFFFF] border-[#E2E8F0] hover:border-[#BFDBFE]'
                           }`}
                         >
                           <span
                             className={`text-[11px] font-medium block ${
-                              active ? 'text-[#E6E8EC]' : 'text-[#94A3B8]'
+                              active ? 'text-[#172033]' : 'text-[#94A3B8]'
                             }`}
                           >
                             {opt.label}
@@ -700,8 +700,8 @@ export const MonitorGroupPage: React.FC = () => {
                               onClick={() => toggleSelected(ch.id)}
                               className={`px-2.5 py-1.5 rounded-md text-[11px] font-medium border transition-colors cursor-pointer ${
                                 selected
-                                  ? 'bg-[#1E5EFF]/15 text-[#00C2FF] border-[#1E5EFF]/40'
-                                  : 'bg-[#070C18] text-[#94A3B8] border-[#1C2C50] hover:border-[#2A4072]'
+                                  ? 'bg-[#2563EB]/15 text-[#2563EB] border-[#2563EB]/40'
+                                  : 'bg-[#FFFFFF] text-[#94A3B8] border-[#CBD5E1] hover:border-[#93C5FD]'
                               }`}
                             >
                               {ch.name}
@@ -715,7 +715,7 @@ export const MonitorGroupPage: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-xs text-[#E6E8EC] font-medium">
+                    <label className="text-xs text-[#172033] font-medium">
                       Intervalo entre grupos (min)
                     </label>
                     <input
@@ -728,11 +728,11 @@ export const MonitorGroupPage: React.FC = () => {
                             parseInt(e.target.value) || 1,
                         })
                       }
-                      className="w-full h-8 px-3 bg-[#070C18] border border-[#182747] rounded-lg text-xs text-[#E6E8EC] focus:outline-none focus:border-[#1E5EFF]"
+                      className="w-full h-8 px-3 bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg text-xs text-[#172033] focus:outline-none focus:border-[#2563EB]"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs text-[#E6E8EC] font-medium">
+                    <label className="text-xs text-[#172033] font-medium">
                       Ordem
                     </label>
                     <Select
@@ -749,7 +749,7 @@ export const MonitorGroupPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="divide-y divide-[#101B33]">
+              <div className="divide-y divide-[#F1F5F9]">
                 <ToggleRow
                   checked={config.rules.respectBusinessHours}
                   label="Respeitar horário de funcionamento"
@@ -793,7 +793,7 @@ export const MonitorGroupPage: React.FC = () => {
               </div>
             </div>
 
-            <p className="text-[10px] text-[#64748B] pt-3 mt-2 border-t border-[#162340] leading-relaxed">
+            <p className="text-[10px] text-[#64748B] pt-3 mt-2 border-t border-[#E2E8F0] leading-relaxed">
               Arquitetura: Grupo Mãe → Publicação → Fila Central → Grupo 1 →
               intervalo → Grupo 2 → intervalo → Grupo 3... Nada é enviado
               simultaneamente — o motor de encadeamento será ativado com a
@@ -802,14 +802,14 @@ export const MonitorGroupPage: React.FC = () => {
           </div>
 
           {/* Processamento */}
-          <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-5">
-            <div className="flex items-center gap-2 pb-3 border-b border-[#162340]">
-              <ListChecks className="w-4 h-4 text-[#00C2FF]" />
-              <h2 className="text-sm font-semibold text-[#E6E8EC] tracking-tight">
+          <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-5">
+            <div className="flex items-center gap-2 pb-3 border-b border-[#E2E8F0]">
+              <ListChecks className="w-4 h-4 text-[#2563EB]" />
+              <h2 className="text-sm font-semibold text-[#172033] tracking-tight">
                 Processamento
               </h2>
             </div>
-            <div className="pt-2 divide-y divide-[#101B33]">
+            <div className="pt-2 divide-y divide-[#F1F5F9]">
               {PROCESSING_STEPS.map((step) => (
                 <ToggleRow
                   key={step.key}
@@ -819,25 +819,25 @@ export const MonitorGroupPage: React.FC = () => {
                 />
               ))}
             </div>
-            <p className="text-[10px] text-[#64748B] pt-3 mt-2 border-t border-[#162340] leading-relaxed">
+            <p className="text-[10px] text-[#64748B] pt-3 mt-2 border-t border-[#E2E8F0] leading-relaxed">
               Configuração local apenas — nenhuma dessas etapas é executada nesta
               versão.
             </p>
           </div>
 
           {/* Atividade */}
-          <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-5">
-            <div className="flex items-center gap-2 pb-3 border-b border-[#162340]">
-              <Inbox className="w-4 h-4 text-[#00C2FF]" />
-              <h2 className="text-sm font-semibold text-[#E6E8EC] tracking-tight">
+          <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-5">
+            <div className="flex items-center gap-2 pb-3 border-b border-[#E2E8F0]">
+              <Inbox className="w-4 h-4 text-[#2563EB]" />
+              <h2 className="text-sm font-semibold text-[#172033] tracking-tight">
                 Atividade
               </h2>
             </div>
             <div className="py-8 flex flex-col items-center text-center">
-              <div className="w-10 h-10 rounded-full bg-[#101B33] border border-[#1C2C50] flex items-center justify-center mb-2">
+              <div className="w-10 h-10 rounded-full bg-[#F1F5F9] border border-[#CBD5E1] flex items-center justify-center mb-2">
                 <Inbox className="w-4 h-4 text-[#64748B]" />
               </div>
-              <span className="text-xs font-semibold text-[#8E9BAE]">
+              <span className="text-xs font-semibold text-[#64748B]">
                 Nenhuma publicação recebida.
               </span>
               <p className="text-[10px] text-[#64748B] mt-1 max-w-[280px] leading-relaxed">
@@ -871,14 +871,14 @@ export const MonitorGroupPage: React.FC = () => {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className="flex items-center gap-2.5 px-4 py-2.5 rounded-lg border border-[#1E325C] bg-[#0E1628] shadow-lg shadow-black/30 animate-in slide-in-from-bottom-3 fade-in"
+            className="flex items-center gap-2.5 px-4 py-2.5 rounded-lg border border-[#BFDBFE] bg-[#FFFFFF] shadow-lg shadow-black/30 animate-in slide-in-from-bottom-3 fade-in"
           >
             {t.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
             ) : (
-              <ShieldCheck className="w-4 h-4 text-[#00C2FF] shrink-0" />
+              <ShieldCheck className="w-4 h-4 text-[#2563EB] shrink-0" />
             )}
-            <span className="text-xs text-[#E6E8EC]">{t.message}</span>
+            <span className="text-xs text-[#172033]">{t.message}</span>
           </div>
         ))}
       </div>

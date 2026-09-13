@@ -36,9 +36,9 @@ export const SettingsGeneralTab: React.FC<SettingsGeneralTabProps> = ({
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* 1. Informações do Workspace */}
-        <div className="p-4 bg-[#0A1020] border border-[#16233B] rounded-xl space-y-3.5">
-          <div className="flex items-center gap-2 border-b border-[#14203B] pb-2.5">
-            <Globe className="w-4 h-4 text-[#00C2FF]" />
+        <div className="p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-3.5">
+          <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-2.5">
+            <Globe className="w-4 h-4 text-[#2563EB]" />
             <h4 className="font-bold text-white text-xs">
               Identificação do Sistema & Localização
             </h4>
@@ -46,7 +46,7 @@ export const SettingsGeneralTab: React.FC<SettingsGeneralTabProps> = ({
 
           <div className="space-y-3 text-xs">
             <div>
-              <label className="text-[#8E9BAE] text-[11px] block mb-1">
+              <label className="text-[#64748B] text-[11px] block mb-1">
                 Nome da Operação / Workspace:
               </label>
               <input
@@ -55,12 +55,12 @@ export const SettingsGeneralTab: React.FC<SettingsGeneralTabProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, workspaceName: e.target.value })
                 }
-                className="w-full bg-[#0E1628] border border-[#182642] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#1E5EFF]"
+                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#2563EB]"
               />
             </div>
 
             <div>
-              <label className="text-[#8E9BAE] text-[11px] block mb-1">
+              <label className="text-[#64748B] text-[11px] block mb-1">
                 E-mail do Administrador (Alertas de Falha):
               </label>
               <input
@@ -69,13 +69,13 @@ export const SettingsGeneralTab: React.FC<SettingsGeneralTabProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, adminEmail: e.target.value })
                 }
-                className="w-full bg-[#0E1628] border border-[#182642] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#1E5EFF]"
+                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#2563EB]"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[#8E9BAE] text-[11px] block mb-1">
+                <label className="text-[#64748B] text-[11px] block mb-1">
                   Fuso Horário:
                 </label>
                 <select
@@ -83,7 +83,7 @@ export const SettingsGeneralTab: React.FC<SettingsGeneralTabProps> = ({
                   onChange={(e) =>
                     setFormData({ ...formData, timezone: e.target.value })
                   }
-                  className="w-full bg-[#0E1628] border border-[#182642] rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#1E5EFF]"
+                  className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#2563EB]"
                 >
                   <option value="America/Sao_Paulo (UTC-03:00)">São Paulo (UTC-03:00)</option>
                   <option value="America/Manaus (UTC-04:00)">Manaus (UTC-04:00)</option>
@@ -92,14 +92,14 @@ export const SettingsGeneralTab: React.FC<SettingsGeneralTabProps> = ({
               </div>
 
               <div>
-                <label className="text-[#8E9BAE] text-[11px] block mb-1">
+                <label className="text-[#64748B] text-[11px] block mb-1">
                   Moeda Padrão:
                 </label>
                 <input
                   type="text"
                   disabled
                   value={formData.currency}
-                  className="w-full bg-[#0E1628] border border-[#182642] rounded-lg px-2.5 py-1.5 text-xs text-[#8E9BAE] opacity-70"
+                  className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-2.5 py-1.5 text-xs text-[#64748B] opacity-70"
                 />
               </div>
             </div>
@@ -107,8 +107,8 @@ export const SettingsGeneralTab: React.FC<SettingsGeneralTabProps> = ({
         </div>
 
         {/* 2. Alertas & Retenção de Dados */}
-        <div className="p-4 bg-[#0A1020] border border-[#16233B] rounded-xl space-y-3.5">
-          <div className="flex items-center gap-2 border-b border-[#14203B] pb-2.5">
+        <div className="p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-3.5">
+          <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-2.5">
             <Bell className="w-4 h-4 text-indigo-400" />
             <h4 className="font-bold text-white text-xs">
               Notificações do Painel & Retenção
@@ -116,14 +116,14 @@ export const SettingsGeneralTab: React.FC<SettingsGeneralTabProps> = ({
           </div>
 
           <div className="space-y-3 text-xs">
-            <label className="flex items-center justify-between p-2.5 bg-[#0B1220] rounded-lg border border-[#16233B] cursor-pointer">
+            <label className="flex items-center justify-between p-2.5 bg-[#F8FAFC] rounded-lg border border-[#E2E8F0] cursor-pointer">
               <div className="flex items-center gap-2.5">
-                <Bell className="w-4 h-4 text-[#00C2FF]" />
+                <Bell className="w-4 h-4 text-[#2563EB]" />
                 <div>
                   <span className="text-white font-medium block">
                     Notificações do Navegador
                   </span>
-                  <span className="text-[11px] text-[#8E9BAE]">
+                  <span className="text-[11px] text-[#64748B]">
                     Avisar em tempo real quando uma oferta crítica for aprovada
                   </span>
                 </div>
@@ -137,18 +137,18 @@ export const SettingsGeneralTab: React.FC<SettingsGeneralTabProps> = ({
                     enableDesktopNotifications: e.target.checked,
                   })
                 }
-                className="rounded border-[#192747] text-[#1E5EFF] focus:ring-0 bg-[#0E1628]"
+                className="rounded border-[#DCE3EC] text-[#2563EB] focus:ring-0 bg-[#FFFFFF]"
               />
             </label>
 
-            <label className="flex items-center justify-between p-2.5 bg-[#0B1220] rounded-lg border border-[#16233B] cursor-pointer">
+            <label className="flex items-center justify-between p-2.5 bg-[#F8FAFC] rounded-lg border border-[#E2E8F0] cursor-pointer">
               <div className="flex items-center gap-2.5">
-                <Volume2 className="w-4 h-4 text-emerald-400" />
+                <Volume2 className="w-4 h-4 text-emerald-700" />
                 <div>
                   <span className="text-white font-medium block">
                     Sons de Confirmação de Disparo
                   </span>
-                  <span className="text-[11px] text-[#8E9BAE]">
+                  <span className="text-[11px] text-[#64748B]">
                     Tocar aviso sonoro sutil quando um disparo for entregue
                   </span>
                 </div>
@@ -162,12 +162,12 @@ export const SettingsGeneralTab: React.FC<SettingsGeneralTabProps> = ({
                     enableSoundAlerts: e.target.checked,
                   })
                 }
-                className="rounded border-[#192747] text-[#1E5EFF] focus:ring-0 bg-[#0E1628]"
+                className="rounded border-[#DCE3EC] text-[#2563EB] focus:ring-0 bg-[#FFFFFF]"
               />
             </label>
 
             <div>
-              <label className="text-[#8E9BAE] text-[11px] block mb-1">
+              <label className="text-[#64748B] text-[11px] block mb-1">
                 Retenção Automática de Registros de Histórico:
               </label>
               <select
@@ -178,7 +178,7 @@ export const SettingsGeneralTab: React.FC<SettingsGeneralTabProps> = ({
                     autoCleanHistoryDays: parseInt(e.target.value),
                   })
                 }
-                className="w-full bg-[#0E1628] border border-[#182642] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#1E5EFF]"
+                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#2563EB]"
               >
                 <option value="30">Limpar logs mais antigos que 30 dias</option>
                 <option value="90">Limpar logs mais antigos que 90 dias (Padrão)</option>
@@ -194,8 +194,8 @@ export const SettingsGeneralTab: React.FC<SettingsGeneralTabProps> = ({
       <div className="p-4 bg-rose-500/5 border border-rose-500/20 rounded-xl space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-rose-400" />
-            <h4 className="font-bold text-rose-300 text-xs">
+            <AlertTriangle className="w-4 h-4 text-rose-700" />
+            <h4 className="font-bold text-rose-700 text-xs">
               Zona de Redefinição do Sistema
             </h4>
           </div>
@@ -211,7 +211,7 @@ export const SettingsGeneralTab: React.FC<SettingsGeneralTabProps> = ({
             variant="outline"
             size="sm"
             onClick={onResetFactory}
-            className="border-rose-500/30 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 shrink-0"
+            className="border-rose-500/30 text-rose-700 hover:bg-rose-500/10 hover:text-rose-700 shrink-0"
           >
             Redefinir para Padrão de Fábrica
           </Button>

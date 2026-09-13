@@ -43,60 +43,60 @@ export const QueueMetricsBar: React.FC<QueueMetricsBarProps> = ({
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
       {/* 1. Em Fila Agora */}
-      <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-4 flex flex-col justify-between hover:border-[#22355A] transition-colors">
+      <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-4 flex flex-col justify-between hover:border-[#94A3B8] transition-colors">
         <div className="flex items-center justify-between text-xs text-[#94A3B8]">
           <span className="font-medium">Em Espera</span>
-          <Clock className="w-4 h-4 text-[#00C2FF]" />
+          <Clock className="w-4 h-4 text-[#2563EB]" />
         </div>
         <div className="mt-2 flex items-baseline gap-2">
-          <span className="text-2xl font-bold font-mono-numeric text-[#E6E8EC]">
+          <span className="text-2xl font-bold font-mono-numeric text-[#172033]">
             {pendingItems.length}
           </span>
           {publishingNow.length > 0 && (
-            <span className="text-xs text-[#00C2FF] font-medium animate-pulse">
+            <span className="text-xs text-[#2563EB] font-medium animate-pulse">
               +{publishingNow.length} enviando
             </span>
           )}
         </div>
-        <p className="text-[11px] text-[#8E9BAE] mt-1 flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#00C2FF]" />
+        <p className="text-[11px] text-[#64748B] mt-1 flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB]" />
           Aguardando liberação automática
         </p>
       </div>
 
       {/* 2. Próxima 1 Hora */}
-      <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-4 flex flex-col justify-between hover:border-[#22355A] transition-colors">
+      <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-4 flex flex-col justify-between hover:border-[#94A3B8] transition-colors">
         <div className="flex items-center justify-between text-xs text-[#94A3B8]">
           <span className="font-medium">Próxima 1 Hora</span>
-          <CalendarCheck className="w-4 h-4 text-[#1E5EFF]" />
+          <CalendarCheck className="w-4 h-4 text-[#2563EB]" />
         </div>
         <div className="mt-2 flex items-baseline gap-2">
-          <span className="text-2xl font-bold font-mono-numeric text-[#E6E8EC]">
+          <span className="text-2xl font-bold font-mono-numeric text-[#172033]">
             {nextHourCount}
           </span>
           <span className="text-xs text-[#94A3B8]">postagens</span>
         </div>
-        <p className="text-[11px] text-[#8E9BAE] mt-1">
+        <p className="text-[11px] text-[#64748B] mt-1">
           Intervalo escalonado anti-flood
         </p>
       </div>
 
       {/* 3. Disparados Hoje */}
-      <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-4 flex flex-col justify-between hover:border-[#22355A] transition-colors">
+      <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-4 flex flex-col justify-between hover:border-[#94A3B8] transition-colors">
         <div className="flex items-center justify-between text-xs text-[#94A3B8]">
           <span className="font-medium">Disparados Hoje</span>
-          <Send className="w-4 h-4 text-emerald-400" />
+          <Send className="w-4 h-4 text-emerald-700" />
         </div>
         <div className="mt-2 flex items-baseline gap-2">
-          <span className="text-2xl font-bold font-mono-numeric text-[#E6E8EC]">
+          <span className="text-2xl font-bold font-mono-numeric text-[#172033]">
             {publishedToday.length}
           </span>
-          <span className="text-xs text-emerald-400 font-medium">
+          <span className="text-xs text-emerald-700 font-medium">
             +{totalClicksToday} cliques
           </span>
         </div>
-        <p className="text-[11px] text-emerald-400/90 mt-1 flex items-center gap-1">
-          <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+        <p className="text-[11px] text-emerald-700/90 mt-1 flex items-center gap-1">
+          <CheckCircle2 className="w-3 h-3 text-emerald-700 shrink-0" />
           {publishedToday.length > 0
             ? '100% entregues sem bloqueios'
             : 'nenhum disparo concluído'}
@@ -104,15 +104,15 @@ export const QueueMetricsBar: React.FC<QueueMetricsBarProps> = ({
       </div>
 
       {/* 4. Falhas / Retentativas */}
-      <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-4 flex flex-col justify-between hover:border-[#22355A] transition-colors">
+      <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-4 flex flex-col justify-between hover:border-[#94A3B8] transition-colors">
         <div className="flex items-center justify-between text-xs text-[#94A3B8]">
           <span className="font-medium">Falhas / Retentativas</span>
-          <AlertTriangle className={`w-4 h-4 ${failedItems.length > 0 ? 'text-amber-400' : 'text-[#8E9BAE]'}`} />
+          <AlertTriangle className={`w-4 h-4 ${failedItems.length > 0 ? 'text-amber-700' : 'text-[#64748B]'}`} />
         </div>
         <div className="mt-2 flex items-baseline gap-2">
           <span
             className={`text-2xl font-bold font-mono-numeric ${
-              failedItems.length > 0 ? 'text-amber-400' : 'text-[#E6E8EC]'
+              failedItems.length > 0 ? 'text-amber-700' : 'text-[#172033]'
             }`}
           >
             {failedItems.length}
@@ -121,7 +121,7 @@ export const QueueMetricsBar: React.FC<QueueMetricsBarProps> = ({
             {failedItems.length > 0 ? 'requer atenção' : 'sem incidentes'}
           </span>
         </div>
-        <p className="text-[11px] text-[#8E9BAE] mt-1">
+        <p className="text-[11px] text-[#64748B] mt-1">
           {failedItems.length > 0
             ? 'Rate-limit temporário na API'
             : 'Fila de reenvio vazia'}
@@ -129,18 +129,18 @@ export const QueueMetricsBar: React.FC<QueueMetricsBarProps> = ({
       </div>
 
       {/* 5. Cadência & Proteção Anti-ban */}
-      <div className="col-span-2 md:col-span-1 bg-[#0E1628] border border-[#1B2947] rounded-xl p-4 flex flex-col justify-between hover:border-[#22355A] transition-colors">
+      <div className="col-span-2 md:col-span-1 bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-4 flex flex-col justify-between hover:border-[#94A3B8] transition-colors">
         <div className="flex items-center justify-between text-xs text-[#94A3B8]">
           <span className="font-medium">Segurança Anti-Ban</span>
-          <ShieldCheck className="w-4 h-4 text-[#00C2FF]" />
+          <ShieldCheck className="w-4 h-4 text-[#2563EB]" />
         </div>
         <div className="mt-2 flex items-baseline gap-2">
-          <span className="text-2xl font-bold font-mono-numeric text-[#00C2FF]">
+          <span className="text-2xl font-bold font-mono-numeric text-[#2563EB]">
             15m
           </span>
           <span className="text-xs text-[#94A3B8]">delay mínimo</span>
         </div>
-        <p className="text-[11px] text-[#8E9BAE] mt-1">
+        <p className="text-[11px] text-[#64748B] mt-1">
           {isQueuePaused ? 'Suspenso enquanto pausado' : 'Aquecimento contínuo ativo'}
         </p>
       </div>

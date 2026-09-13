@@ -86,20 +86,20 @@ export const AutomationsPage: React.FC<{
   };
 
   const flowSources = [
-    { label: 'Busca Automática', icon: Radar, color: 'text-[#00C2FF]' },
-    { label: 'Lista de Links', icon: ListChecks, color: 'text-[#38BDF8]' },
+    { label: 'Busca Automática', icon: Radar, color: 'text-[#2563EB]' },
+    { label: 'Lista de Links', icon: ListChecks, color: 'text-[#3B82F6]' },
     { label: 'Espelhamento', icon: RefreshCw, color: 'text-[#A78BFA]' },
-    { label: 'Grupo Monitor', icon: Share2, color: 'text-emerald-400' },
+    { label: 'Grupo Monitor', icon: Share2, color: 'text-emerald-700' },
   ];
 
   const activityToneStyles: Record<
     AutomationActivityItem['tone'],
     string
   > = {
-    success: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25',
-    info: 'bg-[#1E5EFF]/10 text-[#00C2FF] border-[#1E5EFF]/25',
-    warning: 'bg-amber-500/10 text-amber-400 border-amber-500/25',
-    danger: 'bg-red-500/10 text-red-400 border-red-500/25',
+    success: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/25',
+    info: 'bg-[#2563EB]/10 text-[#2563EB] border-[#2563EB]/25',
+    warning: 'bg-amber-500/10 text-amber-700 border-amber-500/25',
+    danger: 'bg-red-500/10 text-red-700 border-red-500/25',
   };
 
   return (
@@ -108,17 +108,17 @@ export const AutomationsPage: React.FC<{
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-bold text-[#E6E8EC] tracking-tight">
+            <h1 className="text-xl font-bold text-[#172033] tracking-tight">
               Automações
             </h1>
-            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#101F3D] border border-[#1C3A6E] text-xs font-semibold text-[#00C2FF]">
-              <Activity className="w-3 h-3 text-[#00C2FF]" />
+            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#EFF6FF] border border-[#BFDBFE] text-xs font-semibold text-[#2563EB]">
+              <Activity className="w-3 h-3 text-[#2563EB]" />
               <span>
                 {activeCount} de {automations.length} ativas
               </span>
             </div>
           </div>
-          <p className="text-xs text-[#8E9BAE] mt-1">
+          <p className="text-xs text-[#64748B] mt-1">
             Escolha como suas ofertas entram e são distribuídas.
           </p>
         </div>
@@ -136,13 +136,13 @@ export const AutomationsPage: React.FC<{
       </div>
 
       {/* Fluxo da Operação */}
-      <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-5">
+      <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-5">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-sm font-semibold text-[#E6E8EC] tracking-tight">
+            <h3 className="text-sm font-semibold text-[#172033] tracking-tight">
               Fluxo da operação
             </h3>
-            <p className="text-xs text-[#8E9BAE] mt-0.5">
+            <p className="text-xs text-[#64748B] mt-0.5">
               Todas as entradas convergem para o mesmo núcleo operacional.
             </p>
           </div>
@@ -156,13 +156,13 @@ export const AutomationsPage: React.FC<{
               return (
                 <div
                   key={source.label}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#0A1020] border border-[#162340]"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-[#14203B] border border-[#1E3057] flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-[#E2E8F0] border border-[#BFDBFE] flex items-center justify-center shrink-0">
                     <Icon className={`w-4 h-4 ${source.color}`} />
                   </div>
                   <div className="min-w-0">
-                    <span className="text-xs font-medium text-[#E6E8EC] block">
+                    <span className="text-xs font-medium text-[#172033] block">
                       {source.label}
                     </span>
                     <span className="text-[10px] text-[#64748B]">Entrada</span>
@@ -187,9 +187,9 @@ export const AutomationsPage: React.FC<{
             ].map((stage) => (
               <div
                 key={stage.label}
-                className="flex flex-col justify-center px-3 py-2 rounded-lg bg-[#0E1526] border border-[#1C2C50]"
+                className="flex flex-col justify-center px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1]"
               >
-                <span className="text-xs font-semibold text-[#00C2FF]">
+                <span className="text-xs font-semibold text-[#2563EB]">
                   {stage.label}
                 </span>
                 <span className="text-[10px] text-[#64748B] mt-0.5">
@@ -204,27 +204,27 @@ export const AutomationsPage: React.FC<{
       {/* Duplicidade & Atividade Recente */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Deduplicação */}
-        <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-5">
+        <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-sm font-semibold text-[#E6E8EC] tracking-tight">
+              <h3 className="text-sm font-semibold text-[#172033] tracking-tight">
                 Proteção contra duplicidade
               </h3>
-              <p className="text-xs text-[#8E9BAE] mt-0.5">
+              <p className="text-xs text-[#64748B] mt-0.5">
                 Conflitos detectados entre diferentes origens.
               </p>
             </div>
             {duplicates.length > 0 && (
-              <span className="text-xs font-mono-numeric font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded">
+              <span className="text-xs font-mono-numeric font-bold bg-amber-500/15 text-amber-700 border border-amber-500/30 px-2 py-0.5 rounded">
                 {duplicates.length} pendente{duplicates.length > 1 ? 's' : ''}
               </span>
             )}
           </div>
 
           {duplicates.length === 0 ? (
-            <div className="py-8 text-center bg-[#0A1020] border border-[#162340] rounded-xl">
-              <ShieldAlert className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
-              <p className="text-xs text-[#8E9BAE]">
+            <div className="py-8 text-center bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl">
+              <ShieldAlert className="w-8 h-8 text-emerald-700 mx-auto mb-2" />
+              <p className="text-xs text-[#64748B]">
                 Nenhum conflito de duplicidade pendente.
               </p>
             </div>
@@ -233,12 +233,12 @@ export const AutomationsPage: React.FC<{
               {duplicates.map((d) => (
                 <div
                   key={d.id}
-                  className="p-4 bg-[#0B1324] border border-[#162340] rounded-xl space-y-3"
+                  className="p-4 bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl space-y-3"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-[#E6E8EC] leading-snug">
-                        <span className="flex items-center gap-1.5 text-amber-400 mb-1">
+                      <p className="text-xs font-semibold text-[#172033] leading-snug">
+                        <span className="flex items-center gap-1.5 text-amber-700 mb-1">
                           <GitCompareArrows className="w-3.5 h-3.5 shrink-0" />
                           Possível duplicidade detectada
                         </span>
@@ -247,7 +247,7 @@ export const AutomationsPage: React.FC<{
                       <p className="text-[11px] text-[#94A3B8] mt-1.5 space-y-1">
                         <span className="block">
                           Já presente através de{' '}
-                          <span className="font-semibold text-[#E6E8EC]">
+                          <span className="font-semibold text-[#172033]">
                             {d.existingSource === 'AUTO_SEARCH'
                               ? 'Busca Automática'
                               : d.existingSource === 'LINK_LIST'
@@ -260,7 +260,7 @@ export const AutomationsPage: React.FC<{
                         </span>
                         <span className="block">
                           Nova entrada:{' '}
-                          <span className="font-semibold text-[#E6E8EC]">
+                          <span className="font-semibold text-[#172033]">
                             {d.newSource === 'AUTO_SEARCH'
                               ? 'Busca Automática'
                               : d.newSource === 'LINK_LIST'
@@ -283,21 +283,21 @@ export const AutomationsPage: React.FC<{
                       variant="outline"
                       size="xs"
                       onClick={() => handleResolveDuplicate(d.id, 'keep-best')}
-                      className="text-xs border-[#182747] text-[#E6E8EC]"
+                      className="text-xs border-[#DCE3EC] text-[#172033]"
                     >
                       Manter melhor oferta
                     </Button>
                     <button
                       type="button"
                       onClick={() => handleResolveDuplicate(d.id, 'keep-both')}
-                      className="px-2.5 py-1.5 rounded-lg text-xs text-[#94A3B8] hover:text-[#E6E8EC] hover:bg-[#14203B] border border-[#182747] transition-colors"
+                      className="px-2.5 py-1.5 rounded-lg text-xs text-[#94A3B8] hover:text-[#172033] hover:bg-[#E2E8F0] border border-[#DCE3EC] transition-colors"
                     >
                       Manter ambas
                     </button>
                     <button
                       type="button"
                       onClick={() => handleResolveDuplicate(d.id, 'ignore-new')}
-                      className="px-2.5 py-1.5 rounded-lg text-xs text-[#94A3B8] hover:text-rose-400 hover:bg-rose-500/10 border border-[#182747] transition-colors"
+                      className="px-2.5 py-1.5 rounded-lg text-xs text-[#94A3B8] hover:text-rose-700 hover:bg-rose-500/10 border border-[#DCE3EC] transition-colors"
                     >
                       Ignorar nova
                     </button>
@@ -309,13 +309,13 @@ export const AutomationsPage: React.FC<{
         </div>
 
         {/* Atividade Recente */}
-        <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-5">
+        <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-sm font-semibold text-[#E6E8EC] tracking-tight">
+              <h3 className="text-sm font-semibold text-[#172033] tracking-tight">
                 Atividade recente
               </h3>
-              <p className="text-xs text-[#8E9BAE] mt-0.5">
+              <p className="text-xs text-[#64748B] mt-0.5">
                 Últimos eventos registrados pelas automações.
               </p>
             </div>
@@ -323,9 +323,9 @@ export const AutomationsPage: React.FC<{
 
           <div className="space-y-2.5">
             {automationActivityMock.length === 0 ? (
-              <div className="py-8 text-center bg-[#0A1020] border border-[#162340] rounded-xl">
+              <div className="py-8 text-center bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl">
                 <Activity className="w-8 h-8 text-[#475569] mx-auto mb-2" />
-                <p className="text-xs text-[#8E9BAE]">
+                <p className="text-xs text-[#64748B]">
                   Nenhuma atividade registrada ainda.
                 </p>
               </div>
@@ -333,7 +333,7 @@ export const AutomationsPage: React.FC<{
               automationActivityMock.map((a) => (
                 <div
                   key={a.id}
-                  className="flex items-start gap-3 px-3 py-2.5 rounded-lg bg-[#0A1020] border border-[#162340]"
+                  className="flex items-start gap-3 px-3 py-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]"
                 >
                   <span
                     className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono-numeric font-semibold shrink-0 mt-0.5 ${activityToneStyles[a.tone]}`}
@@ -341,7 +341,7 @@ export const AutomationsPage: React.FC<{
                     {a.time}
                   </span>
                   <div className="min-w-0">
-                    <p className="text-xs text-[#E6E8EC] leading-snug">
+                    <p className="text-xs text-[#172033] leading-snug">
                       {a.title}
                     </p>
                     <p className="text-[11px] text-[#64748B] mt-0.5 leading-snug">
@@ -365,13 +365,13 @@ export const AutomationsPage: React.FC<{
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#0E172C] border border-[#1E3563] text-[#E6E8EC] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
+        <div className="fixed bottom-6 right-6 z-50 bg-[#FFFFFF] border border-[#BFDBFE] text-[#172033] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
           {toast.type === 'warning' ? (
-            <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0" />
+            <ShieldAlert className="w-4 h-4 text-amber-700 shrink-0" />
           ) : toast.type === 'info' ? (
-            <Sparkles className="w-4 h-4 text-[#00C2FF] shrink-0" />
+            <Sparkles className="w-4 h-4 text-[#2563EB] shrink-0" />
           ) : (
-            <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
+            <Sparkles className="w-4 h-4 text-emerald-700 shrink-0" />
           )}
           <span className="font-medium leading-relaxed">{toast.text}</span>
         </div>

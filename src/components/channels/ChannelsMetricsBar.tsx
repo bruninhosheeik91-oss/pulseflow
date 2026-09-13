@@ -55,15 +55,15 @@ export const ChannelsMetricsBar: React.FC<ChannelsMetricsBarProps> = ({
         {filterPills.map((pill) => {
           const isActive = activeFilter === pill.id;
 
-          let badgeColorClass = 'bg-[#14203B] text-[#8E9BAE]';
+          let badgeColorClass = 'bg-[#E2E8F0] text-[#64748B]';
           if (isActive) {
             badgeColorClass = 'bg-white/20 text-white';
           } else if (pill.highlight === 'green') {
-            badgeColorClass = 'bg-emerald-500/15 text-emerald-400';
+            badgeColorClass = 'bg-emerald-500/15 text-emerald-700';
           } else if (pill.highlight === 'amber') {
-            badgeColorClass = 'bg-amber-500/15 text-amber-400';
+            badgeColorClass = 'bg-amber-500/15 text-amber-700';
           } else if (pill.highlight === 'blue') {
-            badgeColorClass = 'bg-[#00C2FF]/15 text-[#00C2FF]';
+            badgeColorClass = 'bg-[#2563EB]/15 text-[#2563EB]';
           }
 
           return (
@@ -73,8 +73,8 @@ export const ChannelsMetricsBar: React.FC<ChannelsMetricsBarProps> = ({
               onClick={() => onSelectFilter(pill.id)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 flex items-center gap-2 transition-all cursor-pointer ${
                 isActive
-                  ? 'bg-[#1E5EFF] text-white shadow-sm font-semibold'
-                  : 'bg-[#0B1324] border border-[#162340] text-[#8E9BAE] hover:text-[#E6E8EC] hover:border-[#1E3360]'
+                  ? 'bg-[#2563EB] text-white shadow-sm font-semibold'
+                  : 'bg-[#F1F5F9] border border-[#E2E8F0] text-[#64748B] hover:text-[#172033] hover:border-[#BFDBFE]'
               }`}
             >
               <span>{pill.label}</span>
@@ -91,73 +91,73 @@ export const ChannelsMetricsBar: React.FC<ChannelsMetricsBarProps> = ({
       {/* 2. Consolidated Today Performance Strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {/* Audiência Total */}
-        <div className="p-3 bg-[#0B1324] border border-[#162340] rounded-xl flex items-center justify-between">
+        <div className="p-3 bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl flex items-center justify-between">
           <div className="space-y-0.5">
             <span className="text-[10px] text-[#64748B] uppercase font-semibold tracking-wider block">
               Audiência Total
             </span>
-            <span className="text-base font-bold font-mono-numeric text-[#E6E8EC]">
+            <span className="text-base font-bold font-mono-numeric text-[#172033]">
               {summaryStats.totalAudience.toLocaleString('pt-BR')}
             </span>
-            <span className="text-[10px] text-[#8E9BAE] block">
+            <span className="text-[10px] text-[#64748B] block">
               membros e inscritos ativos
             </span>
           </div>
-          <div className="p-2.5 rounded-lg bg-[#101D38] border border-[#1B325C] text-[#00C2FF]">
+          <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] text-[#2563EB]">
             <Users className="w-4 h-4" />
           </div>
         </div>
 
         {/* Mensagens Enviadas Hoje */}
-        <div className="p-3 bg-[#0B1324] border border-[#162340] rounded-xl flex items-center justify-between">
+        <div className="p-3 bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl flex items-center justify-between">
           <div className="space-y-0.5">
             <span className="text-[10px] text-[#64748B] uppercase font-semibold tracking-wider block">
               Disparos Hoje
             </span>
-            <span className="text-base font-bold font-mono-numeric text-[#00C2FF]">
+            <span className="text-base font-bold font-mono-numeric text-[#2563EB]">
               {summaryStats.messagesToday} msgs
             </span>
-            <span className="text-[10px] text-emerald-400 block font-mono-numeric">
+            <span className="text-[10px] text-emerald-700 block font-mono-numeric">
               100% no horário programado
             </span>
           </div>
-          <div className="p-2.5 rounded-lg bg-[#0E203B] border border-[#18366A] text-[#00C2FF]">
+          <div className="p-2.5 rounded-lg bg-[#EFF6FF] border border-[#E2E8F0] text-[#2563EB]">
             <Send className="w-4 h-4" />
           </div>
         </div>
 
         {/* Cliques Gerados Hoje */}
-        <div className="p-3 bg-[#0B1324] border border-[#162340] rounded-xl flex items-center justify-between">
+        <div className="p-3 bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl flex items-center justify-between">
           <div className="space-y-0.5">
             <span className="text-[10px] text-[#64748B] uppercase font-semibold tracking-wider block">
               Cliques Gerados Hoje
             </span>
-            <span className="text-base font-bold font-mono-numeric text-[#38BDF8]">
+            <span className="text-base font-bold font-mono-numeric text-[#3B82F6]">
               {summaryStats.clicksToday.toLocaleString('pt-BR')}
             </span>
-            <span className="text-[10px] text-[#8E9BAE] block font-mono-numeric">
+            <span className="text-[10px] text-[#64748B] block font-mono-numeric">
               ~{(summaryStats.clicksToday / (summaryStats.messagesToday || 1)).toFixed(0)} cliques / disparo
             </span>
           </div>
-          <div className="p-2.5 rounded-lg bg-[#0E203B] border border-[#18366A] text-[#38BDF8]">
+          <div className="p-2.5 rounded-lg bg-[#EFF6FF] border border-[#E2E8F0] text-[#3B82F6]">
             <MousePointerClick className="w-4 h-4" />
           </div>
         </div>
 
         {/* Taxa de Entrega */}
-        <div className="p-3 bg-[#0B1324] border border-[#162340] rounded-xl flex items-center justify-between">
+        <div className="p-3 bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl flex items-center justify-between">
           <div className="space-y-0.5">
             <span className="text-[10px] text-[#64748B] uppercase font-semibold tracking-wider block">
               Taxa de Entrega
             </span>
-            <span className="text-base font-bold font-mono-numeric text-emerald-400">
+            <span className="text-base font-bold font-mono-numeric text-emerald-700">
               {summaryStats.avgDeliveryRate.toFixed(1)}%
             </span>
-            <span className="text-[10px] text-emerald-400 block font-mono-numeric">
+            <span className="text-[10px] text-emerald-700 block font-mono-numeric">
               Proteção anti-ban ativa
             </span>
           </div>
-          <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">
+          <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-emerald-700">
             <ShieldCheck className="w-4 h-4" />
           </div>
         </div>

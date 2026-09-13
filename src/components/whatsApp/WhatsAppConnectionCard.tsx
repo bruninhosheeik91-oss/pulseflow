@@ -53,17 +53,17 @@ export const WhatsAppConnectionCard: React.FC<
 
   if (isConnected) {
     return (
-      <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 border-b border-[#162442]">
+      <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 border-b border-[#E2E8F0]">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center shrink-0">
-              <MessageCircle className="w-5 h-5 text-emerald-400" />
+              <MessageCircle className="w-5 h-5 text-emerald-700" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-sm font-semibold text-[#E6E8EC] tracking-tight">
+              <h2 className="text-sm font-semibold text-[#172033] tracking-tight">
                 Conta conectada
               </h2>
-              <p className="text-xs text-[#8E9BAE] mt-0.5">
+              <p className="text-xs text-[#64748B] mt-0.5">
                 {account?.name || 'WhatsApp'}
               </p>
             </div>
@@ -76,14 +76,14 @@ export const WhatsAppConnectionCard: React.FC<
             {DETAILS.map(({ label, key, icon: Icon }) => (
               <div
                 key={key}
-                className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg bg-[#0A1020] border border-[#16233B]"
+                className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]"
               >
                 <Icon className="w-3.5 h-3.5 text-[#64748B] shrink-0 mt-0.5" />
                 <div className="min-w-0">
                   <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider block">
                     {label}
                   </span>
-                  <span className="text-xs font-medium text-[#E6E8EC] block mt-0.5">
+                  <span className="text-xs font-medium text-[#172033] block mt-0.5">
                     {key === 'connectionStatus'
                       ? WHATSAPP_STATUS_LABELS[account?.connectionStatus ?? status]
                       : account?.[key] || '—'}
@@ -118,7 +118,7 @@ export const WhatsAppConnectionCard: React.FC<
               size="sm"
               onClick={onDisconnect}
               leftIcon={<LogOut className="w-3.5 h-3.5" />}
-              className="text-xs text-red-400 hover:text-red-300"
+              className="text-xs text-red-700 hover:text-red-700"
             >
               Desconectar
             </Button>
@@ -129,16 +129,16 @@ export const WhatsAppConnectionCard: React.FC<
   }
 
   return (
-    <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-5 p-6">
+    <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-5 p-6">
       <div className="flex items-start gap-4 min-w-0">
-        <div className="w-12 h-12 rounded-xl bg-[#14203B] border border-[#1E3057] flex items-center justify-center shrink-0">
-          <MessageCircle className="w-6 h-6 text-[#00C2FF]" />
+        <div className="w-12 h-12 rounded-xl bg-[#E2E8F0] border border-[#BFDBFE] flex items-center justify-center shrink-0">
+          <MessageCircle className="w-6 h-6 text-[#2563EB]" />
         </div>
         <div className="min-w-0">
-          <h2 className="text-base font-semibold text-[#E6E8EC] tracking-tight">
+          <h2 className="text-base font-semibold text-[#172033] tracking-tight">
             Conecte seu WhatsApp
           </h2>
-          <p className="text-xs text-[#8E9BAE] mt-1 leading-relaxed">
+          <p className="text-xs text-[#64748B] mt-1 leading-relaxed">
             Conecte uma conta para importar seus grupos e habilitar as
             automações de distribuição.
           </p>

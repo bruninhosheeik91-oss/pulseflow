@@ -12,15 +12,15 @@ export const OffersEmptyState: React.FC<OffersEmptyStateProps> = ({
   onScanOffers,
 }) => {
   return (
-    <div className="bg-[#0A0F1C] border border-[#162340] rounded-xl p-8 text-center flex flex-col items-center justify-center">
-      <div className="w-14 h-14 rounded-2xl bg-[#0F182E] border border-[#1E3057] flex items-center justify-center text-[#00C2FF] mb-4 shadow-inner">
+    <div className="bg-[#F4F7FB] border border-[#E2E8F0] rounded-xl p-8 text-center flex flex-col items-center justify-center">
+      <div className="w-14 h-14 rounded-2xl bg-[#F1F5F9] border border-[#BFDBFE] flex items-center justify-center text-[#2563EB] mb-4 shadow-inner">
         <SearchX className="w-7 h-7" />
       </div>
 
-      <h3 className="text-base font-bold text-[#E6E8EC]">
+      <h3 className="text-base font-bold text-[#172033]">
         Nenhuma oferta encontrada
       </h3>
-      <p className="text-xs text-[#8E9BAE] max-w-sm mt-1.5 mb-6">
+      <p className="text-xs text-[#64748B] max-w-sm mt-1.5 mb-6">
         Tente ajustar os filtros ou iniciar uma nova busca de ofertas pelo motor automatizado.
       </p>
 
@@ -29,8 +29,8 @@ export const OffersEmptyState: React.FC<OffersEmptyStateProps> = ({
           variant="outline"
           size="sm"
           onClick={onResetFilters}
-          leftIcon={<RotateCcw className="w-3.5 h-3.5 text-[#8E9BAE]" />}
-          className="text-xs text-[#E6E8EC]"
+          leftIcon={<RotateCcw className="w-3.5 h-3.5 text-[#64748B]" />}
+          className="text-xs text-[#172033]"
         >
           Limpar filtros
         </Button>

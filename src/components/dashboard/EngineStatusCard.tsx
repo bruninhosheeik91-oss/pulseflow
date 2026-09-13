@@ -22,19 +22,19 @@ export const EngineStatusCard: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-5 relative overflow-hidden flex flex-col justify-between">
+    <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-5 relative overflow-hidden flex flex-col justify-between">
       {/* Background subtle watermark icon */}
-      <Cpu className="absolute -right-4 -bottom-4 w-28 h-28 text-[#142240] pointer-events-none opacity-30" />
+      <Cpu className="absolute -right-4 -bottom-4 w-28 h-28 text-[#E2E8F0] pointer-events-none opacity-30" />
 
       <div>
         {/* Top Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-[#162442]">
+        <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#14203B] border border-[#1E3057] flex items-center justify-center text-[#00C2FF] shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-[#E2E8F0] border border-[#BFDBFE] flex items-center justify-center text-[#2563EB] shrink-0">
               <Activity className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-[#E6E8EC]">
+              <h3 className="text-sm font-semibold text-[#172033]">
                 Motor de Ofertas
               </h3>
               <p className="text-xs text-[#94A3B8]">
@@ -52,7 +52,7 @@ export const EngineStatusCard: React.FC = () => {
           {/* Última sincronização */}
           <div className="flex items-center justify-between text-xs">
             <span className="text-[#94A3B8]">Última sincronização</span>
-            <span className="font-mono-numeric font-medium text-[#E6E8EC]">
+            <span className="font-mono-numeric font-medium text-[#172033]">
               {lastSyncText}
             </span>
           </div>
@@ -60,7 +60,7 @@ export const EngineStatusCard: React.FC = () => {
           {/* Produtos analisados hoje */}
           <div className="flex items-center justify-between text-xs">
             <span className="text-[#94A3B8]">Produtos analisados hoje</span>
-            <span className="font-mono-numeric font-semibold text-[#8E9BAE] bg-[#131F38] px-2 py-0.5 rounded border border-[#1C2C50]">
+            <span className="font-mono-numeric font-semibold text-[#64748B] bg-[#EFF6FF] px-2 py-0.5 rounded border border-[#CBD5E1]">
               0
             </span>
           </div>
@@ -68,7 +68,7 @@ export const EngineStatusCard: React.FC = () => {
           {/* Próxima busca */}
           <div className="flex items-center justify-between text-xs">
             <span className="text-[#94A3B8]">Próxima busca programada</span>
-            <span className="font-mono-numeric font-medium text-[#E6E8EC]">
+            <span className="font-mono-numeric font-medium text-[#172033]">
               —
             </span>
           </div>
@@ -76,7 +76,7 @@ export const EngineStatusCard: React.FC = () => {
           {/* Assertividade do Deal Score */}
           <div className="flex items-center justify-between text-xs">
             <span className="text-[#94A3B8]">Assertividade do Deal Score</span>
-            <span className="font-mono-numeric font-semibold text-[#8E9BAE]">
+            <span className="font-mono-numeric font-semibold text-[#64748B]">
               —
             </span>
           </div>
@@ -84,9 +84,9 @@ export const EngineStatusCard: React.FC = () => {
       </div>
 
       {/* Manual Sync Trigger & Connected Sources */}
-      <div className="pt-3 border-t border-[#162442] flex items-center justify-between gap-2">
+      <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 text-xs text-[#94A3B8]">
-          <Radio className="w-3.5 h-3.5 text-[#1E5EFF] shrink-0" />
+          <Radio className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />
           <span>
             {initialEngineStatus.activeSources > 0
               ? `${initialEngineStatus.activeSources} marketplaces conectados`
@@ -98,7 +98,7 @@ export const EngineStatusCard: React.FC = () => {
           type="button"
           onClick={handleSyncNow}
           disabled={syncing}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#00C2FF] hover:text-white px-2.5 py-1 rounded-md hover:bg-[#152345] active:bg-[#101A33] border border-transparent hover:border-[#1E3360] transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#2563EB] hover:text-white px-2.5 py-1 rounded-md hover:bg-[#DBEAFE] active:bg-[#F1F5F9] border border-transparent hover:border-[#BFDBFE] transition-colors disabled:opacity-50"
           title="Forçar ciclo de varredura"
         >
           <RefreshCw

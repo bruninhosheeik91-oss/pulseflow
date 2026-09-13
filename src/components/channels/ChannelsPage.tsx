@@ -255,19 +255,19 @@ export const ChannelsPage: React.FC = () => {
     <div className="space-y-5">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#0E172C] border border-[#1E3563] text-[#E6E8EC] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
+        <div className="fixed bottom-6 right-6 z-50 bg-[#FFFFFF] border border-[#BFDBFE] text-[#172033] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
           <div className="flex items-center gap-2">
             {toastMessage.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
             ) : (
-              <Zap className="w-4 h-4 text-[#00C2FF] shrink-0" />
+              <Zap className="w-4 h-4 text-[#2563EB] shrink-0" />
             )}
             <span className="font-medium leading-relaxed">{toastMessage.text}</span>
           </div>
           <button
             type="button"
             onClick={() => setToastMessage(null)}
-            className="text-[#8E9BAE] hover:text-white cursor-pointer ml-4 shrink-0"
+            className="text-[#64748B] hover:text-white cursor-pointer ml-4 shrink-0"
           >
             <X className="w-4 h-4" />
           </button>
@@ -311,12 +311,12 @@ export const ChannelsPage: React.FC = () => {
 
       {/* Channels List / Grid View */}
       {filteredChannels.length === 0 ? (
-        <div className="p-8 text-center bg-[#0B1324] border border-[#162340] rounded-xl space-y-3">
+        <div className="p-8 text-center bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl space-y-3">
           <FilterX className="w-10 h-10 text-[#64748B] mx-auto" />
-          <h3 className="text-sm font-bold text-[#E6E8EC]">
+          <h3 className="text-sm font-bold text-[#172033]">
             Nenhum canal encontrado com os filtros atuais
           </h3>
-          <p className="text-xs text-[#8E9BAE] max-w-sm mx-auto">
+          <p className="text-xs text-[#64748B] max-w-sm mx-auto">
             Tente remover a busca por texto ou redefinir a plataforma selecionada para visualizar os canais cadastrados.
           </p>
           <button
@@ -327,7 +327,7 @@ export const ChannelsPage: React.FC = () => {
               setSelectedStatus('Todos');
               setActiveFilter('Todos');
             }}
-            className="text-xs text-[#00C2FF] font-semibold hover:underline cursor-pointer"
+            className="text-xs text-[#2563EB] font-semibold hover:underline cursor-pointer"
           >
             Limpar todos os filtros
           </button>

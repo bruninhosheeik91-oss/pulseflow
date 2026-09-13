@@ -32,9 +32,9 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Safeguard status alert */}
-      <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center justify-between text-xs text-emerald-300">
+      <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center justify-between text-xs text-emerald-700">
         <div className="flex items-center gap-2.5">
-          <ShieldAlert className="w-4 h-4 text-emerald-400 shrink-0" />
+          <ShieldAlert className="w-4 h-4 text-emerald-700 shrink-0" />
           <span>
             <strong>Proteção Ativa contra Bloqueios:</strong> Algoritmos de espaçamento dinâmico e humanização de tráfego protegem seus números de WhatsApp contra banimentos do Meta e suspensões de canais.
           </span>
@@ -43,9 +43,9 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* 1. Cadência & Espaçamento */}
-        <div className="p-4 bg-[#0A1020] border border-[#16233B] rounded-xl space-y-3.5">
-          <div className="flex items-center gap-2 border-b border-[#14203B] pb-2.5">
-            <Clock className="w-4 h-4 text-[#00C2FF]" />
+        <div className="p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-3.5">
+          <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-2.5">
+            <Clock className="w-4 h-4 text-[#2563EB]" />
             <h4 className="font-bold text-white text-xs">
               Cadência e Espaçamento Inteligente
             </h4>
@@ -54,7 +54,7 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
           <div className="space-y-3 text-xs">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-[#8E9BAE] text-[11px]">
+                <label className="text-[#64748B] text-[11px]">
                   Intervalo Mínimo Entre Disparos (no mesmo canal):
                 </label>
                 <span className="font-mono text-white font-bold">
@@ -73,7 +73,7 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
                     minIntervalMinutes: parseInt(e.target.value),
                   })
                 }
-                className="w-full accent-[#1E5EFF] bg-[#14203B] rounded-lg h-2"
+                className="w-full accent-[#2563EB] bg-[#E2E8F0] rounded-lg h-2"
               />
               <p className="text-[11px] text-[#64748B] mt-1">
                 Recomendado: mínimo de 15 minutos para manter alta taxa de entrega e zero denúncias de spam.
@@ -82,10 +82,10 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-[#8E9BAE] text-[11px]">
+                <label className="text-[#64748B] text-[11px]">
                   Variação Aleatória (Jitter Anti-Bot):
                 </label>
-                <span className="font-mono text-[#00C2FF] font-bold">
+                <span className="font-mono text-[#2563EB] font-bold">
                   &plusmn;{formData.randomJitterMinutes} min aleatórios
                 </span>
               </div>
@@ -101,7 +101,7 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
                     randomJitterMinutes: parseInt(e.target.value),
                   })
                 }
-                className="w-full accent-[#00C2FF] bg-[#14203B] rounded-lg h-2"
+                className="w-full accent-[#2563EB] bg-[#E2E8F0] rounded-lg h-2"
               />
               <p className="text-[11px] text-[#64748B] mt-1">
                 Adiciona variação randômica ao horário previsto para que os disparos não ocorram sempre em minutos fixos (ex: 10:00:00).
@@ -109,7 +109,7 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
             </div>
 
             <div>
-              <label className="text-[#8E9BAE] text-[11px] block mb-1">
+              <label className="text-[#64748B] text-[11px] block mb-1">
                 Limite Máximo de Mensagens por Canal / Dia:
               </label>
               <input
@@ -123,15 +123,15 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
                     maxDailyMessagesPerChannel: parseInt(e.target.value) || 24,
                   })
                 }
-                className="w-full bg-[#0E1628] border border-[#182642] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#1E5EFF]"
+                className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
         </div>
 
         {/* 2. Horário de Silêncio & Humanização */}
-        <div className="p-4 bg-[#0A1020] border border-[#16233B] rounded-xl space-y-3.5">
-          <div className="flex items-center gap-2 border-b border-[#14203B] pb-2.5">
+        <div className="p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-3.5">
+          <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-2.5">
             <Moon className="w-4 h-4 text-indigo-400" />
             <h4 className="font-bold text-white text-xs">
               Horário de Silêncio Noturno (Quiet Hours)
@@ -139,12 +139,12 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
           </div>
 
           <div className="space-y-3 text-xs">
-            <div className="flex items-center justify-between p-2.5 bg-[#0B1220] rounded-lg border border-[#16233B]">
+            <div className="flex items-center justify-between p-2.5 bg-[#F8FAFC] rounded-lg border border-[#E2E8F0]">
               <div>
                 <span className="text-white font-medium block">
                   Pausar Disparos na Madrugada
                 </span>
-                <span className="text-[11px] text-[#8E9BAE]">
+                <span className="text-[11px] text-[#64748B]">
                   Evita incomodar membros e previne saídas em massa do grupo
                 </span>
               </div>
@@ -160,13 +160,13 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
                   }
                   className="sr-only peer"
                 />
-                <div className="w-9 h-5 bg-[#14203B] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#1E5EFF]" />
+                <div className="w-9 h-5 bg-[#E2E8F0] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#2563EB]" />
               </label>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[#8E9BAE] text-[11px] block mb-1">
+                <label className="text-[#64748B] text-[11px] block mb-1">
                   Início do Silêncio:
                 </label>
                 <input
@@ -179,12 +179,12 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
                     })
                   }
                   disabled={!formData.quietHoursEnabled}
-                  className="w-full bg-[#0E1628] border border-[#182642] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#1E5EFF] disabled:opacity-50"
+                  className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#2563EB] disabled:opacity-50"
                 />
               </div>
 
               <div>
-                <label className="text-[#8E9BAE] text-[11px] block mb-1">
+                <label className="text-[#64748B] text-[11px] block mb-1">
                   Término do Silêncio:
                 </label>
                 <input
@@ -197,17 +197,17 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
                     })
                   }
                   disabled={!formData.quietHoursEnabled}
-                  className="w-full bg-[#0E1628] border border-[#182642] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#1E5EFF] disabled:opacity-50"
+                  className="w-full bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#2563EB] disabled:opacity-50"
                 />
               </div>
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-[#8E9BAE] text-[11px]">
+                <label className="text-[#64748B] text-[11px]">
                   Simulação de Presença ("Digitando..."):
                 </label>
-                <span className="font-mono text-emerald-400 font-bold">
+                <span className="font-mono text-emerald-700 font-bold">
                   {formData.simulateTypingSeconds}s antes do envio
                 </span>
               </div>
@@ -223,7 +223,7 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
                     simulateTypingSeconds: parseInt(e.target.value),
                   })
                 }
-                className="w-full accent-emerald-400 bg-[#14203B] rounded-lg h-2"
+                className="w-full accent-emerald-400 bg-[#E2E8F0] rounded-lg h-2"
               />
             </div>
           </div>
@@ -231,9 +231,9 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
       </div>
 
       {/* Circuit Breaker */}
-      <div className="p-4 bg-[#0A1020] border border-[#16233B] rounded-xl space-y-3">
-        <div className="flex items-center gap-2 border-b border-[#14203B] pb-2.5">
-          <ZapOff className="w-4 h-4 text-amber-400" />
+      <div className="p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-3">
+        <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-2.5">
+          <ZapOff className="w-4 h-4 text-amber-700" />
           <h4 className="font-bold text-white text-xs">
             Disjuntor de Emergência (Circuit Breaker)
           </h4>
@@ -244,13 +244,13 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
             <span className="text-white font-medium block">
               Pausar fila de disparos automaticamente se houver falhas consecutivas
             </span>
-            <span className="text-[11px] text-[#8E9BAE]">
+            <span className="text-[11px] text-[#64748B]">
               Evita que instâncias desconectadas acumulem erros ou disparem rajadas fora de hora
             </span>
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
-            <span className="text-[11px] text-[#8E9BAE]">Pausar após:</span>
+            <span className="text-[11px] text-[#64748B]">Pausar após:</span>
             <select
               value={formData.maxConsecutiveFails}
               onChange={(e) =>
@@ -259,7 +259,7 @@ export const SettingsAntiBanTab: React.FC<SettingsAntiBanTabProps> = ({
                   maxConsecutiveFails: parseInt(e.target.value),
                 })
               }
-              className="bg-[#0E1628] border border-[#182642] rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none"
+              className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none"
             >
               <option value="2">2 falhas</option>
               <option value="3">3 falhas (Padrão)</option>

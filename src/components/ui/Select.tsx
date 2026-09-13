@@ -42,7 +42,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
       <div className="relative w-full">
         <div className="relative flex items-center w-full">
           {leftIcon && (
-            <span className="absolute left-2.5 flex items-center pointer-events-none text-[#8E9BAE]">
+            <span className="absolute left-2.5 flex items-center pointer-events-none text-[#64748B]">
               {leftIcon}
             </span>
           )}
@@ -50,12 +50,12 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           <select
             ref={ref}
             disabled={disabled || loading}
-            className={`w-full appearance-none bg-[#0A1020] border text-[#E6E8EC] rounded-lg transition-all duration-150 cursor-pointer
-              hover:border-[#2A3E6D] hover:bg-[#0D152A]
-              focus:outline-none focus:border-[#1E5EFF] focus:ring-1 focus:ring-[#1E5EFF]
-              active:bg-[#090E1C]
-              disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[#1B2947]
-              ${error ? 'border-red-500/60 text-red-300' : 'border-[#1B2947]'}
+            className={`w-full appearance-none bg-[#F8FAFC] border text-[#172033] rounded-lg transition-all duration-150 cursor-pointer
+              hover:border-[#93C5FD] hover:bg-[#F1F5F9]
+              focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]
+              active:bg-[#F8FAFC]
+              disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[#DCE3EC]
+              ${error ? 'border-red-500/60 text-red-700' : 'border-[#DCE3EC]'}
               ${sizeClasses[sizeVariant]}
               ${leftIcon ? 'pl-8' : ''}
               ${className}`}
@@ -66,7 +66,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
                 key={opt.value}
                 value={opt.value}
                 disabled={opt.disabled}
-                className="bg-[#0E1628] text-[#E6E8EC] py-1"
+                className="bg-[#FFFFFF] text-[#172033] py-1"
               >
                 {opt.label}
               </option>
@@ -75,20 +75,20 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           </select>
 
           {/* Right Indicator (Loading Spinner or Chevron) */}
-          <span className="absolute right-2.5 flex items-center pointer-events-none text-[#8E9BAE]">
+          <span className="absolute right-2.5 flex items-center pointer-events-none text-[#64748B]">
             {loading ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-[#00C2FF]" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-[#2563EB]" />
             ) : (
-              <ChevronDown className="w-3.5 h-3.5 text-[#8E9BAE]" />
+              <ChevronDown className="w-3.5 h-3.5 text-[#64748B]" />
             )}
           </span>
         </div>
 
         {error && (
-          <p className="text-[11px] text-red-400 mt-1 pl-1">{error}</p>
+          <p className="text-[11px] text-red-700 mt-1 pl-1">{error}</p>
         )}
         {!error && helperText && (
-          <p className="text-[11px] text-[#8E9BAE] mt-1 pl-1">{helperText}</p>
+          <p className="text-[11px] text-[#64748B] mt-1 pl-1">{helperText}</p>
         )}
       </div>
     );

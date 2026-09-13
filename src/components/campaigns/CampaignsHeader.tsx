@@ -21,17 +21,17 @@ export const CampaignsHeader: React.FC<CampaignsHeaderProps> = ({
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
       <div>
         <div className="flex items-center gap-2.5">
-          <h1 className="text-xl font-bold text-[#E6E8EC] tracking-tight">
+          <h1 className="text-xl font-bold text-[#172033] tracking-tight">
             Campanhas
           </h1>
-          <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#101F3D] border border-[#1C3A6E] text-xs font-semibold text-[#00C2FF]">
-            <Radio className="w-3 h-3 animate-pulse text-[#00C2FF]" />
+          <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#EFF6FF] border border-[#BFDBFE] text-xs font-semibold text-[#2563EB]">
+            <Radio className="w-3 h-3 animate-pulse text-[#2563EB]" />
             <span>
               {activeCount} ativas de {totalCount}
             </span>
           </div>
         </div>
-        <p className="text-xs text-[#8E9BAE] mt-1">
+        <p className="text-xs text-[#64748B] mt-1">
           Regras de automação contínua, filtros de Deal Score e distribuição automática multimarketplace.
         </p>
       </div>
@@ -44,12 +44,12 @@ export const CampaignsHeader: React.FC<CampaignsHeaderProps> = ({
           disabled={isEngineRunning}
           leftIcon={
             isEngineRunning ? (
-              <RefreshCw className="w-3.5 h-3.5 text-[#00C2FF] animate-spin" />
+              <RefreshCw className="w-3.5 h-3.5 text-[#2563EB] animate-spin" />
             ) : (
-              <Zap className="w-3.5 h-3.5 text-[#00C2FF]" />
+              <Zap className="w-3.5 h-3.5 text-[#2563EB]" />
             )
           }
-          className="text-xs border-[#182747] text-[#E6E8EC] hover:bg-[#0F1C36]"
+          className="text-xs border-[#DCE3EC] text-[#172033] hover:bg-[#F8FAFC]"
         >
           {isEngineRunning ? 'Varrendo ofertas...' : 'Varredura Imediata'}
         </Button>
@@ -59,7 +59,7 @@ export const CampaignsHeader: React.FC<CampaignsHeaderProps> = ({
           size="sm"
           onClick={onOpenNewCampaign}
           leftIcon={<Plus className="w-3.5 h-3.5" />}
-          className="text-xs font-semibold px-4 shadow-sm shadow-[#1E5EFF]/20"
+          className="text-xs font-semibold px-4 shadow-sm shadow-[#2563EB]/20"
         >
           Nova Campanha
         </Button>

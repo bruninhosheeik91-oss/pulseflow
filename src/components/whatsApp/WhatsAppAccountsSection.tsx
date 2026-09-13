@@ -27,12 +27,12 @@ function StatusBadge({
   status: WhatsAppConnectionStatus;
 }) {
   const tones: Record<WhatsAppConnectionStatus, string> = {
-    connected: 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400',
-    connecting: 'bg-[#1E5EFF]/15 border-[#1E5EFF]/40 text-[#70A1FF]',
-    awaiting_qr: 'bg-amber-500/15 border-amber-500/30 text-amber-400',
-    reconnecting: 'bg-amber-500/15 border-amber-500/30 text-amber-400',
-    error: 'bg-red-500/15 border-red-500/30 text-red-400',
-    disconnected: 'bg-[#121C33] border-[#1E2E50] text-[#8E9BAE]',
+    connected: 'bg-emerald-500/15 border-emerald-500/30 text-emerald-700',
+    connecting: 'bg-[#2563EB]/15 border-[#2563EB]/40 text-[#2563EB]',
+    awaiting_qr: 'bg-amber-500/15 border-amber-500/30 text-amber-700',
+    reconnecting: 'bg-amber-500/15 border-amber-500/30 text-amber-700',
+    error: 'bg-red-500/15 border-red-500/30 text-red-700',
+    disconnected: 'bg-[#F1F5F9] border-[#BFDBFE] text-[#64748B]',
   };
   return (
     <span
@@ -116,13 +116,13 @@ export const WhatsAppAccountsSection: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl overflow-hidden">
-      <div className="flex items-start justify-between gap-4 p-5 pb-4 border-b border-[#162442]">
+    <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl overflow-hidden">
+      <div className="flex items-start justify-between gap-4 p-5 pb-4 border-b border-[#E2E8F0]">
         <div>
-          <h2 className="text-sm font-semibold text-[#E6E8EC] tracking-tight">
+          <h2 className="text-sm font-semibold text-[#172033] tracking-tight">
             Contas conectadas
           </h2>
-          <p className="text-xs text-[#8E9BAE] mt-0.5">
+          <p className="text-xs text-[#64748B] mt-0.5">
             Múltiplas contas WhatsApp independentes — cada uma com QR, status e
             grupos próprios.
           </p>
@@ -141,28 +141,28 @@ export const WhatsAppAccountsSection: React.FC = () => {
 
       <div className="p-5">
         {feedback && (
-          <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg bg-red-500/10 border border-red-500/25 text-[11px] text-red-300 leading-relaxed mb-4">
+          <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg bg-red-500/10 border border-red-500/25 text-[11px] text-red-700 leading-relaxed mb-4">
             <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
             <span>{feedback}</span>
           </div>
         )}
 
         {loading ? (
-          <div className="flex items-center gap-2 py-6 justify-center text-xs text-[#8E9BAE]">
-            <Loader2 className="w-4 h-4 text-[#00C2FF] animate-spin" />
+          <div className="flex items-center gap-2 py-6 justify-center text-xs text-[#64748B]">
+            <Loader2 className="w-4 h-4 text-[#2563EB] animate-spin" />
             Carregando contas...
           </div>
         ) : error ? (
-          <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg bg-red-500/10 border border-red-500/25 text-[11px] text-red-300">
+          <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg bg-red-500/10 border border-red-500/25 text-[11px] text-red-700">
             <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         ) : accounts.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-6 text-center">
-            <div className="w-10 h-10 rounded-xl bg-[#14203B] border border-[#1E3057] flex items-center justify-center">
-              <MessageCircle className="w-4 h-4 text-[#00C2FF]" />
+            <div className="w-10 h-10 rounded-xl bg-[#E2E8F0] border border-[#BFDBFE] flex items-center justify-center">
+              <MessageCircle className="w-4 h-4 text-[#2563EB]" />
             </div>
-            <p className="text-xs text-[#8E9BAE] leading-relaxed">
+            <p className="text-xs text-[#64748B] leading-relaxed">
               Nenhuma conta cadastrada. Conecte o primeiro WhatsApp.
             </p>
           </div>
@@ -177,15 +177,15 @@ export const WhatsAppAccountsSection: React.FC = () => {
               return (
                 <li
                   key={account.sessionId}
-                  className="rounded-lg border border-[#1B2947] bg-[#0A1020] p-3"
+                  className="rounded-lg border border-[#DCE3EC] bg-[#F8FAFC] p-3"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                      <div className="w-8 h-8 rounded-lg bg-[#14203B] border border-[#1E3057] flex items-center justify-center shrink-0">
-                        <MessageCircle className="w-3.5 h-3.5 text-[#00C2FF]" />
+                      <div className="w-8 h-8 rounded-lg bg-[#E2E8F0] border border-[#BFDBFE] flex items-center justify-center shrink-0">
+                        <MessageCircle className="w-3.5 h-3.5 text-[#2563EB]" />
                       </div>
                       <div className="min-w-0">
-                        <span className="text-xs font-medium text-[#E6E8EC] block truncate">
+                        <span className="text-xs font-medium text-[#172033] block truncate">
                           {account.name || account.sessionId}
                         </span>
                         <span className="text-[10px] text-[#64748B] font-mono-numeric block truncate">
@@ -203,7 +203,7 @@ export const WhatsAppAccountsSection: React.FC = () => {
 
                     <div className="flex items-center gap-1.5 min-w-0">
                       <Users className="w-3 h-3 text-[#64748B] shrink-0" />
-                      <span className="text-[10px] text-[#8E9BAE] whitespace-nowrap">
+                      <span className="text-[10px] text-[#64748B] whitespace-nowrap">
                         {groupCountFor(account.sessionId)}{' '}
                         {groupCountFor(account.sessionId) === 1
                           ? 'grupo'
@@ -274,7 +274,7 @@ export const WhatsAppAccountsSection: React.FC = () => {
                           onClick={() => void handleRemove(account)}
                           loading={busy && !syncing && connected}
                           title="Remover sessão"
-                          className="text-red-400/70 hover:text-red-300 hover:bg-red-500/10"
+                          className="text-red-700/70 hover:text-red-700 hover:bg-red-500/10"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
@@ -283,9 +283,9 @@ export const WhatsAppAccountsSection: React.FC = () => {
                   </div>
 
                   {waitingQr && (
-                    <div className="mt-3 flex flex-col items-center gap-2 pt-3 border-t border-[#16233B] text-center">
-                      <div className="flex items-center gap-2 text-[10px] text-[#8E9BAE]">
-                        <QrCode className="w-3 h-3 text-amber-400" />
+                    <div className="mt-3 flex flex-col items-center gap-2 pt-3 border-t border-[#E2E8F0] text-center">
+                      <div className="flex items-center gap-2 text-[10px] text-[#64748B]">
+                        <QrCode className="w-3 h-3 text-amber-700" />
                         Aguardando leitura do QR Code — escaneie no WhatsApp do
                         celular
                       </div>
@@ -310,7 +310,7 @@ export const WhatsAppAccountsSection: React.FC = () => {
                   )}
 
                   {account.status === 'error' && (
-                    <div className="mt-3 flex items-start gap-2 px-3 py-2.5 rounded-lg bg-red-500/10 border border-red-500/25 text-[11px] text-red-300 leading-relaxed">
+                    <div className="mt-3 flex items-start gap-2 px-3 py-2.5 rounded-lg bg-red-500/10 border border-red-500/25 text-[11px] text-red-700 leading-relaxed">
                       <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                       <span>
                         Falha na conexão: nenhum QR real foi gerado ou o WhatsApp

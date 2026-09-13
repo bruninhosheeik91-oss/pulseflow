@@ -23,13 +23,13 @@ export const BulkActionBar: React.FC<BulkActionBarProps> = ({
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 max-w-2xl w-[92%] sm:w-auto">
-      <div className="bg-[#0B1326]/95 backdrop-blur-md border border-[#1E3A6D] text-[#E6E8EC] px-4 py-2.5 rounded-2xl shadow-2xl shadow-black/80 flex flex-wrap items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-4 duration-200">
+      <div className="bg-[#F8FAFC]/95 backdrop-blur-md border border-[#93C5FD] text-[#172033] px-4 py-2.5 rounded-2xl shadow-2xl shadow-black/80 flex flex-wrap items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-4 duration-200">
         {/* Selection Count */}
-        <div className="flex items-center gap-2 pr-2 border-r border-[#1B2B4E]">
-          <span className="w-6 h-6 rounded-full bg-[#1E5EFF] text-white flex items-center justify-center text-xs font-bold font-mono-numeric">
+        <div className="flex items-center gap-2 pr-2 border-r border-[#CBD5E1]">
+          <span className="w-6 h-6 rounded-full bg-[#2563EB] text-white flex items-center justify-center text-xs font-bold font-mono-numeric">
             {selectedCount}
           </span>
-          <span className="text-xs font-semibold text-[#E6E8EC] whitespace-nowrap">
+          <span className="text-xs font-semibold text-[#172033] whitespace-nowrap">
             {selectedCount === 1
               ? '1 oferta selecionada'
               : `${selectedCount} ofertas selecionadas`}
@@ -42,7 +42,7 @@ export const BulkActionBar: React.FC<BulkActionBarProps> = ({
             size="xs"
             variant="secondary"
             onClick={onApproveSelected}
-            leftIcon={<CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
+            leftIcon={<CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />}
             className="text-xs hover:border-emerald-500/40"
           >
             Aprovar
@@ -72,8 +72,8 @@ export const BulkActionBar: React.FC<BulkActionBarProps> = ({
             size="xs"
             variant="ghost"
             onClick={onRejectSelected}
-            leftIcon={<XCircle className="w-3.5 h-3.5 text-rose-400" />}
-            className="text-xs text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
+            leftIcon={<XCircle className="w-3.5 h-3.5 text-rose-700" />}
+            className="text-xs text-rose-700 hover:bg-rose-500/10 hover:text-rose-700"
           >
             Rejeitar
           </Button>
@@ -83,7 +83,7 @@ export const BulkActionBar: React.FC<BulkActionBarProps> = ({
         <button
           type="button"
           onClick={onClearSelection}
-          className="p-1 rounded-lg text-[#8E9BAE] hover:text-[#E6E8EC] hover:bg-[#152345] transition-colors"
+          className="p-1 rounded-lg text-[#64748B] hover:text-[#172033] hover:bg-[#DBEAFE] transition-colors"
           title="Limpar seleção"
         >
           <X className="w-4 h-4" />

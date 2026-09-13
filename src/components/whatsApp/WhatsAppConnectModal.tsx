@@ -46,18 +46,18 @@ export const WhatsAppConnectModal: React.FC<WhatsAppConnectModalProps> = ({
         onClick={onClose}
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
       />
-      <div className="relative w-full max-w-md bg-[#0E1628] border border-[#22355F] rounded-xl shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-md bg-[#FFFFFF] border border-[#94A3B8] rounded-xl shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#162442]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#E2E8F0]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#1E5EFF]/15 border border-[#1E5EFF]/30 flex items-center justify-center">
-              <MessageCircle className="w-4 h-4 text-[#00C2FF]" />
+            <div className="w-8 h-8 rounded-lg bg-[#2563EB]/15 border border-[#2563EB]/30 flex items-center justify-center">
+              <MessageCircle className="w-4 h-4 text-[#2563EB]" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-[#E6E8EC] tracking-tight">
+              <h3 className="text-sm font-semibold text-[#172033] tracking-tight">
                 Conectar WhatsApp
               </h3>
-              <p className="text-[10px] text-[#8E9BAE]">
+              <p className="text-[10px] text-[#64748B]">
                 {WHATSAPP_STATUS_LABELS[status]}
               </p>
             </div>
@@ -65,7 +65,7 @@ export const WhatsAppConnectModal: React.FC<WhatsAppConnectModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-7 h-7 rounded-md flex items-center justify-center text-[#8E9BAE] hover:text-[#E6E8EC] hover:bg-[#14203B] transition-colors cursor-pointer"
+            className="w-7 h-7 rounded-md flex items-center justify-center text-[#64748B] hover:text-[#172033] hover:bg-[#E2E8F0] transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -75,14 +75,14 @@ export const WhatsAppConnectModal: React.FC<WhatsAppConnectModalProps> = ({
         <div className="p-5">
           {isLoading && (
             <div className="flex flex-col items-center gap-4 py-6 text-center">
-              <Loader2 className="w-8 h-8 text-[#00C2FF] animate-spin" />
+              <Loader2 className="w-8 h-8 text-[#2563EB] animate-spin" />
               <div>
-                <p className="text-sm font-medium text-[#E6E8EC]">
+                <p className="text-sm font-medium text-[#172033]">
                   {status === 'reconnecting'
                     ? 'Reconectando...'
                     : 'Conectando...'}
                 </p>
-                <p className="text-xs text-[#8E9BAE] mt-1">
+                <p className="text-xs text-[#64748B] mt-1">
                   Estabelecendo sessão com o provedor de conexão.
                 </p>
               </div>
@@ -106,12 +106,12 @@ export const WhatsAppConnectModal: React.FC<WhatsAppConnectModalProps> = ({
                 )}
               </div>
               <div>
-                <p className="text-sm font-medium text-[#E6E8EC]">
+                <p className="text-sm font-medium text-[#172033]">
                   Aguardando leitura do QR Code
                 </p>
-                <p className="text-xs text-[#8E9BAE] mt-1 max-w-xs leading-relaxed">
+                <p className="text-xs text-[#64748B] mt-1 max-w-xs leading-relaxed">
                   Abra o WhatsApp no seu celular, toque em{' '}
-                  <span className="text-[#00C2FF] font-medium">
+                  <span className="text-[#2563EB] font-medium">
                     Aparelhos conectados
                   </span>{' '}
                   e escaneie o código. {QR_TIMEOUT_HINT}
@@ -123,13 +123,13 @@ export const WhatsAppConnectModal: React.FC<WhatsAppConnectModalProps> = ({
           {status === 'error' && (
             <div className="flex flex-col items-center gap-4 py-4 text-center">
               <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/25 flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-red-400" />
+                <AlertTriangle className="w-5 h-5 text-red-700" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-[#E6E8EC]">
+                <p className="text-sm font-semibold text-[#172033]">
                   Não foi possível conectar
                 </p>
-                <p className="text-xs text-[#8E9BAE] mt-1 leading-relaxed">
+                <p className="text-xs text-[#64748B] mt-1 leading-relaxed">
                   {errorMessage ??
                     'Ocorreu um erro durante a conexão. Tente novamente.'}
                 </p>
@@ -158,13 +158,13 @@ export const WhatsAppConnectModal: React.FC<WhatsAppConnectModalProps> = ({
           {status === 'connected' && (
             <div className="flex flex-col items-center gap-4 py-4 text-center">
               <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center">
-                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                <CheckCircle2 className="w-5 h-5 text-emerald-700" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-[#E6E8EC]">
+                <p className="text-sm font-semibold text-[#172033]">
                   Conectado com sucesso
                 </p>
-                <p className="text-xs text-[#8E9BAE] mt-1">
+                <p className="text-xs text-[#64748B] mt-1">
                   Sua conta está pronta para a operação.
                 </p>
               </div>

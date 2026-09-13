@@ -107,20 +107,20 @@ export const WhatsAppGroupsSection: React.FC<
   const motherGroup = groups.find((g) => g.id === parentGroupId) ?? null;
 
   return (
-    <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl overflow-hidden">
+    <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 p-5 pb-4 border-b border-[#162442]">
+      <div className="flex items-start justify-between gap-4 p-5 pb-4 border-b border-[#E2E8F0]">
         <div>
-          <h2 className="text-sm font-semibold text-[#E6E8EC] tracking-tight">
+          <h2 className="text-sm font-semibold text-[#172033] tracking-tight">
             Grupos do WhatsApp
           </h2>
-          <p className="text-xs text-[#8E9BAE] mt-0.5">
+          <p className="text-xs text-[#64748B] mt-0.5">
             Grupos reais retornados pela conta conectada.
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {isConnected && hasGroups && (
-            <span className="text-[11px] font-medium px-2 py-1 rounded-md bg-[#14203B] border border-[#1E3057] text-[#00C2FF]">
+            <span className="text-[11px] font-medium px-2 py-1 rounded-md bg-[#E2E8F0] border border-[#BFDBFE] text-[#2563EB]">
               {groups.length} {groups.length === 1 ? 'grupo' : 'grupos'}
             </span>
           )}
@@ -142,28 +142,28 @@ export const WhatsAppGroupsSection: React.FC<
       <div className="p-5">
         {!isConnected ? (
           <div className="flex flex-col items-center gap-3 py-4 text-center">
-            <div className="w-10 h-10 rounded-xl bg-[#14203B] border border-[#1E3057] flex items-center justify-center">
-              <MessageCircle className="w-4 h-4 text-[#00C2FF]" />
+            <div className="w-10 h-10 rounded-xl bg-[#E2E8F0] border border-[#BFDBFE] flex items-center justify-center">
+              <MessageCircle className="w-4 h-4 text-[#2563EB]" />
             </div>
-            <p className="text-xs text-[#8E9BAE] leading-relaxed">
+            <p className="text-xs text-[#64748B] leading-relaxed">
               Conecte seu WhatsApp para importar seus grupos reais.
             </p>
           </div>
         ) : isSyncing && !hasGroups ? (
           <div className="flex flex-col items-center gap-3 py-6 text-center">
-            <div className="w-10 h-10 rounded-xl bg-[#14203B] border border-[#1E3057] flex items-center justify-center">
-              <RefreshCw className="w-4 h-4 text-[#00C2FF] animate-spin" />
+            <div className="w-10 h-10 rounded-xl bg-[#E2E8F0] border border-[#BFDBFE] flex items-center justify-center">
+              <RefreshCw className="w-4 h-4 text-[#2563EB] animate-spin" />
             </div>
-            <p className="text-xs text-[#8E9BAE] leading-relaxed">
+            <p className="text-xs text-[#64748B] leading-relaxed">
               Sincronizando grupos reais da conta conectada...
             </p>
           </div>
         ) : !hasGroups ? (
           <div className="flex flex-col items-center gap-3 py-4 text-center">
-            <div className="w-10 h-10 rounded-xl bg-[#14203B] border border-[#1E3057] flex items-center justify-center">
-              <Users className="w-4 h-4 text-[#00C2FF]" />
+            <div className="w-10 h-10 rounded-xl bg-[#E2E8F0] border border-[#BFDBFE] flex items-center justify-center">
+              <Users className="w-4 h-4 text-[#2563EB]" />
             </div>
-            <p className="text-xs text-[#8E9BAE] leading-relaxed">
+            <p className="text-xs text-[#64748B] leading-relaxed">
               Nenhum grupo encontrado para esta conta.
             </p>
             <Button
@@ -180,27 +180,27 @@ export const WhatsAppGroupsSection: React.FC<
         ) : (
           <div className="space-y-4">
             {isSyncing && (
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1E5EFF]/10 border border-[#1E5EFF]/25 text-[11px] text-[#00C2FF]">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#2563EB]/10 border border-[#2563EB]/25 text-[11px] text-[#2563EB]">
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                 Sincronizando grupos...
               </div>
             )}
 
             {syncError && (
-              <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg bg-red-500/10 border border-red-500/25 text-[11px] text-red-300 leading-relaxed">
+              <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg bg-red-500/10 border border-red-500/25 text-[11px] text-red-700 leading-relaxed">
                 <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                 <div className="min-w-0">
                   <span className="font-semibold block">Falha ao sincronizar grupos.</span>
-                  <span className="text-red-300/90 block">{syncError}</span>
+                  <span className="text-red-700/90 block">{syncError}</span>
                 </div>
               </div>
             )}
 
             {motherGroup && (
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1E5EFF]/10 border border-[#1E5EFF]/25 text-[11px] text-[#C8D1DE]">
-                <Crown className="w-3.5 h-3.5 text-[#00C2FF] shrink-0" />
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#2563EB]/10 border border-[#2563EB]/25 text-[11px] text-[#334155]">
+                <Crown className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />
                 <span>
-                  <span className="font-semibold text-[#00C2FF]">Grupo Mãe:</span>{' '}
+                  <span className="font-semibold text-[#2563EB]">Grupo Mãe:</span>{' '}
                   {getGroupDisplayName(motherGroup)}
                 </span>
                 <span className="ml-auto text-[#64748B]">
@@ -231,7 +231,7 @@ export const WhatsAppGroupsSection: React.FC<
             {filteredGroups.length === 0 ? (
               <div className="flex flex-col items-center gap-2 py-6 text-center">
                 <Inbox className="w-4 h-4 text-[#64748B]" />
-                <p className="text-xs text-[#8E9BAE]">
+                <p className="text-xs text-[#64748B]">
                   Nenhum grupo encontrado para “{searchQuery.trim()}”.
                 </p>
               </div>
@@ -245,8 +245,8 @@ export const WhatsAppGroupsSection: React.FC<
                       key={group.id}
                       className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg border transition-colors ${
                         isMother
-                          ? 'bg-[#131E38] border-[#1E5EFF]/45'
-                          : 'bg-[#0A1020] border-[#16233B] hover:border-[#1E3360]'
+                          ? 'bg-[#EFF6FF] border-[#2563EB]/45'
+                          : 'bg-[#F8FAFC] border-[#E2E8F0] hover:border-[#BFDBFE]'
                       }`}
                     >
                       <button
@@ -262,8 +262,8 @@ export const WhatsAppGroupsSection: React.FC<
                         }
                         className={`shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 ${
                           isDestination
-                            ? 'bg-[#1E5EFF] border-[#1E5EFF]'
-                            : 'bg-[#0A1020] border-[#2A3E6D] hover:border-[#1E5EFF]'
+                            ? 'bg-[#2563EB] border-[#2563EB]'
+                            : 'bg-[#F8FAFC] border-[#93C5FD] hover:border-[#2563EB]'
                         }`}
                       >
                         {isDestination ? (
@@ -273,11 +273,11 @@ export const WhatsAppGroupsSection: React.FC<
 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 min-w-0">
-                          <span className="text-xs font-medium text-[#E6E8EC] truncate">
+                          <span className="text-xs font-medium text-[#172033] truncate">
                             {getGroupDisplayName(group)}
                           </span>
                           {isMother && (
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#1E5EFF]/20 border border-[#1E5EFF]/40 text-[10px] font-semibold text-[#00C2FF] shrink-0">
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#2563EB]/20 border border-[#2563EB]/40 text-[10px] font-semibold text-[#2563EB] shrink-0">
                               <Crown className="w-2.5 h-2.5" />
                               Grupo Mãe
                             </span>
@@ -288,14 +288,14 @@ export const WhatsAppGroupsSection: React.FC<
                             {formatGroupParticipantCount(group)} · {group.id}
                           </span>
                           {group.sessionId && (
-                            <span className="shrink-0 text-[9px] font-medium px-1.5 py-0.5 rounded bg-[#101B33] border border-[#1C2C50] text-[#8E9BAE]">
+                            <span className="shrink-0 text-[9px] font-medium px-1.5 py-0.5 rounded bg-[#F1F5F9] border border-[#CBD5E1] text-[#64748B]">
                               {group.sessionId}
                             </span>
                           )}
                         </div>
                       </div>
 
-                      <span className="text-[10px] font-medium text-emerald-400/90 shrink-0">
+                      <span className="text-[10px] font-medium text-emerald-700/90 shrink-0">
                         Disponível
                       </span>
 
@@ -304,8 +304,8 @@ export const WhatsAppGroupsSection: React.FC<
                         onClick={() => toggleParent(group)}
                         className={`shrink-0 flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold border transition-colors cursor-pointer ${
                           isMother
-                            ? 'bg-[#1E5EFF]/20 border-[#1E5EFF]/40 text-[#00C2FF]'
-                            : 'bg-transparent border-[#1E2E52] text-[#8E9BAE] hover:text-[#00C2FF] hover:border-[#1E5EFF]/50'
+                            ? 'bg-[#2563EB]/20 border-[#2563EB]/40 text-[#2563EB]'
+                            : 'bg-transparent border-[#BFDBFE] text-[#64748B] hover:text-[#2563EB] hover:border-[#2563EB]/50'
                         }`}
                         title={
                           isMother
@@ -325,20 +325,20 @@ export const WhatsAppGroupsSection: React.FC<
             {/* Legenda */}
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-1 text-[10px] text-[#64748B]">
               <span className="inline-flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded border border-[#2A3E6D] inline-block" />
+                <span className="w-3 h-3 rounded border border-[#93C5FD] inline-block" />
                 Selecione e adicione como destino
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Crown className="w-3 h-3 text-[#00C2FF]" />
+                <Crown className="w-3 h-3 text-[#2563EB]" />
                 Defina 1 grupo como Grupo Mãe
               </span>
             </div>
 
             {/* Enviar mensagem de teste */}
-            <div className="rounded-lg border border-[#1B2947] bg-[#0A1020] p-4">
+            <div className="rounded-lg border border-[#DCE3EC] bg-[#F8FAFC] p-4">
               <div className="flex items-center gap-2 mb-3">
-                <Send className="w-3.5 h-3.5 text-[#00C2FF]" />
-                <h3 className="text-xs font-semibold text-[#E6E8EC]">
+                <Send className="w-3.5 h-3.5 text-[#2563EB]" />
+                <h3 className="text-xs font-semibold text-[#172033]">
                   Enviar mensagem de teste
                 </h3>
               </div>
@@ -370,15 +370,15 @@ export const WhatsAppGroupsSection: React.FC<
                   placeholder="Escreva a mensagem de teste..."
                   rows={3}
                   disabled={sending}
-                  className="w-full bg-[#0A1020] border border-[#1B2947] text-[#E6E8EC] placeholder:text-[#5A6470] rounded-lg p-3 text-xs leading-relaxed resize-y focus:outline-none focus:border-[#1E5EFF] focus:ring-1 focus:ring-[#1E5EFF] disabled:opacity-40"
+                  className="w-full bg-[#F8FAFC] border border-[#DCE3EC] text-[#172033] placeholder:text-[#94A3B8] rounded-lg p-3 text-xs leading-relaxed resize-y focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] disabled:opacity-40"
                 />
 
                 {feedback && (
                   <div
                     className={`flex items-start gap-2 px-3 py-2.5 rounded-lg text-xs leading-relaxed border ${
                       feedback.type === 'success'
-                        ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-300'
-                        : 'bg-red-500/10 border-red-500/25 text-red-300'
+                        ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-700'
+                        : 'bg-red-500/10 border-red-500/25 text-red-700'
                     }`}
                   >
                     {feedback.type === 'success' ? (

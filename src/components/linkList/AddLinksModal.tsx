@@ -83,14 +83,14 @@ export const AddLinksModal: React.FC<AddLinksModalProps> = ({
     >
       <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
         {/* Tabs */}
-        <div className="flex items-center gap-1.5 p-1 bg-[#080E1C] border border-[#162340] rounded-lg">
+        <div className="flex items-center gap-1.5 p-1 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
           <button
             type="button"
             onClick={() => setMode('add')}
             className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
               mode === 'add'
-                ? 'bg-[#142340] text-white border border-[#1E5EFF]'
-                : 'text-[#8E9BAE] hover:text-[#E6E8EC] border border-transparent'
+                ? 'bg-[#E2E8F0] text-white border border-[#2563EB]'
+                : 'text-[#64748B] hover:text-[#172033] border border-transparent'
             }`}
           >
             <ClipboardPaste className="w-3.5 h-3.5" />
@@ -101,8 +101,8 @@ export const AddLinksModal: React.FC<AddLinksModalProps> = ({
             onClick={() => setMode('import')}
             className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
               mode === 'import'
-                ? 'bg-[#142340] text-white border border-[#1E5EFF]'
-                : 'text-[#8E9BAE] hover:text-[#E6E8EC] border border-transparent'
+                ? 'bg-[#E2E8F0] text-white border border-[#2563EB]'
+                : 'text-[#64748B] hover:text-[#172033] border border-transparent'
             }`}
           >
             <FileUp className="w-3.5 h-3.5" />
@@ -113,7 +113,7 @@ export const AddLinksModal: React.FC<AddLinksModalProps> = ({
         {mode === 'add' ? (
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-[#E6E8EC]">
+              <label className="text-xs font-medium text-[#172033]">
                 Colar vários links
               </label>
               <textarea
@@ -121,7 +121,7 @@ export const AddLinksModal: React.FC<AddLinksModalProps> = ({
                 value={bulkText}
                 onChange={(e) => setBulkText(e.target.value)}
                 placeholder={'Cole os links das ofertas, um por linha...\nhttps://...\nhttps://...'}
-                className="w-full p-3 bg-[#070C18] border border-[#1A2C4E] rounded-lg text-xs font-mono text-[#E6E8EC] placeholder:text-[#64748B] focus:outline-none focus:border-[#1E5EFF] resize-y"
+                className="w-full p-3 bg-[#FFFFFF] border border-[#CBD5E1] rounded-lg text-xs font-mono text-[#172033] placeholder:text-[#64748B] focus:outline-none focus:border-[#2563EB] resize-y"
               />
               <p className="text-[10px] text-[#64748B]">
                 {parseUrls(bulkText).length > 0
@@ -131,11 +131,11 @@ export const AddLinksModal: React.FC<AddLinksModalProps> = ({
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="h-px flex-1 bg-[#162340]" />
+              <div className="h-px flex-1 bg-[#E2E8F0]" />
               <span className="text-[10px] uppercase tracking-wider text-[#64748B]">
                 ou adicione um link manualmente
               </span>
-              <div className="h-px flex-1 bg-[#162340]" />
+              <div className="h-px flex-1 bg-[#E2E8F0]" />
             </div>
 
             <div className="flex items-center gap-2">
@@ -144,7 +144,7 @@ export const AddLinksModal: React.FC<AddLinksModalProps> = ({
                 value={singleUrl}
                 onChange={(e) => setSingleUrl(e.target.value)}
                 placeholder="https://..."
-                className="flex-1 h-9 px-3 bg-[#070C18] border border-[#1A2C4E] rounded-lg text-xs font-mono text-[#E6E8EC] placeholder:text-[#64748B] focus:outline-none focus:border-[#1E5EFF]"
+                className="flex-1 h-9 px-3 bg-[#FFFFFF] border border-[#CBD5E1] rounded-lg text-xs font-mono text-[#172033] placeholder:text-[#64748B] focus:outline-none focus:border-[#2563EB]"
               />
               <Button
                 variant="secondary"
@@ -164,14 +164,14 @@ export const AddLinksModal: React.FC<AddLinksModalProps> = ({
           </div>
         ) : (
           <div className="space-y-3">
-            <div className="p-4 bg-[#0B1220] border border-[#162340] rounded-xl flex flex-col items-center gap-3 text-center">
+            <div className="p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl flex flex-col items-center gap-3 text-center">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full flex flex-col items-center gap-2 px-4 py-6 rounded-lg border border-dashed border-[#1E3A6E] hover:border-[#1E5EFF] hover:bg-[#0E1830] transition-colors cursor-pointer bg-transparent"
+                className="w-full flex flex-col items-center gap-2 px-4 py-6 rounded-lg border border-dashed border-[#93C5FD] hover:border-[#2563EB] hover:bg-[#F8FAFC] transition-colors cursor-pointer bg-transparent"
               >
-                <FileUp className="w-6 h-6 text-[#00C2FF]" />
-                <span className="text-xs text-[#E6E8EC] font-medium">
+                <FileUp className="w-6 h-6 text-[#2563EB]" />
+                <span className="text-xs text-[#172033] font-medium">
                   {fileName || 'Selecione um arquivo TXT ou CSV'}
                 </span>
                 <span className="text-[10px] text-[#64748B]">
@@ -192,10 +192,10 @@ export const AddLinksModal: React.FC<AddLinksModalProps> = ({
             </div>
 
             {importedUrls.length > 0 && (
-              <div className="p-3 bg-[#0E1B33] border border-[#1E3B70] rounded-xl flex items-center justify-between text-xs">
+              <div className="p-3 bg-[#F1F5F9] border border-[#93C5FD] rounded-xl flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-[#00C2FF]" />
-                  <span className="text-[#E6E8EC]">
+                  <Sparkles className="w-4 h-4 text-[#2563EB]" />
+                  <span className="text-[#172033]">
                     {importedUrls.length} link(s) reconhecido(s) no arquivo.
                   </span>
                 </div>
@@ -206,7 +206,7 @@ export const AddLinksModal: React.FC<AddLinksModalProps> = ({
                     setImportedUrls([]);
                     if (fileInputRef.current) fileInputRef.current.value = '';
                   }}
-                  className="text-[10px] text-[#8E9BAE] hover:text-rose-400 transition-colors cursor-pointer"
+                  className="text-[10px] text-[#64748B] hover:text-rose-700 transition-colors cursor-pointer"
                 >
                   Limpar
                 </button>
@@ -218,7 +218,7 @@ export const AddLinksModal: React.FC<AddLinksModalProps> = ({
                 {importedUrls.slice(0, 20).map((url) => (
                   <p
                     key={url}
-                    className="text-[11px] font-mono text-[#94A3B8] truncate px-2 py-1 bg-[#080E1C] border border-[#14203B] rounded"
+                    className="text-[11px] font-mono text-[#94A3B8] truncate px-2 py-1 bg-[#F8FAFC] border border-[#E2E8F0] rounded"
                   >
                     {url}
                   </p>
@@ -234,7 +234,7 @@ export const AddLinksModal: React.FC<AddLinksModalProps> = ({
         )}
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#14203B]">
+        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#E2E8F0]">
           <Button variant="ghost" size="sm" onClick={onClose}>
             Cancelar
           </Button>

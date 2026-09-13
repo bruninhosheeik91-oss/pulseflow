@@ -65,14 +65,14 @@ export const QueueRescheduleModal: React.FC<QueueRescheduleModalProps> = ({
     >
       <div className="space-y-4 text-xs">
         {/* Current info pill */}
-        <div className="p-3 bg-[#0E1628] border border-[#1B2947] rounded-xl flex items-center justify-between">
+        <div className="p-3 bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl flex items-center justify-between">
           <div>
-            <span className="text-[#8E9BAE]">Canal de Destino:</span>
+            <span className="text-[#64748B]">Canal de Destino:</span>
             <p className="font-semibold text-white mt-0.5">{item.channel}</p>
           </div>
           <div className="text-right">
-            <span className="text-[#8E9BAE]">Horário Atual:</span>
-            <p className="font-mono-numeric font-bold text-[#00C2FF] mt-0.5">
+            <span className="text-[#64748B]">Horário Atual:</span>
+            <p className="font-mono-numeric font-bold text-[#2563EB] mt-0.5">
               {item.time}
             </p>
           </div>
@@ -89,7 +89,7 @@ export const QueueRescheduleModal: React.FC<QueueRescheduleModalProps> = ({
                 key={preset.label}
                 type="button"
                 onClick={() => handleApplyPreset(preset.minutes)}
-                className="py-2 px-2.5 bg-[#121E38] hover:bg-[#1A2B50] border border-[#1E3360] rounded-lg font-medium text-[#E6E8EC] transition-colors text-center"
+                className="py-2 px-2.5 bg-[#EFF6FF] hover:bg-[#CBD5E1] border border-[#BFDBFE] rounded-lg font-medium text-[#172033] transition-colors text-center"
               >
                 {preset.label}
               </button>
@@ -104,12 +104,12 @@ export const QueueRescheduleModal: React.FC<QueueRescheduleModalProps> = ({
               Horário Específico (HH:MM)
             </label>
             <div className="relative">
-              <Clock className="w-4 h-4 text-[#8E9BAE] absolute left-3 top-1/2 -translate-y-1/2" />
+              <Clock className="w-4 h-4 text-[#64748B] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                className="w-full bg-[#0A1020] border border-[#192747] rounded-lg pl-9 pr-3 py-2 text-xs text-[#E6E8EC] font-mono focus:outline-none focus:border-[#1E5EFF]"
+                className="w-full bg-[#F8FAFC] border border-[#DCE3EC] rounded-lg pl-9 pr-3 py-2 text-xs text-[#172033] font-mono focus:outline-none focus:border-[#2563EB]"
               />
             </div>
           </div>
@@ -121,7 +121,7 @@ export const QueueRescheduleModal: React.FC<QueueRescheduleModalProps> = ({
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value as QueuePriority)}
-              className="w-full bg-[#0A1020] border border-[#192747] rounded-lg px-3 py-2 text-xs text-[#E6E8EC] focus:outline-none focus:border-[#1E5EFF]"
+              className="w-full bg-[#F8FAFC] border border-[#DCE3EC] rounded-lg px-3 py-2 text-xs text-[#172033] focus:outline-none focus:border-[#2563EB]"
             >
               <option value="Alta">Alta (Disparo prioritário)</option>
               <option value="Normal">Normal (Ordem cronológica)</option>
@@ -131,15 +131,15 @@ export const QueueRescheduleModal: React.FC<QueueRescheduleModalProps> = ({
         </div>
 
         {/* Anti-flood warning */}
-        <div className="p-2.5 bg-[#0E1B33] border border-[#1C3A6D] rounded-lg flex items-center gap-2.5 text-[#94A3B8]">
-          <ShieldCheck className="w-4 h-4 text-[#00C2FF] shrink-0" />
+        <div className="p-2.5 bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg flex items-center gap-2.5 text-[#94A3B8]">
+          <ShieldCheck className="w-4 h-4 text-[#2563EB] shrink-0" />
           <span className="text-[11px] leading-relaxed">
             O algoritmo garante um espaçamento mínimo seguro de 15 minutos entre mensagens no mesmo canal para blindar suas instâncias contra banimentos.
           </span>
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#16233B]">
+        <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#E2E8F0]">
           <Button variant="ghost" size="sm" onClick={onClose}>
             Cancelar
           </Button>

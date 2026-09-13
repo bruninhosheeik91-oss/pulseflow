@@ -48,12 +48,12 @@ export const AutomationCard: React.FC<AutomationCardProps> = ({
   const Icon = AUTOMATION_ICONS[automation.type];
   const accent =
     automation.type === 'AUTO_SEARCH'
-      ? 'text-[#00C2FF]'
+      ? 'text-[#2563EB]'
       : automation.type === 'LINK_LIST'
-      ? 'text-[#38BDF8]'
+      ? 'text-[#3B82F6]'
       : automation.type === 'MIRROR'
       ? 'text-[#A78BFA]'
-      : 'text-emerald-400';
+      : 'text-emerald-700';
 
   const metricLabels: Record<string, { label: string; value: React.ReactNode }[]> =
     {
@@ -85,19 +85,19 @@ export const AutomationCard: React.FC<AutomationCardProps> = ({
   const metrics = metricLabels[automation.type] || [];
 
   return (
-    <div className="relative bg-[#0E1628] border border-[#1B2947] rounded-xl transition-all hover:border-[#283C66] hover:bg-[#0F182E] flex flex-col">
+    <div className="relative bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl transition-all hover:border-[#93C5FD] hover:bg-[#F1F5F9] flex flex-col">
       {/* Header */}
-      <div className="p-5 pb-4 border-b border-[#162442]">
+      <div className="p-5 pb-4 border-b border-[#E2E8F0]">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-[#14203B] border border-[#1E3057] flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-[#E2E8F0] border border-[#BFDBFE] flex items-center justify-center shrink-0">
               <Icon className={`w-5 h-5 ${accent}`} />
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm font-bold text-[#E6E8EC] tracking-tight">
+              <h3 className="text-sm font-bold text-[#172033] tracking-tight">
                 {automation.name}
               </h3>
-              <p className="text-[11px] text-[#8E9BAE] mt-0.5 leading-snug line-clamp-2">
+              <p className="text-[11px] text-[#64748B] mt-0.5 leading-snug line-clamp-2">
                 {automation.description}
               </p>
             </div>
@@ -128,7 +128,7 @@ export const AutomationCard: React.FC<AutomationCardProps> = ({
             <div className="text-[10px] uppercase tracking-wider text-[#64748B] font-semibold">
               {m.label}
             </div>
-            <div className="text-base font-bold font-mono-numeric text-[#E6E8EC] mt-0.5">
+            <div className="text-base font-bold font-mono-numeric text-[#172033] mt-0.5">
               {m.value}
             </div>
           </div>
@@ -148,7 +148,7 @@ export const AutomationCard: React.FC<AutomationCardProps> = ({
           )}
         </div>
         {automation.type === 'MIRROR' && (
-          <div className="flex items-center gap-1.5 mt-2.5 text-[10px] text-[#8E9BAE]">
+          <div className="flex items-center gap-1.5 mt-2.5 text-[10px] text-[#64748B]">
             <Globe className="w-3 h-3 shrink-0" />
             <span>Disponibilidade depende da integração utilizada.</span>
           </div>
@@ -156,14 +156,14 @@ export const AutomationCard: React.FC<AutomationCardProps> = ({
       </div>
 
       {/* Actions */}
-      <div className="px-5 py-4 border-t border-[#162442] flex items-center justify-end gap-2">
+      <div className="px-5 py-4 border-t border-[#E2E8F0] flex items-center justify-end gap-2">
         <Button
           variant="outline"
           size="xs"
           onClick={() => onConfigure(automation)}
           leftIcon={<Settings className="w-3.5 h-3.5" />}
           rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
-          className="text-xs border-[#182747] text-[#E6E8EC] hover:bg-[#14203B]"
+          className="text-xs border-[#DCE3EC] text-[#172033] hover:bg-[#E2E8F0]"
         >
           Configurar
         </Button>
