@@ -5,8 +5,18 @@ import {
   ChannelQuickFilter,
   ChannelSortOption,
 } from '../../types';
-import { getGroupDisplayName, WhatsAppAccount, WhatsAppGroup } from '../../types/whatsApp';
+import {
+  getGroupDisplayName,
+  WhatsAppAccount,
+  WhatsAppGroup,
+} from '../../types/whatsApp';
 import { getWhatsAppProvider } from '../../services/whatsApp/provider';
+import {
+  addChildGroup,
+  getGroupConfig,
+  removeChildGroup,
+  setSyncedGroupsForSession,
+} from '../../services/whatsApp/groupConfigStore';
 import { ChannelsHeader } from './ChannelsHeader';
 import { ChannelsMetricsBar } from './ChannelsMetricsBar';
 import {
@@ -37,14 +47,29 @@ function channelFromRealGroup(
   account: WhatsAppAccount,
   group: WhatsAppGroup
 ): DistributionChannel {
+  const config = getGroupConfig();
+  const sessionStatus = accountStatusToChannelStatus(account);
+  const isMonitorSource = config.parentGroupId === group.id;
+  const isActiveDestination = config.childGroupIds.includes(group.id);
+  const status: DistributionChannel['status'] =
+    sessionStatus !== 'Conectado'
+      ? sessionStatus
+      : isMonitorSource || isActiveDestination
+      ? 'Conectado'
+      : 'Pausado';
+
   return {
     id: `${account.sessionId}|${group.id}`,
     name: getGroupDisplayName(group),
     platform: 'WhatsApp',
     type: 'Grupo WhatsApp',
-    status: accountStatusToChannelStatus(account),
+    status,
     membersCount: group.participantCount ?? 0,
-    description: `Grupo sincronizado da conta ${account.name || account.sessionId}.`,
+    description: isMonitorSource
+      ? `Grupo Mãe do monitor na conta ${account.name || account.sessionId}.`
+      : isActiveDestination
+      ? `Destino ativo do monitor na conta ${account.name || account.sessionId}.`
+      : `Grupo sincronizado da conta ${account.name || account.sessionId}.`,
     identifier: group.id,
     instanceName: account.name || account.sessionId,
     instanceStatus: accountStatusToInstanceStatus(account),
@@ -100,9 +125,7 @@ export const ChannelsPage: React.FC = () => {
     groups: number;
   }> => {
     const provider = getWhatsAppProvider();
-    if (!provider) {
-      throw new Error('Provedor WhatsApp não configurado.');
-    }
+    if (!provider) throw new Error('Provedor WhatsApp não configurado.');
 
     const accounts = await provider.listAccounts();
     const connectedAccounts = accounts.filter(
@@ -113,6 +136,7 @@ export const ChannelsPage: React.FC = () => {
       connectedAccounts.map(async (account) => {
         try {
           const groups = await provider.getGroupsForSession(account.sessionId);
+          setSyncedGroupsForSession(groups, account.sessionId);
           return groups.map((group) => channelFromRealGroup(account, group));
         } catch {
           return [] as DistributionChannel[];
@@ -123,11 +147,11 @@ export const ChannelsPage: React.FC = () => {
     const realChannels = results.flat();
     setChannels(realChannels);
     setLoadError(null);
-
-    setSelectedChannelForDrawer((current) => {
-      if (!current) return null;
-      return realChannels.find((channel) => channel.id === current.id) ?? null;
-    });
+    setSelectedChannelForDrawer((current) =>
+      current
+        ? realChannels.find((channel) => channel.id === current.id) ?? null
+        : null
+    );
 
     return {
       accounts: accounts.length,
@@ -152,7 +176,6 @@ export const ChannelsPage: React.FC = () => {
       .finally(() => {
         if (active) setIsLoading(false);
       });
-
     return () => {
       active = false;
     };
@@ -182,9 +205,59 @@ export const ChannelsPage: React.FC = () => {
   };
 
   const handleToggleStatus = (channel: DistributionChannel) => {
+    const config = getGroupConfig();
+    const sessionId = sessionIdFromChannel(channel);
+
+    if (config.parentGroupId === channel.identifier) {
+      showToast(
+        `"${channel.name}" é o Grupo Mãe do monitor. A origem é gerenciada no módulo Grupo Monitor.`,
+        'info'
+      );
+      return;
+    }
+
+    if (!config.parentGroupId || !config.parentSessionId) {
+      showToast('Defina primeiro um Grupo Mãe no módulo Grupo Monitor.', 'info');
+      return;
+    }
+
+    if (!sessionId || sessionId !== config.parentSessionId) {
+      showToast(
+        'Este grupo pertence a outra conta WhatsApp. Grupo Mãe e destinos precisam usar a mesma sessão.',
+        'info'
+      );
+      return;
+    }
+
+    const isActive = config.childGroupIds.includes(channel.identifier);
+    if (isActive) removeChildGroup(channel.identifier);
+    else addChildGroup(channel.identifier);
+
+    const nextStatus: DistributionChannel['status'] = isActive
+      ? 'Pausado'
+      : 'Conectado';
+    const nextDescription = isActive
+      ? `Grupo sincronizado da conta ${channel.instanceName}.`
+      : `Destino ativo do monitor na conta ${channel.instanceName}.`;
+
+    setChannels((current) =>
+      current.map((item) =>
+        item.id === channel.id
+          ? { ...item, status: nextStatus, description: nextDescription }
+          : item
+      )
+    );
+    setSelectedChannelForDrawer((current) =>
+      current?.id === channel.id
+        ? { ...current, status: nextStatus, description: nextDescription }
+        : current
+    );
+
     showToast(
-      `O status de "${channel.name}" vem da sessão real do WhatsApp. Conecte ou desconecte a conta pelo módulo WhatsApp.`,
-      'info'
+      isActive
+        ? `Canal "${channel.name}" pausado e removido dos destinos do monitor.`
+        : `Canal "${channel.name}" ativado como destino real do monitor.`,
+      'success'
     );
   };
 
@@ -194,8 +267,8 @@ export const ChannelsPage: React.FC = () => {
       showToast('Provedor WhatsApp não configurado.', 'info');
       return;
     }
-    if (channel.status !== 'Conectado') {
-      showToast(`O canal "${channel.name}" não está conectado.`, 'info');
+    if (channel.instanceStatus !== 'Online') {
+      showToast(`A instância de "${channel.name}" não está online.`, 'info');
       return;
     }
 
@@ -226,65 +299,47 @@ export const ChannelsPage: React.FC = () => {
         if (activeFilter === 'Alta Audiência' && ch.membersCount < 5000) return false;
         if (selectedPlatform !== 'Todos' && ch.platform !== selectedPlatform) return false;
         if (selectedStatus !== 'Todos' && ch.status !== selectedStatus) return false;
-
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase();
-          const matchName = ch.name.toLowerCase().includes(q);
-          const matchId = ch.identifier.toLowerCase().includes(q);
-          const matchInst = ch.instanceName.toLowerCase().includes(q);
-          const matchCamp = ch.linkedCampaigns.some((c) =>
-            c.toLowerCase().includes(q)
-          );
-          const matchDesc = ch.description.toLowerCase().includes(q);
-          if (!matchName && !matchId && !matchInst && !matchCamp && !matchDesc) {
-            return false;
-          }
+          const matches =
+            ch.name.toLowerCase().includes(q) ||
+            ch.identifier.toLowerCase().includes(q) ||
+            ch.instanceName.toLowerCase().includes(q) ||
+            ch.linkedCampaigns.some((c) => c.toLowerCase().includes(q)) ||
+            ch.description.toLowerCase().includes(q);
+          if (!matches) return false;
         }
         return true;
       })
       .sort((a, b) => {
         if (sortOption === 'audience') return b.membersCount - a.membersCount;
-        if (sortOption === 'dispatches') {
-          return b.stats.messagesToday - a.stats.messagesToday;
-        }
+        if (sortOption === 'dispatches') return b.stats.messagesToday - a.stats.messagesToday;
         if (sortOption === 'delivery') return b.stats.deliveryRate - a.stats.deliveryRate;
         if (sortOption === 'recent') return b.id.localeCompare(a.id);
         if (sortOption === 'name') return a.name.localeCompare(b.name);
         return 0;
       });
-  }, [
-    channels,
-    activeFilter,
-    selectedPlatform,
-    selectedStatus,
-    searchQuery,
-    sortOption,
-  ]);
+  }, [channels, activeFilter, selectedPlatform, selectedStatus, searchQuery, sortOption]);
 
-  const counts = useMemo(() => {
-    return {
+  const counts = useMemo(
+    () => ({
       total: channels.length,
       whatsapp: channels.filter((c) => c.platform === 'WhatsApp').length,
       telegram: channels.filter((c) => c.platform === 'Telegram').length,
       connected: channels.filter((c) => c.status === 'Conectado').length,
       attention: channels.filter((c) => c.status === 'Atenção').length,
       highAudience: channels.filter((c) => c.membersCount >= 5000).length,
-    };
-  }, [channels]);
+    }),
+    [channels]
+  );
 
   const summaryStats = useMemo(() => {
     const totalAudience = channels.reduce((acc, c) => acc + c.membersCount, 0);
-    const messagesToday = channels.reduce(
-      (acc, c) => acc + c.stats.messagesToday,
-      0
-    );
+    const messagesToday = channels.reduce((acc, c) => acc + c.stats.messagesToday, 0);
     const clicksToday = channels.reduce((acc, c) => acc + c.stats.clicksToday, 0);
-    const avgDeliveryRate =
-      channels.length > 0
-        ? channels.reduce((acc, c) => acc + c.stats.deliveryRate, 0) /
-          channels.length
-        : 0;
-
+    const avgDeliveryRate = channels.length
+      ? channels.reduce((acc, c) => acc + c.stats.deliveryRate, 0) / channels.length
+      : 0;
     return { totalAudience, messagesToday, clicksToday, avgDeliveryRate };
   }, [channels]);
 
@@ -300,11 +355,7 @@ export const ChannelsPage: React.FC = () => {
             )}
             <span className="font-medium leading-relaxed">{toastMessage.text}</span>
           </div>
-          <button
-            type="button"
-            onClick={() => setToastMessage(null)}
-            className="text-[#64748B] hover:text-[#2563EB] cursor-pointer ml-4 shrink-0"
-          >
+          <button type="button" onClick={() => setToastMessage(null)} className="text-[#64748B] hover:text-[#2563EB] cursor-pointer ml-4 shrink-0">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -319,12 +370,7 @@ export const ChannelsPage: React.FC = () => {
         onOpenConnectModal={handleSyncChannels}
       />
 
-      <ChannelsMetricsBar
-        activeFilter={activeFilter}
-        onSelectFilter={setActiveFilter}
-        counts={counts}
-        summaryStats={summaryStats}
-      />
+      <ChannelsMetricsBar activeFilter={activeFilter} onSelectFilter={setActiveFilter} counts={counts} summaryStats={summaryStats} />
 
       <ChannelsSearchBar
         searchQuery={searchQuery}
@@ -348,20 +394,14 @@ export const ChannelsPage: React.FC = () => {
         <div className="p-8 text-center bg-[#FFF7ED] border border-[#FED7AA] rounded-xl space-y-3">
           <h3 className="text-sm font-bold text-[#9A3412]">Falha ao carregar canais reais</h3>
           <p className="text-xs text-[#7C2D12] max-w-xl mx-auto">{loadError}</p>
-          <button
-            type="button"
-            onClick={handleSyncChannels}
-            className="text-xs text-[#2563EB] font-semibold hover:underline cursor-pointer"
-          >
+          <button type="button" onClick={handleSyncChannels} className="text-xs text-[#2563EB] font-semibold hover:underline cursor-pointer">
             Tentar sincronizar novamente
           </button>
         </div>
       ) : filteredChannels.length === 0 ? (
         <div className="p-8 text-center bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl space-y-3">
           <FilterX className="w-10 h-10 text-[#64748B] mx-auto" />
-          <h3 className="text-sm font-bold text-[#172033]">
-            Nenhum grupo real encontrado
-          </h3>
+          <h3 className="text-sm font-bold text-[#172033]">Nenhum grupo real encontrado</h3>
           <p className="text-xs text-[#64748B] max-w-lg mx-auto">
             Conecte uma conta no módulo WhatsApp e use “Sincronizar Grupos”. Se houver filtros ativos, limpe-os para visualizar todos os grupos sincronizados.
           </p>
