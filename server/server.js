@@ -18,6 +18,30 @@ const {
   createTenantAutoSearchSendsStore,
 } = require('./linkConversion/tenantAutoSearchSendsStore.js');
 
+// Carrega server/.env (KEY=VAL, gitignored) para o runtime Node local, mesmo
+// padrão do helper test-real-shopee.js. Sem isso, `node server.js` rodaria sem
+// ENCRYPTION_KEY: segredos salvos não poderiam ser decifrados nem re-cifrados.
+// Variáveis já presentes no ambiente NUNCA são sobrescritas (deploy vence).
+try {
+  const envFilePath = path.join(__dirname, '.env');
+  if (existsSync(envFilePath)) {
+    for (const line of readFileSync(envFilePath, 'utf8').split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const idx = trimmed.indexOf('=');
+      if (idx <= 0) continue;
+      const key = trimmed.slice(0, idx).trim();
+      const val = trimmed
+        .slice(idx + 1)
+        .trim()
+        .replace(/^["']|["']$/g, '');
+      if (key && !(key in process.env)) process.env[key] = val;
+    }
+  }
+} catch {
+  // Sem .env o servidor sobe mesmo assim; segredos ficam indisponíveis.
+}
+
 const PORT = Number(process.env.PORT || 3001);
 const HOST = '127.0.0.1';
 const DOMNEX_DEFAULT_SESSION = 'domnex-main';
@@ -1041,8 +1065,10 @@ app.use(
       const allowed = new Set([
         'http://localhost:3000',
         'http://127.0.0.1:3000',
+        'http://[::1]:3000',
         'http://localhost:5173',
         'http://127.0.0.1:5173',
+        'http://[::1]:5173',
       ]);
       if (!origin || allowed.has(origin)) {
         callback(null, true);
@@ -1232,6 +1258,38 @@ async function sendViaClient(sessionClient, groupId, message) {
   const messageId =
     (sent && sent.id && (sent.id._serialized || sent.id.id)) || null;
   return messageId;
+}
+
+// Envio com a foto REAL do produto (imageUrl vem somente do productOfferV2 da
+// Shopee, nunca do corpo da requisição). Usa sendImage por URL do WPPConnect.
+// Se a mídia falhar, cai para envio apenas de texto, sem perder o envio.
+async function sendProductWithMedia(sessionClient, groupId, message, imageUrl) {
+  const isUrl =
+    typeof imageUrl === 'string' && /^https?:\/\//i.test(imageUrl.trim());
+  if (isUrl) {
+    try {
+      const sent = await sessionClient.sendImage(
+        groupId,
+        imageUrl.trim(),
+        'produto.png',
+        message
+      );
+      const messageId =
+        (sent && sent.id && (sent.id._serialized || sent.id.id)) || null;
+      logWhatsApp(`[auto-search] envio com mídia OK (${groupId})`);
+      return { messageId, media: 'sent' };
+    } catch (err) {
+      logWhatsApp(
+        `[auto-search] mídia falhou (${groupId}); enviando apenas texto: ${sanitizeSendError(err)}`
+      );
+    }
+  } else {
+    logWhatsApp(`[auto-search] sem imageUrl real; enviando apenas texto (${groupId})`);
+  }
+  const sent = await sessionClient.sendText(groupId, message);
+  const messageId =
+    (sent && sent.id && (sent.id._serialized || sent.id.id)) || null;
+  return { messageId, media: 'text' };
 }
 
 // Erro de envio sanitizado (nunca expõe segredos do tenant/Shopee).
@@ -2002,7 +2060,12 @@ app.post(
       };
 
       try {
-        const messageId = await sendViaClient(state.client, groupId, message);
+        const { messageId, media } = await sendProductWithMedia(
+          state.client,
+          groupId,
+          message,
+          product.imageUrl
+        );
         const record = {
           ...recordBase,
           sentAt: new Date().toISOString(),
@@ -2012,7 +2075,7 @@ app.post(
         };
         autoSearchSendsStore.record(tenantId, record);
         logInfo(
-          `[auto-search] envio real OK (tenant=${tenantId}, automation=${automation.id}, session=${sessionId}, group=${groupId}, item=${itemId}, msg=${messageId})`
+          `[auto-search] envio real OK (tenant=${tenantId}, automation=${automation.id}, session=${sessionId}, group=${groupId}, item=${itemId}, media=${media}, msg=${messageId})`
         );
         res.json({ ok: true, tenant: tenantId, send: record, message });
       } catch (err) {

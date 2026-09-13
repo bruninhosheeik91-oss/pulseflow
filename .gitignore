@@ -13,3 +13,6 @@ server/node_modules/
 
 # Runtime state do backend (monitor-config, contas) — never versioned
 server/data/
+
+.vercel
+.env*
