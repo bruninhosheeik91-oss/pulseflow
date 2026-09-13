@@ -40,10 +40,11 @@ function jsonFetch(programmed) {
   return { impl, calls };
 }
 
-function jsonResponse(status, data) {
+function jsonResponse(status, data, extra = {}) {
   return {
     ok: status >= 200 && status < 300,
     status,
+    ...extra,
     async text() {
       return JSON.stringify(data);
     },
@@ -81,6 +82,58 @@ function sha256Hex(value) {
     assert.ok(parsed.query.includes('generateShortLink'));
     assert.ok(parsed.query.includes(JSON.stringify(PRODUCT_URL)));
     assert.ok(parsed.query.includes('"G1"'));
+  });
+
+  await run('shortlink Shopee guarda URL canônica para a consulta do monitor', async () => {
+    const shortSource = 'https://s.shopee.com.br/9fKrjhoA8f';
+    const canonical =
+      'https://shopee.com.br/Patinho-Jack-da-Zueira-Com-Led-i.123456789.987654321';
+    const calls = [];
+    const fetchImpl = async (url, init = {}) => {
+      calls.push({ url, init });
+      if (init.method === 'POST') {
+        return jsonResponse(200, {
+          data: { generateShortLink: { shortLink: 'https://s.shopee.com.br/afiliado123' } },
+        });
+      }
+      assert.equal(init.method, 'GET');
+      assert.equal(url, shortSource);
+      return jsonResponse(200, {}, { url: canonical, body: null });
+    };
+
+    const client = createShopeeApiClient({ env: okEnv, fetchImpl });
+    const result = await client.generateShortLink({ sourceUrl: shortSource });
+
+    assert.equal(result.affiliateUrl, 'https://s.shopee.com.br/afiliado123');
+    assert.equal(calls.length, 2);
+    assert.equal(calls[0].init.method, 'POST');
+    assert.equal(calls[1].init.method, 'GET');
+    assert.equal(
+      new URL(shortSource).pathname,
+      '/Patinho-Jack-da-Zueira-Com-Led-i.123456789.987654321'
+    );
+    assert.equal(
+      client._internals.lookupResolvedSourceUrl(shortSource),
+      canonical
+    );
+  });
+
+  await run('falha ao expandir shortlink não cancela o link afiliado', async () => {
+    const shortSource = 'https://s.shopee.com.br/falhaRedirect';
+    let calls = 0;
+    const fetchImpl = async (_url, init = {}) => {
+      calls++;
+      if (init.method === 'POST') {
+        return jsonResponse(200, {
+          data: { generateShortLink: { shortLink: 'https://s.shopee.com.br/okMesmoAssim' } },
+        });
+      }
+      throw new Error('redirect indisponível');
+    };
+    const client = createShopeeApiClient({ env: okEnv, fetchImpl });
+    const result = await client.generateShortLink({ sourceUrl: shortSource });
+    assert.equal(result.affiliateUrl, 'https://s.shopee.com.br/okMesmoAssim');
+    assert.equal(calls, 2);
   });
 
   await run('HTTP 400 -> ShopeeAffiliateApiError (não-credencial)', async () => {
