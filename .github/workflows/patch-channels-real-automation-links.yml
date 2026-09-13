@@ -1,10 +1,10 @@
 name: Patch channels real automation links
 on:
   push:
-    branches: [feat/channels-real-automation-links]
+    branches:
+      - feat/channels-real-automation-links
 jobs:
   patch:
-    if: github.event.head_commit.message != 'feat: show real automations linked to channels'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -58,23 +58,18 @@ jobs:
 
           p = Path(drawer)
           text = p.read_text(encoding='utf-8')
-          replacements = {
-              'Campanhas Vinculadas': 'Automações Vinculadas',
-              'Campanhas Alimentando Este Canal': 'Automações Alimentando Este Canal',
-              'Nenhuma campanha vinculada a este canal no momento.': 'Nenhuma automação vinculada a este canal no momento.',
-              'campanha vinculada': 'automação vinculada',
-              'campanhas vinculadas': 'automações vinculadas',
-          }
-          for old, new in replacements.items():
-              text = text.replace(old, new)
+          text = text.replace('Campanhas Vinculadas', 'Automações Vinculadas')
+          text = text.replace('Campanhas Alimentando Este Canal', 'Automações Alimentando Este Canal')
+          text = text.replace('Nenhuma campanha vinculada a este canal no momento.', 'Nenhuma automação vinculada a este canal no momento.')
           p.write_text(text, encoding='utf-8')
           PY
       - name: Validate build
         run: |
           npm ci
           npm run build
-      - name: Commit changes
+      - name: Commit changes if any
         run: |
+          if git diff --quiet; then exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add src/components/channels/ChannelsPage.tsx src/components/channels/ChannelDetailDrawer.tsx
