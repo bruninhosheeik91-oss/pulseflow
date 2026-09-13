@@ -188,7 +188,7 @@ export default function App() {
     ?.icon;
 
   return (
-    <div className="min-h-screen bg-[#0A0F1C] text-[#E6E8EC] flex font-sans antialiased selection:bg-[#1E5EFF]/30 selection:text-white">
+    <div className="min-h-screen bg-[#F4F7FB] text-[#172033] flex font-sans antialiased selection:bg-[#2563EB]/20 selection:text-[#172033]">
       {/* Fixed Sidebar */}
       <Sidebar activeItem={activeNav} onNavigate={handleSidebarNavigate} />
 
@@ -209,7 +209,7 @@ export default function App() {
           pageSubtitle={pageInfo.subtitle}
           icon={
             ActivePageIcon ? (
-              <ActivePageIcon className="w-4 h-4 text-[#00C2FF]" />
+              <ActivePageIcon className="w-4 h-4 text-[#2563EB]" />
             ) : undefined
           }
         />
@@ -256,9 +256,9 @@ export default function App() {
 
       {/* Floating Action Toast */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#0E172C] border border-[#1E3563] text-[#E6E8EC] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
+        <div className="fixed bottom-6 right-6 z-50 bg-white border border-[#BFDBFE] text-[#172033] px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
           {toast.type === 'info' ? (
-            <AlertCircle className="w-4 h-4 text-[#00C2FF] shrink-0" />
+            <AlertCircle className="w-4 h-4 text-[#2563EB] shrink-0" />
           ) : (
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           )}

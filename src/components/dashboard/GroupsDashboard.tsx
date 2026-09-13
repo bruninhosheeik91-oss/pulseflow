@@ -16,12 +16,12 @@ import {
 } from '../../types/whatsApp';
 
 const STATUS_TONES: Record<WhatsAppConnectionStatus, string> = {
-  connected: 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400',
-  error: 'bg-red-500/15 border-red-500/30 text-red-400',
-  reconnecting: 'bg-amber-500/15 border-amber-500/30 text-amber-400',
-  connecting: 'bg-amber-500/15 border-amber-500/30 text-amber-400',
-  awaiting_qr: 'bg-amber-500/15 border-amber-500/30 text-amber-400',
-  disconnected: 'bg-[#16243F] border-[#22365E] text-[#8E9BAE]',
+  connected: 'bg-emerald-50 border-emerald-200 text-emerald-700',
+  error: 'bg-red-50 border-red-200 text-red-700',
+  reconnecting: 'bg-amber-50 border-amber-200 text-amber-700',
+  connecting: 'bg-amber-50 border-amber-200 text-amber-700',
+  awaiting_qr: 'bg-amber-50 border-amber-200 text-amber-700',
+  disconnected: 'bg-slate-100 border-slate-200 text-slate-600',
 };
 
 const STATUS_LABELS: Record<WhatsAppConnectionStatus, string> = {
@@ -123,40 +123,40 @@ export const GroupsDashboard: React.FC = () => {
     <div className="space-y-6">
       {/* KPI Cards: dados reais dos grupos */}
       <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-4">
+        <div className="dashboard-card bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-[0_4px_14px_rgba(15,23,42,0.05)]">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider">
+            <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">
               Total de Grupos
             </span>
-            <div className="w-7 h-7 rounded-lg bg-[#14203B] border border-[#1E3057] flex items-center justify-center text-[#00C2FF]">
+            <div className="w-8 h-8 rounded-lg bg-[#EFF6FF] border border-[#DBEAFE] flex items-center justify-center text-[#2563EB]">
               <Users className="w-3.5 h-3.5" />
             </div>
           </div>
           <div className="mt-1.5 flex items-baseline gap-1.5">
-            <span className="text-2xl font-bold font-mono-numeric text-[#E6E8EC] tracking-tight">
+            <span className="text-2xl font-bold font-mono-numeric text-[#172033] tracking-tight">
               {stats.totalGroups.toLocaleString('pt-BR')}
             </span>
           </div>
-          <span className="text-[10px] text-[#8E9BAE]">
+          <span className="text-[10px] text-[#64748B]">
             grupos sincronizados
           </span>
         </div>
 
-        <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-4">
+        <div className="dashboard-card bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-[0_4px_14px_rgba(15,23,42,0.05)]">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider">
+            <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">
               Total de Membros
             </span>
-            <div className="w-7 h-7 rounded-lg bg-[#14203B] border border-[#1E3057] flex items-center justify-center text-[#00C2FF]">
+            <div className="w-8 h-8 rounded-lg bg-[#EFF6FF] border border-[#DBEAFE] flex items-center justify-center text-[#2563EB]">
               <UserPlus className="w-3.5 h-3.5" />
             </div>
           </div>
           <div className="mt-1.5 flex items-baseline gap-1.5">
-            <span className="text-2xl font-bold font-mono-numeric text-[#E6E8EC] tracking-tight">
+            <span className="text-2xl font-bold font-mono-numeric text-[#172033] tracking-tight">
               {totalMembersLabel}
             </span>
           </div>
-          <span className="text-[10px] text-[#8E9BAE]">
+          <span className="text-[10px] text-[#64748B]">
             {stats.groupsWithParticipants > 0
               ? `somados de ${stats.groupsWithParticipants} de ${stats.totalGroups} grupos`
               : stats.totalGroups > 0
@@ -165,41 +165,41 @@ export const GroupsDashboard: React.FC = () => {
           </span>
         </div>
 
-        <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-4">
+        <div className="dashboard-card bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-[0_4px_14px_rgba(15,23,42,0.05)]">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider">
+            <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">
               Grupos Conectados
             </span>
-            <div className="w-7 h-7 rounded-lg bg-[#14203B] border border-[#1E3057] flex items-center justify-center text-[#00C2FF]">
+            <div className="w-8 h-8 rounded-lg bg-[#EFF6FF] border border-[#DBEAFE] flex items-center justify-center text-[#2563EB]">
               <Plug className="w-3.5 h-3.5" />
             </div>
           </div>
           <div className="mt-1.5 flex items-baseline gap-1.5">
-            <span className="text-2xl font-bold font-mono-numeric text-[#E6E8EC] tracking-tight">
+            <span className="text-2xl font-bold font-mono-numeric text-[#172033] tracking-tight">
               {stats.connectedGroups.toLocaleString('pt-BR')}
             </span>
           </div>
-          <span className="text-[10px] text-[#8E9BAE]">
+          <span className="text-[10px] text-[#64748B]">
             {stats.connectedAccounts.toLocaleString('pt-BR')} conta(s)
             conectada(s)
           </span>
         </div>
 
-        <div className="bg-[#0E1628] border border-[#1B2947] rounded-xl p-4">
+        <div className="dashboard-card bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-[0_4px_14px_rgba(15,23,42,0.05)]">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider">
+            <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">
               Contas WhatsApp
             </span>
-            <div className="w-7 h-7 rounded-lg bg-[#14203B] border border-[#1E3057] flex items-center justify-center text-[#00C2FF]">
+            <div className="w-8 h-8 rounded-lg bg-[#EFF6FF] border border-[#DBEAFE] flex items-center justify-center text-[#2563EB]">
               <Smartphone className="w-3.5 h-3.5" />
             </div>
           </div>
           <div className="mt-1.5 flex items-baseline gap-1.5">
-            <span className="text-2xl font-bold font-mono-numeric text-[#E6E8EC] tracking-tight">
+            <span className="text-2xl font-bold font-mono-numeric text-[#172033] tracking-tight">
               {accounts.length.toLocaleString('pt-BR')}
             </span>
           </div>
-          <span className="text-[10px] text-[#8E9BAE]">
+          <span className="text-[10px] text-[#64748B]">
             {accounts.length === 0
               ? 'registre uma conta no WhatsApp'
               : 'contas registradas'}
@@ -208,13 +208,13 @@ export const GroupsDashboard: React.FC = () => {
       </section>
 
       {/* Visão dos Grupos (dados reais) */}
-      <section className="bg-[#0E1628] border border-[#1B2947] rounded-xl overflow-hidden">
-        <div className="flex items-center justify-between gap-3 p-4 border-b border-[#162442]">
+      <section className="dashboard-card bg-white border border-[#E2E8F0] rounded-2xl overflow-hidden shadow-[0_4px_14px_rgba(15,23,42,0.05)]">
+        <div className="flex items-center justify-between gap-3 p-4 border-b border-[#E2E8F0]">
           <div>
-            <h2 className="text-base font-semibold text-[#E6E8EC] tracking-tight">
+            <h2 className="text-base font-semibold text-[#172033] tracking-tight">
               Visão dos Grupos
             </h2>
-            <p className="text-xs text-[#8E9BAE] mt-0.5">
+            <p className="text-xs text-[#64748B] mt-0.5">
               {syncedAtLabel
                 ? `Última sincronização: ${syncedAtLabel}`
                 : 'Grupos sincronizados no WhatsApp'}
@@ -224,11 +224,11 @@ export const GroupsDashboard: React.FC = () => {
 
         {rows.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 py-14 text-center px-6">
-            <TrendingUp className="w-8 h-8 text-[#22365E]" />
-            <p className="text-sm font-semibold text-[#C8D1DE] mt-1">
+            <TrendingUp className="w-8 h-8 text-[#94A3B8]" />
+            <p className="text-sm font-semibold text-[#334155] mt-1">
               Nenhum grupo sincronizado ainda
             </p>
-            <p className="text-xs text-[#8E9BAE] max-w-sm">
+            <p className="text-xs text-[#64748B] max-w-sm">
               Conecte uma conta no WhatsApp e sincronize os grupos para
               acompanhar aqui a operação real.
             </p>
@@ -236,17 +236,17 @@ export const GroupsDashboard: React.FC = () => {
         ) : (
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-[#162442]">
-                <th className="px-4 py-2.5 text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider">
+              <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
+                <th className="px-4 py-2.5 text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">
                   Grupo
                 </th>
-                <th className="px-4 py-2.5 text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider">
+                <th className="px-4 py-2.5 text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">
                   Membros
                 </th>
-                <th className="px-4 py-2.5 text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider">
+                <th className="px-4 py-2.5 text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">
                   Conta WhatsApp
                 </th>
-                <th className="px-4 py-2.5 text-[10px] font-semibold text-[#8E9BAE] uppercase tracking-wider">
+                <th className="px-4 py-2.5 text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">
                   Status
                 </th>
               </tr>
@@ -255,20 +255,20 @@ export const GroupsDashboard: React.FC = () => {
               {rows.map(({ group, account }) => (
                 <tr
                   key={group.id}
-                  className="border-b border-[#101C34] last:border-0"
+                  className="border-b border-[#EEF2F7] last:border-0 hover:bg-[#F8FBFF] transition-colors"
                 >
                   <td className="px-4 py-3">
-                    <div className="text-xs font-medium text-[#E6E8EC] truncate max-w-[220px]">
+                    <div className="text-xs font-medium text-[#172033] truncate max-w-[220px]">
                       {getGroupDisplayName(group)}
                     </div>
                     <div className="text-[10px] text-[#64748B] truncate max-w-[220px] font-mono">
                       {group.sessionId ?? '—'}
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-mono-numeric text-xs font-medium text-[#E6E8EC]">
+                  <td className="px-4 py-3 font-mono-numeric text-xs font-medium text-[#172033]">
                     {group.participantCount ?? '—'}
                   </td>
-                  <td className="px-4 py-3 text-xs text-[#8E9BAE]">
+                  <td className="px-4 py-3 text-xs text-[#64748B]">
                     {accountLabel(account) ?? '—'}
                   </td>
                   <td className="px-4 py-3">
@@ -291,22 +291,22 @@ export const GroupsDashboard: React.FC = () => {
       </section>
 
       {/* Evolução de Grupos e Membros (área preparada, sem dados inventados) */}
-      <section className="bg-[#0E1628] border border-[#1B2947] rounded-xl">
-        <div className="p-4 border-b border-[#162442]">
-          <h2 className="text-base font-semibold text-[#E6E8EC] tracking-tight">
+      <section className="dashboard-card bg-white border border-[#E2E8F0] rounded-2xl shadow-[0_4px_14px_rgba(15,23,42,0.05)]">
+        <div className="p-4 border-b border-[#E2E8F0]">
+          <h2 className="text-base font-semibold text-[#172033] tracking-tight">
             Evolução de Grupos e Membros
           </h2>
-          <p className="text-xs text-[#8E9BAE] mt-0.5">
+          <p className="text-xs text-[#64748B] mt-0.5">
             Crescimento de grupos e membros ao longo do tempo
           </p>
         </div>
 
         <div className="flex flex-col items-center justify-center gap-2 py-12 text-center px-6">
-          <TrendingUp className="w-8 h-8 text-[#22365E]" />
-          <p className="text-sm font-semibold text-[#C8D1DE] mt-1">
+          <TrendingUp className="w-8 h-8 text-[#94A3B8]" />
+          <p className="text-sm font-semibold text-[#334155] mt-1">
             Sem histórico de crescimento ainda
           </p>
-          <p className="text-xs text-[#8E9BAE] max-w-sm">
+          <p className="text-xs text-[#64748B] max-w-sm">
             Quando houver histórico acumulado das sincronizações, esta área
             exibirá a evolução de grupos e membros.
           </p>
