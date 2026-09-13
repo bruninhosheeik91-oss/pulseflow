@@ -3,13 +3,8 @@
 // Converte UM evento bruto do listener (onAnyMessage do WPPConnect) em UMA
 // mensagem canônica processável — ou descarta o evento de forma silenciosa e
 // determinística, ANTES de dedup, admin, Shopee ou distribuição.
-//
-// Regra: um evento só é processável se tiver os campos de uma mensagem REAL:
-//   - identificador estável real da mensagem (messageId);
-//   - origem válida (chatId de grupo, sem broadcast/newsletter);
-//   - conteúdo textual real (body/caption/content).
-// NENHUM id é inventado (sem timestamp, sem hash do texto, sem aleatório).
 
+const { createHash } = require('node:crypto');
 const { extractUrls } = require('./linkConversion/affiliateLinkConverter.js');
 const { isShopeeUrl } = require('./linkConversion/shopeeConverter.js');
 
@@ -31,11 +26,97 @@ function serializedId(value) {
   ];
 
   for (const candidate of candidates) {
-    if (typeof candidate === 'string' && candidate.trim()) {
-      return candidate.trim();
-    }
+    if (typeof candidate === 'string' && candidate.trim()) return candidate.trim();
   }
   return null;
+}
+
+function isMonitorGroupChatId(chatId) {
+  return (
+    typeof chatId === 'string' &&
+    MONITOR_GROUP_ID_REGEX.test(chatId) &&
+    !MONITOR_NON_GROUP_REGEX.test(chatId)
+  );
+}
+
+function directMonitorGroupId(message) {
+  if (!message || typeof message !== 'object') return null;
+  const id = message.id && typeof message.id === 'object' ? message.id : null;
+  const key = (id && id.key) || message.key || null;
+  const candidates = [
+    message.chatId,
+    message.from,
+    message.to,
+    message.chat && message.chat.id,
+    id && id.remote,
+    id && id.remoteJid,
+    key && key.remoteJid,
+    message.remote,
+    message.remoteJid,
+  ];
+  for (const candidate of candidates) {
+    const normalized = serializedId(candidate);
+    if (normalized && isMonitorGroupChatId(normalized)) return normalized;
+  }
+  return null;
+}
+
+function rawMessageBody(message) {
+  if (!message) return '';
+  const extended =
+    message.extendedTextMessage && typeof message.extendedTextMessage === 'object'
+      ? message.extendedTextMessage
+      : null;
+  const candidates = [
+    message.body,
+    message.caption,
+    message.content,
+    message.text,
+    message.url,
+    message.clientUrl,
+    extended && extended.text,
+  ];
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string' && candidate.trim()) return candidate.trim();
+  }
+  return '';
+}
+
+// Em payloads reais do onAnyMessage observamos Message completo, grupo e corpo,
+// mas `id` ausente. Nessa situação derivamos um identificador determinístico
+// somente de dados reais do evento. Não usa aleatório nem relógio local.
+function fallbackMessageId(message) {
+  if (!message || typeof message !== 'object') return null;
+  const groupId = directMonitorGroupId(message);
+  const body = rawMessageBody(message);
+  const eventTime =
+    message.clientReceivedTsMillis ??
+    message.serverStoreTimeMicros ??
+    message.timestamp ??
+    message.t ??
+    null;
+  if (!groupId || !body || eventTime == null || eventTime === '') return null;
+
+  const author =
+    serializedId(message.author) ||
+    serializedId(message.sender && message.sender.id) ||
+    serializedId(message.participant) ||
+    serializedId(message.from) ||
+    '';
+  const to = serializedId(message.to) || '';
+  const type = typeof message.type === 'string' ? message.type : '';
+  const material = JSON.stringify([
+    groupId,
+    author,
+    to,
+    String(eventTime),
+    String(message.clientReceivedTsMillis ?? ''),
+    String(message.serverStoreTimeMicros ?? ''),
+    type,
+    body,
+  ]);
+  const digest = createHash('sha256').update(material).digest('hex').slice(0, 32);
+  return `pf-fallback:${digest}`;
 }
 
 function rawMessageId(message) {
@@ -63,13 +144,14 @@ function rawMessageId(message) {
       const remote = serializedId(keyObj.remoteJid) || '';
       const fromMe =
         keyObj.fromMe === true ? 'true' : keyObj.fromMe === false ? 'false' : '';
-      serialized.push(
-        remote && fromMe ? `${remote}_${keyObj.id}_${fromMe}` : keyObj.id
-      );
+      serialized.push(remote && fromMe ? `${remote}_${keyObj.id}_${fromMe}` : keyObj.id);
     }
   }
 
-  return serialized.find((s) => typeof s === 'string' && s.trim()) || null;
+  return (
+    serialized.find((s) => typeof s === 'string' && s.trim()) ||
+    fallbackMessageId(message)
+  );
 }
 
 function rawMessageAuthorId(message) {
@@ -88,70 +170,20 @@ function rawMessageAuthorId(message) {
     const normalized = serializedId(candidate);
     if (normalized && !isMonitorGroupChatId(normalized)) return normalized;
   }
-
   return null;
-}
-
-function isMonitorGroupChatId(chatId) {
-  return (
-    typeof chatId === 'string' &&
-    MONITOR_GROUP_ID_REGEX.test(chatId) &&
-    !MONITOR_NON_GROUP_REGEX.test(chatId)
-  );
 }
 
 function rawMonitorChatId(message) {
   if (!message) return null;
+  const direct = directMonitorGroupId(message);
+  if (direct) return direct;
 
-  const id = message.id && typeof message.id === 'object' ? message.id : null;
-  const key = (id && id.key) || message.key || null;
-  const candidates = [
-    message.chatId,
-    message.from,
-    message.to,
-    message.chat && message.chat.id,
-    id && id.remote,
-    id && id.remoteJid,
-    key && key.remoteJid,
-    message.remote,
-    message.remoteJid,
-  ];
-
-  for (const candidate of candidates) {
-    const normalized = serializedId(candidate);
-    if (normalized && isMonitorGroupChatId(normalized)) return normalized;
-  }
-
-  // Alguns eventos do WPPConnect omitem chatId/to/from no envelope, mas o
-  // _serialized da MsgKey ainda contém o JID real do grupo.
   const serializedMessageId = rawMessageId(message);
-  if (serializedMessageId) {
+  if (serializedMessageId && !serializedMessageId.startsWith('pf-fallback:')) {
     const match = serializedMessageId.match(/([^\s_]+@g\.us)/i);
     if (match && isMonitorGroupChatId(match[1])) return match[1];
   }
-
   return null;
-}
-
-function rawMessageBody(message) {
-  if (!message) return '';
-  const extended =
-    message.extendedTextMessage && typeof message.extendedTextMessage === 'object'
-      ? message.extendedTextMessage
-      : null;
-  const candidates = [
-    message.body,
-    message.caption,
-    message.content,
-    message.text,
-    message.url,
-    message.clientUrl,
-    extended && extended.text,
-  ];
-  for (const candidate of candidates) {
-    if (typeof candidate === 'string' && candidate.trim()) return candidate.trim();
-  }
-  return '';
 }
 
 function isParentMonitorChat(chatId, parentGroupId) {
@@ -192,15 +224,9 @@ function monitorPayloadCandidates(raw) {
   return candidates;
 }
 
-// Diagnóstico estrutural seguro: não registra corpo, URL, IDs, nomes ou
-// qualquer conteúdo da mensagem. Expõe apenas quais campos existem e qual
-// requisito canônico está faltando. Serve para parar de adivinhar formatos
-// reais do WPPConnect quando um evento é descartado.
 function diagnoseMonitorMessage(raw) {
   const candidates = monitorPayloadCandidates(raw);
-  if (!candidates.length) {
-    return { reason: 'payload-invalido', keys: [] };
-  }
+  if (!candidates.length) return { reason: 'payload-invalido', keys: [] };
 
   let hasId = false;
   let hasGroup = false;
@@ -241,9 +267,6 @@ function diagnoseMonitorMessage(raw) {
   };
 }
 
-// WPPConnect pode entregar o mesmo evento com os campos úteis em wrappers
-// internos (_data/data/message). Tentamos o envelope e combinações rasas com
-// esses wrappers sem fabricar nenhum id ou conteúdo.
 function normalizeMonitorMessage(raw) {
   const candidates = monitorPayloadCandidates(raw);
   for (const candidate of candidates) {
@@ -252,9 +275,7 @@ function normalizeMonitorMessage(raw) {
   }
 
   const diagnostic = diagnoseMonitorMessage(raw);
-  console.log(
-    `[Monitor diagnóstico] ${JSON.stringify(diagnostic)}`
-  );
+  console.log(`[Monitor diagnóstico] ${JSON.stringify(diagnostic)}`);
   return null;
 }
 
@@ -288,6 +309,7 @@ function resolveMonitorRoute(body) {
 
 module.exports = {
   rawMessageId,
+  fallbackMessageId,
   rawMessageAuthorId,
   isMonitorGroupChatId,
   isParentMonitorChat,
