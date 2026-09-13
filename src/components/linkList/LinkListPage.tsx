@@ -28,6 +28,7 @@ import {
   createLinkList,
   deleteLinkList,
   listLinkLists,
+  processLinkList,
   removeLinkFromList,
 } from '../../services/linkList/linkListService';
 import { Button } from '../ui/Button';
@@ -176,9 +177,21 @@ export const LinkListPage: React.FC = () => {
     }
   };
 
-  const handleProcessLinks = () => {
+  const handleProcessLinks = async () => {
+    if (!activeList) return;
     setProcessingNotice(true);
-    showToast('Processamento real de produto será conectado na próxima etapa.', 'info');
+    try {
+      const updated = await processLinkList(activeList.id);
+      setLists((prev) => prev.map((list) => list.id === updated.id ? updated : list));
+      const valid = updated.links.filter((link) => link.status === 'Válido').length;
+      const invalid = updated.links.filter((link) => link.status === 'Inválido').length;
+      const retry = updated.links.filter((link) => link.status === 'Pendente' && link.processError).length;
+      showToast(`Processamento real concluído: ${valid} válido(s), ${invalid} inválido(s), ${retry} para tentar novamente.`);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Falha ao processar links.', 'info');
+    } finally {
+      setProcessingNotice(false);
+    }
   };
 
   const handleCopyLink = async (link: import('../../types/linkList').LinkListItem) => {
