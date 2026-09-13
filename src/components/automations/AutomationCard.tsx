@@ -58,10 +58,10 @@ export const AutomationCard: React.FC<AutomationCardProps> = ({
   const metricLabels: Record<string, { label: string; value: React.ReactNode }[]> =
     {
       AUTO_SEARCH: [
-        { label: 'Marketplaces', value: automation.marketplaces.length },
-        { label: 'Encontradas hoje', value: automation.metrics.entriesToday.toLocaleString('pt-BR') },
-        { label: 'Na fila', value: automation.metrics.queued },
-        { label: 'Última busca', value: automation.metrics.lastRun },
+        { label: 'Destinos', value: automation.sources.length },
+        { label: 'Envios hoje', value: automation.metrics.entriesToday.toLocaleString('pt-BR') },
+        { label: 'Envios total', value: automation.metrics.published.toLocaleString('pt-BR') },
+        { label: 'Último envio', value: automation.metrics.lastRun },
       ],
       LINK_LIST: [
         { label: 'Listas', value: automation.sources.length },

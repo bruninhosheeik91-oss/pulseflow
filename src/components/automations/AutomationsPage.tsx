@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Radar,
   ListChecks,
@@ -17,16 +17,84 @@ import {
   automationActivityMock,
   duplicateConflictsMock,
 } from '../../data/mockAutomations';
+import {
+  AutoSearchAutomation,
+  AutoSearchSendRecord,
+  getCurrentTenantId,
+  listAutoSearchAutomations,
+  listAutoSearchSends,
+} from '../../services/affiliatePrograms/affiliateProgramsService';
 import { AutomationCard } from './AutomationCard';
 import { AutomationConfigureDrawer } from './AutomationConfigureDrawer';
 import { Button } from '../ui/Button';
 
+function formatRealDate(value: string | undefined): string {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleString('pt-BR');
+}
+
+function realAutoSearchToAutomation(
+  automation: AutoSearchAutomation,
+  sends: AutoSearchSendRecord[]
+): Automation {
+  const automationSends = sends.filter((send) => send.automationId === automation.id);
+  const todayKey = new Date().toLocaleDateString('pt-BR');
+  const sentToday = automationSends.filter(
+    (send) => new Date(send.sentAt).toLocaleDateString('pt-BR') === todayKey
+  ).length;
+  const lastSend = automationSends
+    .slice()
+    .sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime())[0];
+  const hasDestination =
+    Boolean(automation.destination.accountId) && automation.destination.groupIds.length > 0;
+
+  return {
+    id: automation.id,
+    type: 'AUTO_SEARCH',
+    name: automation.name,
+    description: `Busca real Shopee · ${automation.destination.groupIds.length} destino(s) · intervalo ${automation.schedule.intervalMinutes} min`,
+    status: !hasDestination ? 'REQUIRES_CONFIGURATION' : automation.active ? 'ACTIVE' : 'PAUSED',
+    marketplaces: ['Shopee'],
+    metrics: {
+      entriesToday: sentToday,
+      processed: automationSends.length,
+      queued: 0,
+      published: automationSends.length,
+      invalid: 0,
+      duplicates: 0,
+      pending: 0,
+      lastRun: formatRealDate(lastSend?.sentAt),
+    },
+    sources: automation.destination.groupIds.map((groupId) => ({
+      id: `${automation.destination.accountId}|${groupId}`,
+      name: groupId,
+      type: 'AUTO_SEARCH',
+      description: `Destino WhatsApp da conta ${automation.destination.accountId}`,
+      active: automation.active,
+    })),
+    capabilities: {
+      detectNewEntries: 'AVAILABLE',
+      identifyProductAndLink: 'AVAILABLE',
+      generateAffiliateLink: 'AVAILABLE',
+      replaceAffiliateLink: 'AVAILABLE',
+      routeToChannels: hasDestination ? 'AVAILABLE' : 'REQUIRES_CONFIGURATION',
+      sendMessages: hasDestination ? 'AVAILABLE' : 'REQUIRES_CONFIGURATION',
+    },
+    requiresIntegration: !hasDestination,
+    integrationHint: hasDestination ? undefined : 'Defina uma conta e ao menos um grupo de destino.',
+  };
+}
+
 export const AutomationsPage: React.FC<{
   onNavigate?: (item: string) => void;
 }> = ({ onNavigate }) => {
-  const [automations, setAutomations] = useState<Automation[]>(
-    initialAutomations
+  const [automations, setAutomations] = useState<Automation[]>(() =>
+    initialAutomations.filter((automation) => automation.type !== 'AUTO_SEARCH')
   );
+  const [isLoadingRealAutomations, setIsLoadingRealAutomations] = useState(true);
+  const [realAutomationsError, setRealAutomationsError] = useState<string | null>(null);
   const [selectedAutomation, setSelectedAutomation] = useState<Automation | null>(
     null
   );
@@ -38,6 +106,45 @@ export const AutomationsPage: React.FC<{
   } | null>(null);
 
   const activeCount = automations.filter((a) => a.status === 'ACTIVE').length;
+
+
+  useEffect(() => {
+    let active = true;
+    const tenantId = getCurrentTenantId();
+    if (!tenantId) {
+      setRealAutomationsError('Tenant de desenvolvimento não configurado para carregar automações reais.');
+      setIsLoadingRealAutomations(false);
+      return () => {
+        active = false;
+      };
+    }
+
+    Promise.all([listAutoSearchAutomations(tenantId), listAutoSearchSends(tenantId)])
+      .then(([realAutoSearch, sends]) => {
+        if (!active) return;
+        const realCards = realAutoSearch.map((automation) =>
+          realAutoSearchToAutomation(automation, sends)
+        );
+        const otherModules = initialAutomations.filter(
+          (automation) => automation.type !== 'AUTO_SEARCH'
+        );
+        setAutomations([...realCards, ...otherModules]);
+        setRealAutomationsError(null);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setRealAutomationsError(
+          error instanceof Error ? error.message : 'Falha ao carregar automações reais.'
+        );
+      })
+      .finally(() => {
+        if (active) setIsLoadingRealAutomations(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleConfigure = (auto: Automation) => {
     if (auto.type === 'AUTO_SEARCH' && onNavigate) {
@@ -121,6 +228,12 @@ export const AutomationsPage: React.FC<{
           <p className="text-xs text-[#64748B] mt-1">
             Escolha como suas ofertas entram e são distribuídas.
           </p>
+          {isLoadingRealAutomations && (
+            <p className="text-[11px] text-[#64748B] mt-1">Sincronizando automações reais...</p>
+          )}
+          {realAutomationsError && (
+            <p className="text-[11px] text-amber-700 mt-1">{realAutomationsError}</p>
+          )}
         </div>
       </div>
 
