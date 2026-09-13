@@ -34,11 +34,11 @@ assert.strictEqual(
 );
 
 const message = buildDynamicMonitorOfferMessage(highDiscount);
-assert(message.includes('🏠 *ACHADINHO PARA CASA*'));
+assert(message.startsWith('🛍️ *LINK DA OFERTA*'));
 assert(message.includes('*Kit organizador para cozinha com 10 potes*'));
-assert(message.includes('R$ 119,90'));
-assert(message.includes('R$ 69,90'));
-assert(message.includes('42% OFF'));
+assert(message.includes('💰 De: ~R$ 119,90~'));
+assert(message.includes('🔥 Por: *R$ 69,90*'));
+assert(message.includes('🏷️ 42% OFF'));
 assert(message.includes('🎟️ Cupom: *PULSE10*'));
 assert(message.includes('👉 Confira aqui:'));
 assert(message.includes(link));
@@ -50,15 +50,16 @@ const priceOnly = buildDynamicMonitorOfferMessage({
   price: 25,
   affiliateUrl: link,
 });
-assert(priceOnly.includes('👗 *ACHADINHO DE MODA*'));
-assert(priceOnly.includes('R$ 25,00'));
+assert(priceOnly.startsWith('🛍️ *LINK DA OFERTA*'));
+assert(priceOnly.includes('🔥 Por: *R$ 25,00*'));
+assert(!priceOnly.includes('💰 De:'));
 assert(!priceOnly.includes('OFF'));
 assert(!priceOnly.includes('Cupom:'));
 
 const linkOnly = buildDynamicMonitorOfferMessage({ affiliateUrl: link });
 assert.strictEqual(
   linkOnly,
-  `🛍️ *OFERTA EM DESTAQUE*\n\n👉 Confira aqui:\n${link}`,
+  `🛍️ *LINK DA OFERTA*\n\n👉 Confira aqui:\n${link}`,
 );
 assert.strictEqual(buildDynamicMonitorOfferMessage({}), '');
 
