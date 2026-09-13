@@ -85,7 +85,7 @@ export const QueueTableView: React.FC<QueueTableViewProps> = ({
                 onBulkDispatch?.(selectedItems);
                 setSelectedIds([]);
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2563EB] text-white hover:bg-[#F8FAFC] font-medium transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2563EB] text-white hover:bg-[#1D4ED8] active:bg-[#1E40AF] font-medium transition-colors"
             >
               <Send className="w-3.5 h-3.5" />
               <span>Disparar Selecionados</span>
