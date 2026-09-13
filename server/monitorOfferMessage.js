@@ -37,6 +37,52 @@ function cleanLines(lines) {
   return output.join('\n');
 }
 
+function normalizeText(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function buildProductHeadline(productName) {
+  const name = normalizeText(productName);
+  if (!name) return '🛍️ *OFERTA EM DESTAQUE*';
+
+  const groups = [
+    {
+      pattern: /\b(celular|smartphone|iphone|fone|headset|smartwatch|tablet|notebook|carregador|eletronico)\b/,
+      headline: '📱 *ACHADINHO DE TECNOLOGIA*',
+    },
+    {
+      pattern: /\b(vestido|blusa|camisa|camiseta|calca|short|saia|tenis|sapato|sandalia|bolsa|moda)\b/,
+      headline: '👗 *ACHADINHO DE MODA*',
+    },
+    {
+      pattern: /\b(maquiagem|batom|perfume|hidratante|shampoo|condicionador|beleza|cosmetico|skincare)\b/,
+      headline: '💄 *ACHADINHO DE BELEZA*',
+    },
+    {
+      pattern: /\b(bebe|fralda|mamadeira|chupeta|maternidade|infantil|crianca)\b/,
+      headline: '👶 *ACHADINHO PARA BEBÊ*',
+    },
+    {
+      pattern: /\b(cozinha|panela|pote|organizador|casa|lar|toalha|tapete|almofada|cama|decoracao)\b/,
+      headline: '🏠 *ACHADINHO PARA CASA*',
+    },
+    {
+      pattern: /\b(furadeira|parafusadeira|ferramenta|chave|broca|oficina)\b/,
+      headline: '🛠️ *OFERTA DE FERRAMENTAS*',
+    },
+    {
+      pattern: /\b(racao|pet|cachorro|gato|coleira|comedouro)\b/,
+      headline: '🐾 *ACHADINHO PET*',
+    },
+  ];
+
+  const match = groups.find((group) => group.pattern.test(name));
+  return match ? match.headline : '🔥 *ACHADINHO EM DESTAQUE*';
+}
+
 function buildPriceBlock(offer) {
   const price = toFiniteNumber(offer.price);
   const originalPrice = toFiniteNumber(offer.originalPrice);
@@ -94,7 +140,7 @@ function buildDynamicMonitorOfferMessage(offer = {}) {
   const productName =
     typeof offer.productName === 'string' ? offer.productName.trim() : '';
 
-  const lines = ['🛍️ *LINK DA OFERTA*', ''];
+  const lines = [buildProductHeadline(productName), ''];
 
   if (productName) {
     lines.push(`*${productName}*`, '');
@@ -112,7 +158,7 @@ function buildDynamicMonitorOfferMessage(offer = {}) {
 
   lines.push('👉 Confira aqui:', affiliateUrl);
 
-  if (priceBlock.length || couponBlock.length) {
+  if (productName || priceBlock.length || couponBlock.length) {
     lines.push('', '⚡ Preço e disponibilidade podem mudar a qualquer momento.');
   }
 
@@ -121,6 +167,7 @@ function buildDynamicMonitorOfferMessage(offer = {}) {
 
 module.exports = {
   buildDynamicMonitorOfferMessage,
+  buildProductHeadline,
   classifyOffer,
   formatBRL,
 };
