@@ -1,0 +1,28 @@
+name: Patch WPP browser cleanup race v2
+on:
+  push:
+    branches:
+      - fix/wpp-browser-cleanup-race
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply scoped patch
+        run: python -c "import base64;exec(base64.b64decode('CmZyb20gcGF0aGxpYiBpbXBvcnQgUGF0aAppbXBvcnQgcmUKcD1QYXRoKCJzZXJ2ZXIvc2VydmVyLmpzIikKdGV4dD1wLnJlYWRfdGV4dChlbmNvZGluZz0idXRmLTgiKQpuZXcgPSByIiIiYXN5bmMgZnVuY3Rpb24ga2lsbFNlc3Npb25Ccm93c2VyKHNlc3Npb25JZCkgewogIGNvbnN0IHByb2ZpbGVQYXRoID0gcGF0aC5qb2luKFNFU1NJT05fRElSLCBzZXNzaW9uSWQpOwogIGNvbnN0IHBzID0gYAomIHsKICAkcHJvZmlsZSA9ICRhcmdzWzBdCiAgaWYgKC1ub3QgKFRlc3QtUGF0aCAtTGl0ZXJhbFBhdGggJHByb2ZpbGUpKSB7IGV4aXQgMCB9CiAgJGRlYWRsaW5lID0gKEdldC1EYXRlKS5BZGRTZWNvbmRzKDgpCiAgZG8gewogICAgJG1hdGNoZXMgPSBAKEdldC1DaW1JbnN0YW5jZSBXaW4zMl9Qcm9jZXNzIC1GaWx0ZXIgIk5hbWU9J2Nocm9tZS5leGUnIiB8IFdoZXJlLU9iamVjdCB7CiAgICAgICRjbWQgPSAkXy5Db21tYW5kTGluZQogICAgICAkY21kIC1hbmQgJGNtZC5Ub0xvd2VyKCkuQ29udGFpbnMoJHByb2ZpbGUuVG9Mb3dlcigpKQogICAgfSkKICAgIGZvcmVhY2ggKCRpdGVtIGluICRtYXRjaGVzKSB7CiAgICAgIHRyeSB7IFN0b3AtUHJvY2VzcyAtSWQgJGl0ZW0uUHJvY2Vzc0lkIC1Gb3JjZSAtRXJyb3JBY3Rpb24gU3RvcCB8IE91dC1OdWxsIH0gY2F0Y2ggeyB9CiAgICB9CiAgICBpZiAoJG1hdGNoZXMuQ291bnQgLWVxIDApIHsgYnJlYWsgfQogICAgU3RhcnQtU2xlZXAgLU1pbGxpc2Vjb25kcyAyNTAKICB9IHdoaWxlICgoR2V0LURhdGUpIC1sdCAkZGVhZGxpbmUpCn1gOwoKICBhd2FpdCBuZXcgUHJvbWlzZSgocmVzb2x2ZSkgPT4gewogICAgbGV0IHNldHRsZWQgPSBmYWxzZTsKICAgIGNvbnN0IGZpbmlzaCA9ICgpID0+IHsKICAgICAgaWYgKHNldHRsZWQpIHJldHVybjsKICAgICAgc2V0dGxlZCA9IHRydWU7CiAgICAgIHJlc29sdmUoKTsKICAgIH07CiAgICBsZXQgcHJvYzsKICAgIHRyeSB7CiAgICAgIHByb2MgPSBzcGF3bigKICAgICAgICAncG93ZXJzaGVsbCcsCiAgICAgICAgWyctTm9Qcm9maWxlJywgJy1Ob25JbnRlcmFjdGl2ZScsICctQ29tbWFuZCcsIHBzLCBwcm9maWxlUGF0aF0sCiAgICAgICAgeyB3aW5kb3dzSGlkZTogdHJ1ZSB9CiAgICAgICk7CiAgICB9IGNhdGNoIHsKICAgICAgZmluaXNoKCk7CiAgICAgIHJldHVybjsKICAgIH0KICAgIHByb2Mub25jZSgnZXJyb3InLCBmaW5pc2gpOwogICAgcHJvYy5vbmNlKCdjbG9zZScsIGZpbmlzaCk7CiAgICBzZXRUaW1lb3V0KGZpbmlzaCwgMTBfMDAwKTsKICB9KTsKCiAgbG9nV2hhdHNBcHAoCiAgICBgWyR7c2Vzc2lvbklkfV0gYnJvd3NlciBkYSBzZXNzw6NvIGVuY2VycmFkbyBlIGxvY2sgbGliZXJhZG8gKHRva2VucyBwcmVzZXJ2YWRvcylgCiAgKTsKfSIiIgp0ZXh0LCBuID0gcmUuc3VibihyJ2Z1bmN0aW9uIGtpbGxTZXNzaW9uQnJvd3Nlclwoc2Vzc2lvbklkXCkgXHsuKj9cblx9XG5cbmNvbnN0IHNlc3Npb25zID0gbmV3IE1hcFwoXCk7JywgbmV3ICsgJ1xuXG5jb25zdCBzZXNzaW9ucyA9IG5ldyBNYXAoKTsnLCB0ZXh0LCBjb3VudD0xLCBmbGFncz1yZS5TKQppZiBuICE9IDE6CiAgICByYWlzZSBTeXN0ZW1FeGl0KGYia2lsbFNlc3Npb25Ccm93c2VyIHJlcGxhY2VtZW50IGNvdW50PXtufSIpCnRleHQ9dGV4dC5yZXBsYWNlKCIgICAga2lsbFNlc3Npb25Ccm93c2VyKHN0YXRlLnNlc3Npb25JZCk7XG4gICAgbG9nRXJyb3IoIiwgIiAgICBhd2FpdCBraWxsU2Vzc2lvbkJyb3dzZXIoc3RhdGUuc2Vzc2lvbklkKTtcbiAgICBsb2dFcnJvcigiLDEpCnRleHQ9dGV4dC5yZXBsYWNlKCIgIGtpbGxTZXNzaW9uQnJvd3NlcihzdGF0ZS5zZXNzaW9uSWQpO1xuICBhd2FpdCBzbGVlcCgxNTAwKTsiLCAiICBhd2FpdCBraWxsU2Vzc2lvbkJyb3dzZXIoc3RhdGUuc2Vzc2lvbklkKTtcbiAgYXdhaXQgc2xlZXAoNTAwKTsiLDEpCnRleHQ9dGV4dC5yZXBsYWNlKCIgIGtpbGxTZXNzaW9uQnJvd3NlcihzZXNzaW9uSWQpO1xuICBhd2FpdCBzbGVlcCgxNTAwKTsiLCAiICBhd2FpdCBraWxsU2Vzc2lvbkJyb3dzZXIoc2Vzc2lvbklkKTtcbiAgYXdhaXQgc2xlZXAoNTAwKTsiLDEpCnAud3JpdGVfdGV4dCh0ZXh0LGVuY29kaW5nPSJ1dGYtOCIpCg==')))"
+      - name: Validate server syntax and monitor tests
+        run: |
+          node --check server/server.js
+          cd server
+          npm ci
+          npm run test:monitor
+      - name: Commit patch if changed
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add server/server.js
+          git commit -m "fix: wait for WPP browser cleanup before retry"
+          git push
