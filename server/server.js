@@ -28,6 +28,7 @@ const {
 const {
   createTenantAutoSearchSendsStore,
 } = require('./linkConversion/tenantAutoSearchSendsStore.js');
+const { createTenantLinkListsStore } = require('./linkConversion/tenantLinkListsStore.js');
 
 // Carrega server/.env (KEY=VAL, gitignored) para o runtime Node local, mesmo
 // padrão do helper test-real-shopee.js. Sem isso, `node server.js` rodaria sem
@@ -77,6 +78,7 @@ const SESSION_ID_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9-]*$/;
 const affiliateStore = createAffiliateCredentialsStore({ dataDir: DATA_DIR });
 const automationsStore = createTenantAutomationsStore({ dataDir: DATA_DIR });
 const autoSearchSendsStore = createTenantAutoSearchSendsStore({ dataDir: DATA_DIR });
+const linkListsStore = createTenantLinkListsStore({ dataDir: DATA_DIR });
 
 function logInfo(message) {
   console.log(`[info] ${new Date().toISOString()} ${message}`);
@@ -2465,6 +2467,41 @@ app.delete(
     res.json({ ok: true, tenant: req.tenantId, removed: true });
   }
 );
+
+// ===== Lista de Links (persistência real por tenant) =====
+app.get('/api/affiliate/link-lists', resolveTenant, (req, res) => {
+  res.json({ ok: true, tenant: req.tenantId, lists: linkListsStore.list(req.tenantId) });
+});
+
+app.post('/api/affiliate/link-lists', resolveTenant, (req, res) => {
+  try {
+    const list = linkListsStore.upsert(req.tenantId, req.body || {});
+    logInfo(`lista de links criada (tenant=${req.tenantId}, id=${list.id})`);
+    res.json({ ok: true, tenant: req.tenantId, list });
+  } catch (err) {
+    logError(`falha ao criar lista de links (tenant=${req.tenantId}): ${sanitizeSendError(err)}`);
+    res.status(500).json({ ok: false, error: 'Falha ao salvar lista de links.' });
+  }
+});
+
+app.delete('/api/affiliate/link-lists/:id', resolveTenant, (req, res) => {
+  const removed = linkListsStore.remove(req.tenantId, req.params.id);
+  if (!removed) return res.status(404).json({ ok: false, error: 'Lista não encontrada.' });
+  res.json({ ok: true, tenant: req.tenantId, removed: true });
+});
+
+app.post('/api/affiliate/link-lists/:id/links', resolveTenant, (req, res) => {
+  const result = linkListsStore.addLinks(req.tenantId, req.params.id, req.body?.urls || []);
+  if (!result) return res.status(404).json({ ok: false, error: 'Lista não encontrada.' });
+  res.json({ ok: true, tenant: req.tenantId, list: result.list, added: result.added.length });
+});
+
+app.delete('/api/affiliate/link-lists/:id/links/:linkId', resolveTenant, (req, res) => {
+  const result = linkListsStore.removeLink(req.tenantId, req.params.id, req.params.linkId);
+  if (result === null) return res.status(404).json({ ok: false, error: 'Lista não encontrada.' });
+  if (result === false) return res.status(404).json({ ok: false, error: 'Link não encontrado.' });
+  res.json({ ok: true, tenant: req.tenantId, list: result });
+});
 
 // ===== Envio manual real (1 produto, 1 grupo, conta salva na automação) =====
 // FLUXO: automação salva → busca real → validações → mensagem com template → WPPConnect.

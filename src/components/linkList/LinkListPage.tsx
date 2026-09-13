@@ -16,7 +16,6 @@ import {
 } from 'lucide-react';
 import {
   LinkList,
-  LinkListItem,
   LinkListFrequency,
   LinkListLinkStatus,
   LinkListDeduplication,
@@ -24,6 +23,13 @@ import {
   ROTATION_LABELS,
 } from '../../types/linkList';
 import { initialCampaigns } from '../../data/mockCampaigns';
+import {
+  addLinksToList,
+  createLinkList,
+  deleteLinkList,
+  listLinkLists,
+  removeLinkFromList,
+} from '../../services/linkList/linkListService';
 import { Button } from '../ui/Button';
 import { Badge, BadgeProps } from '../ui/Badge';
 import { NewListModal } from './NewListModal';
@@ -52,11 +58,10 @@ const frequencyLabel = (f: LinkListFrequency) =>
     f.activeDays.length >= 7 ? 'Todos os dias' : f.activeDays.join(', ')
   }`;
 
-const nowTime = () =>
-  new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-
 export const LinkListPage: React.FC = () => {
   const [lists, setLists] = useState<LinkList[]>([]);
+  const [loadingLists, setLoadingLists] = useState(true);
+  const [listsError, setListsError] = useState<string | null>(null);
   const [activeListId, setActiveListId] = useState<string | null>(null);
   const [isNewListOpen, setIsNewListOpen] = useState(false);
   const [addLinksOpen, setAddLinksOpen] = useState(false);
@@ -80,6 +85,25 @@ export const LinkListPage: React.FC = () => {
   const activeList = lists.find((l) => l.id === activeListId) ?? lists[0] ?? null;
 
   useEffect(() => {
+    let mounted = true;
+    listLinkLists()
+      .then((realLists) => {
+        if (!mounted) return;
+        setLists(realLists);
+        setActiveListId((current) => current || realLists[0]?.id || null);
+        setListsError(null);
+      })
+      .catch((error) => {
+        if (!mounted) return;
+        setListsError(error instanceof Error ? error.message : 'Falha ao carregar listas reais.');
+      })
+      .finally(() => {
+        if (mounted) setLoadingLists(false);
+      });
+    return () => { mounted = false; };
+  }, []);
+
+  useEffect(() => {
     if (activeListId && !lists.some((l) => l.id === activeListId) && lists.length > 0) {
       setActiveListId(lists[0].id);
     }
@@ -89,7 +113,7 @@ export const LinkListPage: React.FC = () => {
     setSelectedIds([]);
   }, [activeListId]);
 
-  const handleCreateList = (data: {
+  const handleCreateList = async (data: {
     name: string;
     description: string;
     campaignId: string | null;
@@ -98,109 +122,66 @@ export const LinkListPage: React.FC = () => {
     rotation: LinkList['rotation'];
     frequency: LinkListFrequency;
   }) => {
-    const newList: LinkList = {
-      id: `LIST-${Date.now()}`,
-      name: data.name,
-      description: data.description,
-      campaignId: data.campaignId,
-      campaignName: data.campaignName,
-      destination: data.destination,
-      rotation: data.rotation,
-      frequency: data.frequency,
-      createdAt: new Date().toLocaleString('pt-BR', {
-        dateStyle: 'short',
-        timeStyle: 'short',
-      }),
-      links: [],
-      automationSource: 'LINK_LIST',
-    };
-    setLists((prev) => [...prev, newList]);
-    setActiveListId(newList.id);
-    setProcessingNotice(false);
-    showToast(`Lista "${data.name}" criada.`);
+    try {
+      const created = await createLinkList(data);
+      setLists((prev) => [...prev, created]);
+      setActiveListId(created.id);
+      setProcessingNotice(false);
+      showToast(`Lista "${created.name}" criada e salva.`);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Falha ao criar lista.', 'info');
+    }
   };
 
-  const handleAddLinks = (urls: string[]) => {
+  const handleAddLinks = async (urls: string[]) => {
     if (!activeList) return;
-    const items: LinkListItem[] = urls.map((url) => ({
-      id: `LINK-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      url,
-      marketplace: null,
-      productName: null,
-      status: 'Pendente',
-      campaignId: null,
-      campaignName: null,
-      addedAt: nowTime(),
-      automationSource: 'LINK_LIST',
-    }));
-    setLists((prev) =>
-      prev.map((l) =>
-        l.id === activeList.id ? { ...l, links: [...items, ...l.links] } : l
-      )
-    );
-    setProcessingNotice(false);
-    showToast(
-      `${items.length} link(s) adicionado(s) a "${activeList.name}".`
-    );
+    try {
+      const updated = await addLinksToList(activeList.id, urls);
+      setLists((prev) => prev.map((list) => list.id === updated.id ? updated : list));
+      setProcessingNotice(false);
+      showToast(`${urls.length} link(s) sincronizado(s) com "${activeList.name}".`);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Falha ao salvar links.', 'info');
+    }
   };
 
-  const handleRemoveLink = (linkId: string) => {
+  const handleRemoveLink = async (linkId: string) => {
     if (!activeList) return;
-    setLists((prev) =>
-      prev.map((l) =>
-        l.id === activeList.id
-          ? { ...l, links: l.links.filter((link) => link.id !== linkId) }
-          : l
-      )
-    );
-    setSelectedIds((prev) => prev.filter((id) => id !== linkId));
-    showToast('Link removido da lista.', 'info');
+    try {
+      const updated = await removeLinkFromList(activeList.id, linkId);
+      setLists((prev) => prev.map((list) => list.id === updated.id ? updated : list));
+      setSelectedIds((prev) => prev.filter((id) => id !== linkId));
+      showToast('Link removido da lista real.', 'info');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Falha ao remover link.', 'info');
+    }
   };
 
   const handleSendToQueue = () => {
-    if (!activeList || selectedIds.length === 0) return;
-    const pending = new Set(selectedIds);
-    setLists((prev) =>
-      prev.map((l) =>
-        l.id === activeList.id
-          ? {
-              ...l,
-              links: l.links.map((link) =>
-                pending.has(link.id) && link.status === 'Pendente'
-                  ? { ...link, status: 'Na fila' }
-                  : link
-              ),
-            }
-          : l
-      )
-    );
-    const count = activeList.links.filter(
-      (link) => pending.has(link.id) && link.status === 'Pendente'
-    ).length;
-    setSelectedIds([]);
-    showToast(
-      `Enviado(s) para a fila de publicação: ${count} link(s).`
-    );
+    showToast('Fila real ainda não está conectada à Lista de Links. Nenhum status foi simulado.', 'info');
   };
 
-  const handleDeleteList = (listId: string) => {
-    const target = lists.find((l) => l.id === listId);
-    setLists((prev) => prev.filter((l) => l.id !== listId));
-    if (activeListId === listId) {
-      const remaining = lists.filter((l) => l.id !== listId);
-      setActiveListId(remaining[0]?.id ?? null);
+  const handleDeleteList = async (listId: string) => {
+    const target = lists.find((list) => list.id === listId);
+    try {
+      await deleteLinkList(listId);
+      const remaining = lists.filter((list) => list.id !== listId);
+      setLists(remaining);
+      if (activeListId === listId) setActiveListId(remaining[0]?.id ?? null);
+      setSelectedIds([]);
+      setProcessingNotice(false);
+      showToast(`Lista "${target?.name ?? ''}" excluída do backend.`, 'info');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Falha ao excluir lista.', 'info');
     }
-    setSelectedIds([]);
-    setProcessingNotice(false);
-    showToast(`Lista "${target?.name ?? ''}" excluída.`, 'info');
   };
 
   const handleProcessLinks = () => {
     setProcessingNotice(true);
-    showToast('Processamento disponível após integração com os marketplaces.', 'info');
+    showToast('Processamento real de produto será conectado na próxima etapa.', 'info');
   };
 
-  const handleCopyLink = async (link: LinkListItem) => {
+  const handleCopyLink = async (link: import('../../types/linkList').LinkListItem) => {
     try {
       await navigator.clipboard.writeText(link.url);
       setCopiedId(link.id);
@@ -258,6 +239,8 @@ export const LinkListPage: React.FC = () => {
           <p className="text-xs text-[#64748B] mt-1">
             Organize links de ofertas e prepare sua distribuição.
           </p>
+          {loadingLists && <p className="text-[11px] text-[#64748B] mt-1">Sincronizando listas reais...</p>}
+          {listsError && <p className="text-[11px] text-amber-700 mt-1">{listsError}</p>}
         </div>
         <div className="flex items-center gap-2">
           <Button
