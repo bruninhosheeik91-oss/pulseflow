@@ -4,7 +4,7 @@ const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const { create } = require('@wppconnect-team/wppconnect');
-const { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } = require('fs');
+const { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync, rmSync } = require('fs');
 const { spawn } = require('child_process');
 const {
   createAffiliateCredentialsStore,
@@ -56,14 +56,19 @@ try {
 }
 
 const PORT = Number(process.env.PORT || 3001);
-const HOST = '127.0.0.1';
+const HOST = process.env.HOST || '127.0.0.1';
 const DOMNEX_DEFAULT_SESSION = 'domnex-main';
 // Limite técnico de contas, opcional e configurável por ambiente.
 // 0 (padrão) = ilimitado. Caso um plano comercial limite a quantidade no
 // futuro, basta definir MAX_WHATSAPP_ACCOUNTS no ambiente do servidor.
 const MAX_ACCOUNTS = Number(process.env.MAX_WHATSAPP_ACCOUNTS || 0);
-const SESSION_DIR = path.join(__dirname, 'tokens');
-const DATA_DIR = path.join(__dirname, 'data');
+// Estado persistente do backend. PULSEFLOW_STATE_DIR=/data em produção
+// (Railway mantém volume montado em /data); local sem a variável usa __dirname.
+const STATE_DIR = process.env.PULSEFLOW_STATE_DIR
+  ? path.resolve(String(process.env.PULSEFLOW_STATE_DIR))
+  : __dirname;
+const SESSION_DIR = path.join(STATE_DIR, 'tokens');
+const DATA_DIR = path.join(STATE_DIR, 'data');
 const ACCOUNTS_FILE = path.join(DATA_DIR, 'accounts.json');
 const CHROME_PATH =
   process.env.WPP_CHROME_PATH ||
@@ -182,13 +187,68 @@ function enterAwaitingQr(state) {
   }
 }
 
-// Encerra o processo PRINCIPAL do Chrome cujo user-data-dir é o perfil desta
-// sessão (para liberar o lock da pasta de tokens). Escopo estrito por sessão:
-// filhos (--type=*) e perfis de OUTRAS sessões não são tocados. NÃO apaga
-// tokens/cookies — a próxima inicialização reutiliza a auth existente quando
-// válida. Best-effort: nunca derruba o fluxo em caso de falha.
-function killSessionBrowser(sessionId) {
-  const profilePath = path.join(SESSION_DIR, sessionId);
+// Ciclo de vida do Chromium do WPPConnect. No Linux/Railway, browsers órfãos
+// seguram o userDataDir da sessão (/data/tokens/<sessionId>) e fazem o próximo
+// create() falhar com "The browser is already running...". O encerramento é
+// best-effort, com escopo ESTRITO por sessão: apenas processos Chromium cujo
+// cmdline contém o userDataDir da sessão são encerrados. Aguarda o término real
+// do processo e remove SOMENTE os locks transitórios do perfil (SingletonLock,
+// SingletonSocket, SingletonCookie). NUNCA apaga Local Storage, IndexedDB,
+// Session Storage, tokens ou cookies — a auth existente é preservada.
+const IS_WINDOWS = process.platform === 'win32';
+const CHROMIUM_SINGLETON_LOCKS = [
+  'SingletonLock',
+  'SingletonSocket',
+  'SingletonCookie',
+];
+
+// PIDs de processos Chromium associados ao userDataDir da sessão (Linux).
+// Lê /proc/<pid>/cmdline; casa o binário Chromium + o caminho do perfil.
+function linuxChromiumPidsForProfile(profilePath) {
+  const pids = [];
+  try {
+    for (const entry of readdirSync('/proc')) {
+      if (!/^\d+$/.test(entry)) continue;
+      const cmdlineFile = path.join('/proc', entry, 'cmdline');
+      try {
+        const cmdline = readFileSync(cmdlineFile, 'utf8').replace(/\0/g, ' ');
+        if (cmdline.includes('chrom') && cmdline.includes(profilePath)) {
+          pids.push(Number(entry));
+        }
+      } catch {
+        // processo já encerrou entre a listagem e a leitura
+      }
+    }
+  } catch {
+    // /proc indisponível (não-Linux)
+  }
+  return pids;
+}
+
+function pidAlive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (err) {
+    return err && err.code === 'EPERM';
+  }
+}
+
+// Aguarda os PIDs realmente saírem (polling, até timeoutMs).
+async function waitForPidsToExit(pids, timeoutMs) {
+  const remaining = new Set(pids);
+  const deadline = Date.now() + timeoutMs;
+  while (remaining.size > 0 && Date.now() < deadline) {
+    for (const pid of [...remaining]) {
+      if (!pidAlive(pid)) remaining.delete(pid);
+    }
+    if (remaining.size > 0) await sleep(200);
+  }
+  return remaining.size === 0;
+}
+
+// Windows: mantém o comportamento original via PowerShell/Win32_Process.
+function killSessionBrowserWindows(sessionId, profilePath) {
   const ps = `
 & {
   $profile = $args[0]
@@ -209,9 +269,95 @@ function killSessionBrowser(sessionId) {
   );
   proc.on('error', () => {});
   proc.unref();
+}
+
+// Linux/POSIX: encerra SOMENTE os Chromium do userDataDir da sessão e aguarda o
+// término efetivo antes de retornar.
+async function killSessionBrowserPosix(profilePath) {
+  const pids = linuxChromiumPidsForProfile(profilePath);
+  for (const pid of pids) {
+    try {
+      process.kill(pid, 'SIGKILL');
+    } catch {
+      // processo já saiu
+    }
+  }
+  if (pids.length > 0) {
+    await waitForPidsToExit(pids, 10000);
+  }
+}
+
+// Remove apenas os locks transitórios do perfil. Nunca toca em autenticação.
+function removeSessionSingletonLocks(profilePath) {
+  for (const name of CHROMIUM_SINGLETON_LOCKS) {
+    try {
+      const target = path.join(profilePath, name);
+      if (existsSync(target)) rmSync(target, { force: true });
+    } catch (err) {
+      logError(
+        `[browser] falha ao remover lock transitório ${name}: ${String((err && err.message) || err)}`
+      );
+    }
+  }
+}
+
+// Encerramento best-effort: encerra o browser órfão da sessão (somente os
+// processos do userDataDir /data/tokens/<sessionId>), aguarda o término e
+// remove só os locks transitórios. Autenticação em /data é preservada.
+async function ensureSessionBrowserStopped(sessionId) {
+  const profilePath = path.join(SESSION_DIR, sessionId);
+  if (IS_WINDOWS) {
+    killSessionBrowserWindows(sessionId, profilePath);
+  } else {
+    await killSessionBrowserPosix(profilePath);
+    removeSessionSingletonLocks(profilePath);
+  }
   logWhatsApp(
     `[${sessionId}] encerramento best-effort do browser órfão da sessão (tokens preservados)`
   );
+}
+
+// ===== Single-flight / mutex por sessionId =====
+// Garante que NUNCA há dois create() WPPConnect concorrentes para a mesma
+// sessão: connect/recover-qr reutilizam a Promise de inicialização em curso em
+// vez de iniciar outra create(). Também serializa operações de ciclo de vida
+// (destroy + create) de cada sessão.
+const sessionCreatePromises = new Map();
+const sessionLifecycleChains = new Map();
+
+function runSessionLifecycleOp(sessionId, op) {
+  const previous = sessionLifecycleChains.get(sessionId) || Promise.resolve();
+  const next = previous.then(op, op);
+  sessionLifecycleChains.set(sessionId, next);
+  next.catch(() => {});
+  return next;
+}
+
+function startSessionCreate(sessionId) {
+  const inFlight = sessionCreatePromises.get(sessionId);
+  if (inFlight) return inFlight;
+  const creating = createSession(sessionId).finally(() => {
+    if (sessionCreatePromises.get(sessionId) === creating) {
+      sessionCreatePromises.delete(sessionId);
+    }
+  });
+  sessionCreatePromises.set(sessionId, creating);
+  return creating;
+}
+
+// Interrompe uma inicialização em curso (invalida callbacks pelo initGen e
+// fecha o browser criado) e a aguarda assentar. Usado pelo recover-qr antes de
+// recriar a sessão, para que o create() antigo não colida com o novo.
+async function cancelInFlightCreate(state) {
+  const inFlight = sessionCreatePromises.get(state.sessionId);
+  if (!inFlight) return;
+  state.initGen += 1;
+  clearQrWatchdog(state);
+  try {
+    await inFlight;
+  } catch {
+    // o fluxo interno já trata erros; aqui só garantimos que assentou
+  }
 }
 
 const sessions = new Map();
@@ -1267,7 +1413,7 @@ async function handleCreateFailure(state, generation, err) {
     state.lastError = msg;
     state.qrCode = null;
     setSessionState(state, 'error');
-    killSessionBrowser(state.sessionId);
+    await ensureSessionBrowserStopped(state.sessionId);
     logError(
       `[WhatsApp ${state.sessionId}] tentativas de inicialização esgotadas - estado de erro + "Tentar novamente" disponível`
     );
@@ -1282,7 +1428,7 @@ async function handleCreateFailure(state, generation, err) {
   logWhatsApp(
     `[${state.sessionId}] reiniciando sessão após falha de init (tentativa ${state.initRetries}/1) - browser órfão encerrado, tokens preservados`
   );
-  killSessionBrowser(state.sessionId);
+  await ensureSessionBrowserStopped(state.sessionId);
   await sleep(1500);
   if (state.initGen !== generation) return state;
   if (state.qrCode && state.qrCode.length) {
@@ -1315,6 +1461,10 @@ async function createSession(sessionId) {
     await destroySession(sessionId);
     if (state.starting) return state;
   }
+  // Garante que nenhum browser órfão segura o userDataDir desta sessão antes
+  // de (re)iniciar. Idempotente: encerra somente Chromium deste perfil em
+  // qualquer estado (error/disconnected) e remove apenas locks transitórios.
+  await ensureSessionBrowserStopped(sessionId);
   const generation = state.initGen + 1;
   state.initGen = generation;
   state.starting = true;
@@ -1337,6 +1487,9 @@ async function createSession(sessionId) {
       puppeteerOptions: {
         executablePath: CHROME_PATH,
         headless: true,
+        // Contêiner roda como root (Railway/Docker): sem --no-sandbox o
+        // Chromium recusa abrir ("Running as root without --no-sandbox").
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       },
       // Mantem a sessao viva em segundo plano mesmo sem QR escaneado.
       autoClose: 0,
@@ -1478,9 +1631,10 @@ async function destroySession(sessionId) {
       }
     }
   }
-  // Best-effort: garante que o processo principal do Chrome desta sessão saiu
-  // (libera o lock do perfil). Não apaga tokens/cookies da sessão.
-  killSessionBrowser(sessionId);
+  // Best-effort: garante que nenhum browser Chromium desta sessão ficou vivo
+  // (encerra somente os processos do userDataDir, aguarda o término e remove
+  // apenas locks transitórios). Não apaga tokens/cookies da sessão.
+  await ensureSessionBrowserStopped(sessionId);
   await sleep(1500);
   state.qrCode = null;
   state.starting = false;
@@ -1545,7 +1699,14 @@ app.use(
         'http://127.0.0.1:5173',
         'http://[::1]:5173',
       ]);
-      if (!origin || allowed.has(origin)) {
+      const productionOrigin = 'https://pulseflow.vercel.app';
+      const previewOriginPattern = /^https:\/\/pulseflow-[a-z0-9-]+-domnex-tech\.vercel\.app$/i;
+      if (
+        !origin ||
+        allowed.has(origin) ||
+        origin === productionOrigin ||
+        previewOriginPattern.test(origin)
+      ) {
         callback(null, true);
       } else {
         callback(new Error('Origem nao permitida pelo CORS'));
@@ -1888,7 +2049,9 @@ app.post(
       logWhatsApp(`[${sessionId}] sessão existente encontrada - reutilizando cliente`);
       return res.json({ ok: true, session: sessionId, status: state.connectionState });
     }
-    void createSession(sessionId);
+    // Single-flight/mutex: se já houver init em andamento para esta sessão,
+    // reutiliza a PROMISE em curso em vez de iniciar outro create().
+    void runSessionLifecycleOp(sessionId, () => startSessionCreate(sessionId));
     res.json({ ok: true, session: sessionId, status: 'connecting' });
   }
 );
@@ -1913,10 +2076,17 @@ app.post(
   async (req, res) => {
     const sessionId = req.resolvedSessionId;
     try {
-      clearQrWatchdog(getSessionState(sessionId));
-      await destroySession(sessionId);
-      clearSessionAuthData(sessionId);
-      void createSession(sessionId);
+      // Mutex por sessão: serializa destroy+create para nunca haver DOIS
+      // create() WPPConnect concorrentes / colisão com recover anterior.
+      await runSessionLifecycleOp(sessionId, async () => {
+        const state = getSessionState(sessionId);
+        // Interrompe e aguarda qualquer init WPPConnect em andamento para que
+        // o create() antigo não colida com o novo (libera o userDataDir).
+        await cancelInFlightCreate(state);
+        await destroySession(sessionId);
+        clearSessionAuthData(sessionId);
+        await startSessionCreate(sessionId);
+      });
       logWhatsApp(`[${sessionId}] recuperação de QR solicitada (nova sessão real iniciada)`);
       res.json({ ok: true, session: sessionId, status: 'connecting' });
     } catch (err) {
@@ -2048,25 +2218,30 @@ app.post('/api/whatsapp/connect', (req, res) => {
     logWhatsApp(`[${sessionId}] sessão existente encontrada - reutilizando cliente`);
     return res.json({ ok: true, session: sessionId, status: state.connectionState });
   }
-  void createSession(sessionId);
+  void runSessionLifecycleOp(sessionId, () => startSessionCreate(sessionId));
   res.json({ ok: true, session: sessionId, status: 'connecting' });
 });
 
-app.get('/api/whatsapp/qr', (req, res) => {
-  const qr = getSessionState(DOMNEX_DEFAULT_SESSION).qrCode;
-  if (!qr) {
-    return res.status(204).json({ qr: null });
+app.get('/api/whatsapp/qr',
+  (req, res) => {
+    const qr = getSessionState(DOMNEX_DEFAULT_SESSION).qrCode;
+    if (!qr) {
+      return res.status(204).json({ qr: null });
+    }
+    res.json({ qr });
   }
-  res.json({ qr });
-});
+);
 
 app.post('/api/whatsapp/recover-qr', async (req, res) => {
   try {
     const sessionId = DOMNEX_DEFAULT_SESSION;
-    clearQrWatchdog(getSessionState(sessionId));
-    await destroySession(sessionId);
-    clearSessionAuthData(sessionId);
-    void createSession(sessionId);
+    await runSessionLifecycleOp(sessionId, async () => {
+      const state = getSessionState(sessionId);
+      await cancelInFlightCreate(state);
+      await destroySession(sessionId);
+      clearSessionAuthData(sessionId);
+      await startSessionCreate(sessionId);
+    });
     logWhatsApp(`[${sessionId}] recuperação de QR solicitada (rota legada)`);
     res.json({ ok: true, session: sessionId, status: 'connecting' });
   } catch (err) {
@@ -2829,7 +3004,7 @@ app.listen(PORT, HOST, () => {
     let delay = 0;
     for (const acc of restoreCandidates) {
       setTimeout(() => {
-        void createSession(acc.sessionId);
+        void runSessionLifecycleOp(acc.sessionId, () => startSessionCreate(acc.sessionId));
       }, delay);
       delay += 8000;
     }
