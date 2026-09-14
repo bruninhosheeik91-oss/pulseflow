@@ -140,27 +140,46 @@ function buildDynamicMonitorOfferMessage(offer = {}) {
   const productName =
     typeof offer.productName === 'string' ? offer.productName.trim() : '';
 
-  const lines = ['🛍️ *LINK DA OFERTA*', ''];
+  const lines = ['🛍️ LINK DA OFERTA', ''];
 
-  if (productName) {
-    lines.push(`*${productName}*`, '');
+  if (productName && !/^(undefined|null|xxx|nan)$/i.test(productName)) {
+    lines.push(productName, '');
   }
 
-  const priceBlock = buildPriceBlock(offer);
-  if (priceBlock.length) {
-    lines.push(...priceBlock, '');
+  const originalPrice = toFiniteNumber(offer.originalPrice);
+  const price = toFiniteNumber(offer.price);
+  const discount = toFiniteNumber(offer.discountPercentage);
+
+  if (originalPrice !== null && originalPrice > 0) {
+    lines.push(`💰 De: ${formatBRL(originalPrice)}`);
+  }
+  if (price !== null && price > 0) {
+    lines.push(`🔥 Por: ${formatBRL(price)}`);
+  }
+  if (discount !== null && discount > 0) {
+    const normalized = Math.round(discount * 100) / 100;
+    const discountText = Number.isInteger(normalized)
+      ? String(normalized)
+      : String(normalized).replace('.', ',');
+    lines.push(`🏷️ ${discountText}% OFF`);
+  }
+  if (originalPrice > 0 || price > 0 || (discount !== null && discount > 0)) {
+    lines.push('');
   }
 
-  const couponBlock = buildCouponBlock(offer);
-  if (couponBlock.length) {
-    lines.push(...couponBlock, '');
+  const coupon =
+    typeof offer.coupon === 'string'
+      ? offer.coupon.trim()
+      : typeof offer.couponCode === 'string'
+        ? offer.couponCode.trim()
+        : '';
+
+  if (coupon && !/^(undefined|null|xxx|nan)$/i.test(coupon)) {
+    lines.push(`🎟️ Cupom: ${coupon}`, '');
   }
 
   lines.push('👉 Confira aqui:', affiliateUrl);
-
-  if (productName || priceBlock.length || couponBlock.length) {
-    lines.push('', '⚡ Preço e disponibilidade podem mudar a qualquer momento.');
-  }
+  lines.push('', '⚡ Preço e disponibilidade podem mudar a qualquer momento.');
 
   return cleanLines(lines);
 }
