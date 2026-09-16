@@ -148,6 +148,8 @@ function createSessionState(sessionId) {
     lastSyncAt: null,
     deviceName: null,
     devicePhone: null,
+    // Rota de grupos: sinaliza à resposta se a listagem veio do cache em memória.
+    groupsFromCache: false,
   };
 }
 
@@ -477,7 +479,14 @@ function buildAccountView() {
 async function refreshHostDevice(state) {
   if (!state.client || typeof state.client.getHostDevice !== 'function') return;
   try {
-    const info = await state.client.getHostDevice();
+    // Timeout: /account nunca mais segura a request por minutos; se não
+    // responder, mantém os dados já conhecidos (state.devicePhone/deviceName).
+    const info = await withTimeout(
+      state.client.getHostDevice(),
+      WPP_ROUTE_TIMEOUT_MS,
+      `getHostDevice (${state.sessionId})`
+    );
+    if (!info) return;
     const raw = info || {};
     const me = raw.me || {};
     let number = state.devicePhone;
@@ -1732,9 +1741,16 @@ let watchdogRunning = false;
 let watchdogStarted = false;
 const watchHealthyLogAt = { at: 0 };
 
-function withTimeout(promise, ms) {
+function withTimeout(promise, ms, label) {
   return new Promise((resolve) => {
-    const timer = setTimeout(() => resolve(null), ms);
+    const timer = setTimeout(() => {
+      if (label) {
+        logError(
+          `[WhatsApp] ${label} excedeu o limite de ${ms}ms - respondendo sem travar a sessão/request`
+        );
+      }
+      resolve(null);
+    }, ms);
     Promise.resolve(promise).then(
       (value) => {
         clearTimeout(timer);
@@ -2212,30 +2228,118 @@ function normalizeGroupSource(raw) {
   return { id, name, participantCount, isGroup: true };
 }
 
-async function listGroupsForClient(sessionClient) {
-  let source = [];
-  // API real da versão instalada. getAllGroups garante os metadados do grupo
-  // (participants/size). listChats é o substituto moderno, getAllChats o fallback.
-  if (typeof sessionClient.getAllGroups === 'function') {
-    source = await sessionClient.getAllGroups(false);
-  } else if (typeof sessionClient.listChats === 'function') {
-    const chats = await sessionClient.listChats({ onlyGroups: true });
-    source = chats || [];
-  } else if (typeof sessionClient.getAllChats === 'function') {
-    const chats = await sessionClient.getAllChats();
-    source = (chats || []).filter((chat) => chat && chat.isGroup);
-  } else {
-    throw new Error('Nenhuma API de consulta de grupos disponível.');
-  }
+// Tempo máximo para chamadas WPP usadas por rotas HTTP (listChats/getAllGroups,
+// getHostDevice, etc). Nenhuma request pode ficar presa por minutos.
+const WPP_ROUTE_TIMEOUT_MS = 9_000;
 
-  return (Array.isArray(source) ? source : [])
-    .map(normalizeGroupSource)
-    .filter((group) => group && group.id)
-    .sort((a, b) => {
-      const an = a.name || '';
-      const bn = b.name || '';
-      return an.localeCompare(bn, 'pt-BR') || a.id.localeCompare(b.id);
-    });
+// Cache em memória do último resultado VÁLIDO de grupos por sessão + janela em
+// que o cache é devolvido sem nova consulta (evita refetch em rajada/polling).
+// Uma listagem nova só é disparada quando o cache passou da idade ou não existe.
+const groupsListCache = new Map(); // sessionId -> { groups: Array, at: number }
+const groupsListInFlight = new Map(); // sessionId -> Promise<Array> (single-flight)
+const GROUP_LIST_CACHE_TTL_MS = 5_000;
+
+// Busca REAL na API WPPConnect e normaliza para { id, name, participantCount }.
+// Estratégia: listChats é a API oficial (getAllGroups é deprecated). getAllGroups
+// é apenas FALLBACK quando listChats não existir. Nunca lança: em falha o chamador
+// decide (cache vs []), e comTimeout já enquadra o tempo.
+function fetchRealGroups(sessionClient) {
+  return (async () => {
+    let source = [];
+    if (typeof sessionClient.listChats === 'function') {
+      const chats = await sessionClient.listChats({ onlyGroups: true });
+      source = chats || [];
+    } else if (typeof sessionClient.getAllGroups === 'function') {
+      source = await sessionClient.getAllGroups(false);
+    } else if (typeof sessionClient.getAllChats === 'function') {
+      const chats = await sessionClient.getAllChats();
+      source = (chats || []).filter((chat) => chat && chat.isGroup);
+    } else {
+      throw new Error('Nenhuma API de consulta de grupos disponível.');
+    }
+    return (Array.isArray(source) ? source : [])
+      .map(normalizeGroupSource)
+      .filter((group) => group && group.id)
+      .sort((a, b) => {
+        const an = a.name || '';
+        const bn = b.name || '';
+        return an.localeCompare(bn, 'pt-BR') || a.id.localeCompare(b.id);
+      });
+  })();
+}
+
+async function listGroupsForClient(sessionClient) {
+  const state = sessionStateForClient(sessionClient);
+  if (!state) {
+    // Sem estado (caso defensivo): tenta uma vez direto, nunca trava.
+    const fetched = await withTimeout(
+      fetchRealGroups(sessionClient),
+      WPP_ROUTE_TIMEOUT_MS,
+      'listChats/getAllGroups (sem sessão)'
+    );
+    return Array.isArray(fetched) ? fetched : [];
+  }
+  const sessionId = state.sessionId;
+
+  // Single-flight: nunca empilha listChats/getAllGroups concorrentes.
+  const existing = groupsListInFlight.get(sessionId);
+  if (existing) return existing;
+
+  const attempt = (async () => {
+    const cachedEntry = groupsListCache.get(sessionId);
+    const now = Date.now();
+    if (
+      cachedEntry &&
+      Array.isArray(cachedEntry.groups) &&
+      now - cachedEntry.at < GROUP_LIST_CACHE_TTL_MS
+    ) {
+      state.groupsFromCache = true;
+      return cachedEntry.groups;
+    }
+    logWhatsApp(`[${sessionId}] listagem de grupos iniciada`);
+    let fetched = null;
+    try {
+      fetched = await withTimeout(
+        fetchRealGroups(sessionClient),
+        WPP_ROUTE_TIMEOUT_MS,
+        `listChats/getAllGroups (${sessionId})`
+      );
+    } catch {
+      fetched = null;
+    }
+    if (Array.isArray(fetched)) {
+      // Nunca sobrescreve cache válido por [] (somente resultado não-vazio ou
+      // ausência total de cache grava; timeout/erro jamais apagam o snapshot).
+      if (fetched.length > 0 || !groupsListCache.has(sessionId)) {
+        groupsListCache.set(sessionId, { groups: fetched, at: Date.now() });
+      }
+      state.groupsFromCache = false;
+      const via =
+        typeof sessionClient.listChats === 'function' ? 'listChats' : 'getAllGroups';
+      logWhatsApp(`[${sessionId}] grupos carregados via ${via} = ${fetched.length}`);
+      return fetched;
+    }
+    // Timeout/erro: usa o último resultado válido se houver.
+    if (cachedEntry && Array.isArray(cachedEntry.groups)) {
+      state.groupsFromCache = true;
+      logWhatsApp(
+        `[${sessionId}] listagem de grupos timeout - usando cache ${cachedEntry.groups.length}`
+      );
+      return cachedEntry.groups;
+    }
+    state.groupsFromCache = false;
+    logWhatsApp(`[${sessionId}] listagem de grupos falhou: timeout sem cache válido`);
+    return [];
+  })();
+
+  groupsListInFlight.set(sessionId, attempt);
+  try {
+    return await attempt;
+  } finally {
+    if (groupsListInFlight.get(sessionId) === attempt) {
+      groupsListInFlight.delete(sessionId);
+    }
+  }
 }
 
 function validateSendBody(req, res) {
@@ -2551,12 +2655,14 @@ app.get(
     try {
       const state = getSessionState(sessionId);
       const groups = await listGroupsForClient(state.client);
-      logWhatsApp(`[${sessionId}] grupos reais carregados = ${groups.length}`);
+      const cached = Boolean(state.groupsFromCache);
+      state.groupsFromCache = false;
       res.json({
         ok: true,
         session: sessionId,
         groups,
         total: groups.length,
+        cached,
       });
     } catch (err) {
       logError(`[WhatsApp ${sessionId}] falha ao listar grupos: ${String((err && err.message) || err)}`);
@@ -2688,8 +2794,9 @@ app.get('/api/whatsapp/groups', makeRequireConnected(DOMNEX_DEFAULT_SESSION), as
   try {
     const state = getSessionState(DOMNEX_DEFAULT_SESSION);
     const groups = await listGroupsForClient(state.client);
-    logWhatsApp(`[${DOMNEX_DEFAULT_SESSION}] grupos reais carregados = ${groups.length}`);
-    res.json({ ok: true, groups, total: groups.length });
+    const cached = Boolean(state.groupsFromCache);
+    state.groupsFromCache = false;
+    res.json({ ok: true, groups, total: groups.length, cached });
   } catch (err) {
     logError(`[WhatsApp] falha ao listar grupos: ${String((err && err.message) || err)}`);
     res.status(500).json({ ok: false, error: 'Falha ao listar grupos.' });
