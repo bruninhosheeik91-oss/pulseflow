@@ -4,7 +4,7 @@ const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const { create } = require('@wppconnect-team/wppconnect');
-const { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync, rmSync } = require('fs');
+const { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync, rmSync } = require('fs');
 const { spawn } = require('child_process');
 const {
   createAffiliateCredentialsStore,
@@ -98,6 +98,10 @@ function logWhatsApp(message) {
   console.log(`[WhatsApp] ${new Date().toISOString()} ${message}`);
 }
 
+function logWatchdog(message) {
+  console.log(`[Watchdog] ${new Date().toISOString()} ${message}`);
+}
+
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // ===== Sessões (uma por conta WhatsApp) =====
@@ -116,6 +120,15 @@ function createSessionState(sessionId) {
     // posterior (ex.: connected).
     initGen: 0,
     initRetries: 0,
+    // Marca de desconexão EXPLÍCITA pelo usuário (POST /disconnect). O watchdog
+    // respeita e NÃO reconecta automaticamente sessões desconectadas pelo
+    // usuário (a menos que um monitor esteja ativo para a sessão). Limpa no
+    // próximo connect.
+    userDisconnectedAt: null,
+    // Período de tolerância após criar um cliente WPPConnect: o socket ainda
+    // pode estar subindo (PAIRING/OPENING) e uma sonda prematura não deve
+    // disparar recuperação em cliente recém-criado e saudável.
+    clientGraceUntil: null,
     // Vigilância de QR/init: evita "Gerando QR Code..." infinito quando o
     // WPPConnect fica sem canvas de QR real ("QR (undefined)" / sessão não
     // pareada) ou quando a inicialização trava (wapi.js failed / timeout).
@@ -1328,6 +1341,7 @@ function handleSocketState(state, generation, socketState) {
   switch (s) {
     case 'CONNECTED':
       state.initRetries = 0;
+      state.userDisconnectedAt = null;
       state.qrCode = null;
       clearQrWatchdog(state);
       setSessionState(state, 'connected');
@@ -1471,6 +1485,7 @@ async function createSession(sessionId) {
   state.qrCode = null;
   state.qrLastDataAt = null;
   state.lastError = null;
+  state.userDisconnectedAt = null;
   setSessionState(state, 'connecting');
   startQrStuckWatchdog(state);
 
@@ -1509,6 +1524,7 @@ async function createSession(sessionId) {
     state.client = created;
     state.starting = false;
     state.initRetries = 0;
+    state.clientGraceUntil = Date.now() + WATCHDOG_CLIENT_GRACE_MS;
     logWhatsApp(`[${sessionId}] cliente inicializado (init #${generation})`);
 
     // A v2.3.3 resolve o create() já com a sessão conectada quando há tokens
@@ -1615,6 +1631,7 @@ async function destroySession(sessionId) {
   clearQrWatchdog(state);
   const current = state.client;
   state.client = null;
+  state.clientGraceUntil = null;
   if (current) {
     if (typeof current.logout === 'function') {
       try {
@@ -1641,6 +1658,229 @@ async function destroySession(sessionId) {
   setSessionState(state, 'disconnected');
   state.lastError = null;
   logWhatsApp(`[${sessionId}] sessão destruída`);
+}
+
+// ===== Watchdog WhatsApp server-side (autonomia 24/7) =====
+// Independente do frontend. A cada ~30s avalia cada sessão que deve ficar viva
+// (monitor ativo, tokens persistidos ou cliente existente):
+//   MAIN/socket CONNECTED/OPENING/PAIRING  -> saudável
+//   estados mortos (error/disconnected/reconnecting/timeout/browser fechado,
+//   client inválido/phantom) -> recuperação automática.
+// A recuperação é single-flight por sessionId, nunca inicia dois Chromium para
+// a mesma sessão, encerra o browser órfão, remove SOMENTE SingletonLock,
+// SingletonSocket e SingletonCookie e reutiliza /data/tokens/<sessionId>.
+// NUNCA apaga auth (Local Storage/IndexedDB/Session Storage/Service Worker)
+// para corrigir timeout transitório.
+const WATCHDOG_INTERVAL_MS = 30_000;
+const WATCHDOG_PROBE_TIMEOUT_MS = 6_000;
+const WATCHDOG_CLIENT_GRACE_MS = 90_000;
+// Log de "sessão saudável" no máximo a cada poucos minutos (evita spam).
+const WATCHDOG_HEALTHY_LOG_MIN_MS = 5 * 60_000;
+const watchdogNoted = new Map();
+const watchdogRecovering = new Set();
+let watchdogRunning = false;
+let watchdogStarted = false;
+const watchHealthyLogAt = { at: 0 };
+
+function withTimeout(promise, ms) {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(null), ms);
+    Promise.resolve(promise).then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      () => {
+        clearTimeout(timer);
+        resolve(null);
+      }
+    );
+  });
+}
+
+// Sonda o estado do socket WPPConnect do cliente. Nunca lança; null em falha.
+function probeSocketState(client) {
+  return new Promise((resolve) => {
+    let attempt;
+    try {
+      if (!client || typeof client.getConnectionState !== 'function') {
+        resolve(null);
+        return;
+      }
+      attempt = client.getConnectionState();
+    } catch {
+      resolve(null);
+      return;
+    }
+    const timer = setTimeout(() => resolve(null), WATCHDOG_PROBE_TIMEOUT_MS);
+    try {
+      Promise.resolve(attempt).then(
+        (value) => {
+          clearTimeout(timer);
+          resolve(value);
+        },
+        () => {
+          clearTimeout(timer);
+          resolve(null);
+        }
+      );
+    } catch {
+      clearTimeout(timer);
+      resolve(null);
+    }
+  });
+}
+
+function isMonitorEnabledForSession(sessionId) {
+  const cfg = monitorBySession[sessionId];
+  return Boolean(cfg && cfg.enabled);
+}
+
+// Classifica a saúde da sessão:
+//   'healthy'           - conectada de fato (socket CONNECTED/OPENING/PAIRING)
+//   'in_progress'       - inicialização em andamento (não intervém)
+//   'user_action'       - aguardando QR real do usuário (não intervém)
+//   'user_disconnected' - desconexão explícita pelo usuário (respeitada)
+//   'degraded'          - estados mortos/timeout/browser fechado -> recuperação
+async function classifySessionHealth(state) {
+  if (state.userDisconnectedAt && !isMonitorEnabledForSession(state.sessionId)) {
+    return 'user_disconnected';
+  }
+  if (state.starting) return 'in_progress';
+  if (state.connectionState === 'awaiting_qr') {
+    return state.qrCode ? 'user_action' : 'degraded';
+  }
+  if (state.client) {
+    // Cliente recém-criado ainda pode estar subindo o socket (PAIRING/OPENING);
+    // dentro da janela de tolerância não iniciamos recuperação.
+    if (state.clientGraceUntil && Date.now() < state.clientGraceUntil) {
+      return 'in_progress';
+    }
+    const probe = await probeSocketState(state.client);
+    const upper = String(probe || '').toUpperCase();
+    if (probe === null) return 'degraded';
+    if (upper === 'CONNECTED' || upper === 'OPENING' || upper === 'PAIRING') {
+      return 'healthy';
+    }
+    // TIMEOUT / CLOSED / UNPAIRED (sem confirmação inequívoca do usuário) ou
+    // qualquer outro estado morto: degradada -> recuperação.
+    return 'degraded';
+  }
+  // Sem cliente: 'disconnected', 'error', 'connecting'/'reconnecting' presos
+  // (sem init em andamento) são estados mortos -> recuperação.
+  return 'degraded';
+}
+
+function applyWatchdogNoted(health, sessionId) {
+  const previous = watchdogNoted.get(sessionId);
+  if (health === 'healthy') {
+    const now = Date.now();
+    if (previous !== 'healthy' || now - watchHealthyLogAt.at >= WATCHDOG_HEALTHY_LOG_MIN_MS) {
+      logWatchdog(`[Watchdog] sessão saudável (${sessionId})`);
+      watchHealthyLogAt.at = now;
+    }
+    watchdogNoted.set(sessionId, 'healthy');
+    return;
+  }
+  if (health === 'in_progress' || health === 'user_action' || health === 'user_disconnected') {
+    watchdogNoted.set(sessionId, health);
+    return;
+  }
+  if (previous !== 'degraded') {
+    const state = getSessionState(sessionId);
+    logWatchdog(
+      `[Watchdog] sessão degradada (${sessionId}) estado=${state.connectionState}${
+        state.lastError ? ` erro=${String(state.lastError).slice(0, 140)}` : ''
+      }`
+    );
+  }
+  watchdogNoted.set(sessionId, 'degraded');
+}
+
+// Sessões que o backend mantém vivas: monitor ativo, tokens persistidos em
+// /data/tokens/<sessionId> ou cliente em memória (não deixa cair).
+function watchdogTargetSessionIds() {
+  const targets = new Set();
+  for (const acc of accounts) {
+    const sid = acc.sessionId;
+    if (!sid) continue;
+    if (isMonitorEnabledForSession(sid)) targets.add(sid);
+    if (existsSync(path.join(SESSION_DIR, sid))) targets.add(sid);
+  }
+  for (const [sid, state] of sessions) {
+    if (state.client) targets.add(sid);
+  }
+  return [...targets];
+}
+
+// Recuperação single-flight por sessão. Fecha o cliente antigo SEM logout
+// (nunca desregistra o aparelho), encerra o browser órfão, remove só os locks
+// transitórios e recria a sessão reutilizando /data/tokens/<sessionId>.
+async function recoverWhatsAppSession(sessionId) {
+  if (watchdogRecovering.has(sessionId)) return;
+  watchdogRecovering.add(sessionId);
+  logWatchdog(`[Watchdog] recuperação iniciada (${sessionId})`);
+  try {
+    await runSessionLifecycleOp(sessionId, async () => {
+      const state = getSessionState(sessionId);
+      await cancelInFlightCreate(state);
+      const current = state.client;
+      state.client = null;
+      state.clientGraceUntil = null;
+      if (current && typeof current.close === 'function') {
+        try {
+          await withTimeout(Promise.resolve(current.close()), 8_000);
+        } catch {
+          // best-effort: o browser órfão é encerrado abaixo
+        }
+      }
+      state.qrCode = null;
+      state.starting = false;
+      setSessionState(state, 'reconnecting');
+      await ensureSessionBrowserStopped(sessionId);
+      removeSessionSingletonLocks(path.join(SESSION_DIR, sessionId));
+      await startSessionCreate(sessionId);
+    });
+    logWatchdog(`[Watchdog] recuperação concluída (${sessionId})`);
+  } catch (err) {
+    logWatchdog(
+      `[Watchdog] recuperação falhou (${sessionId}): ${String((err && err.message) || err)}`
+    );
+  } finally {
+    watchdogRecovering.delete(sessionId);
+  }
+}
+
+async function watchdogTick() {
+  if (watchdogRunning) return;
+  watchdogRunning = true;
+  try {
+    for (const sessionId of watchdogTargetSessionIds()) {
+      try {
+        const state = getSessionState(sessionId);
+        const health = await classifySessionHealth(state);
+        applyWatchdogNoted(health, sessionId);
+        if (health === 'degraded') {
+          await recoverWhatsAppSession(sessionId);
+        }
+      } catch (err) {
+        logWatchdog(
+          `[Watchdog] erro ao avaliar ${sessionId}: ${String((err && err.message) || err)}`
+        );
+      }
+    }
+  } finally {
+    watchdogRunning = false;
+  }
+}
+
+function startWatchdog() {
+  if (watchdogStarted) return;
+  watchdogStarted = true;
+  setInterval(() => {
+    void watchdogTick();
+  }, WATCHDOG_INTERVAL_MS);
+  logInfo(`[Watchdog] ativo - avalia sessões a cada ${WATCHDOG_INTERVAL_MS / 1000}s`);
 }
 
 // Limpa SOMENTE o dado de autenticação WhatsApp da sessão informada (dados
@@ -1684,6 +1924,42 @@ function clearSessionAuthData(sessionId) {
   if (removed.length) {
     logWhatsApp(`[${sessionId}] auth WhatsApp morta removida (${removed.join(', ')})`);
   }
+}
+
+// Recuperação de QR. Sempre: cancela create em andamento, encerra o browser da
+// sessão e recria a sessão.
+//   forceNewSession=false (fluxo normal, reflete o recover automático/rotina):
+//   encerra o cliente SEM logout (nunca desregistra o aparelho), remove apenas
+//   os locks transitórios (SingletonLock/SingletonSocket/SingletonCookie) e
+//   tenta restaurar a MESMA sessão reutilizando /data/tokens/<sessionId>. NUNCA
+//   apaga auth (Local Storage, Session Storage, IndexedDB, Service Worker).
+//   forceNewSession=true (ação explicitamente destrutiva do usuário, ex.:
+//   "Gerar nova sessão / esquecer aparelho"): além de encerrar, apaga a auth
+//   para escanear um QR realmente novo.
+async function recoverQrSession(sessionId, forceNewSession) {
+  const state = getSessionState(sessionId);
+  await cancelInFlightCreate(state);
+  if (forceNewSession) {
+    await destroySession(sessionId);
+    clearSessionAuthData(sessionId);
+  } else {
+    const current = state.client;
+    state.client = null;
+    state.clientGraceUntil = null;
+    if (current && typeof current.close === 'function') {
+      try {
+        await withTimeout(Promise.resolve(current.close()), 8_000);
+      } catch {
+        // best-effort: o browser órfão é encerrado abaixo
+      }
+    }
+    state.qrCode = null;
+    state.starting = false;
+    setSessionState(state, 'reconnecting');
+    await ensureSessionBrowserStopped(sessionId);
+    removeSessionSingletonLocks(path.join(SESSION_DIR, sessionId));
+  }
+  await startSessionCreate(sessionId);
 }
 
 const app = express();
@@ -2068,8 +2344,10 @@ app.get(
   }
 );
 
-// Recupera o QR travado: encerra a sessão órfã (logout + close), remove a
-// auth morta que bloqueia o canvas de QR e recria a sessão -> QR REAL novo.
+// Recupera o QR travado: encerra a sessão órfã e recria a sessão. Recuperação
+// normal NÃO apaga auth (preserva /data/tokens/<sessionId>); apenas remove os
+// locks transitórios e tenta restaurar a mesma sessão. A limpeza da auth só
+// ocorre com forceNewSession=true (ação explicitamente destrutiva do usuário).
 app.post(
   '/api/whatsapp/:sessionId/recover-qr',
   resolveSessionId,
@@ -2079,15 +2357,12 @@ app.post(
       // Mutex por sessão: serializa destroy+create para nunca haver DOIS
       // create() WPPConnect concorrentes / colisão com recover anterior.
       await runSessionLifecycleOp(sessionId, async () => {
-        const state = getSessionState(sessionId);
-        // Interrompe e aguarda qualquer init WPPConnect em andamento para que
-        // o create() antigo não colida com o novo (libera o userDataDir).
-        await cancelInFlightCreate(state);
-        await destroySession(sessionId);
-        clearSessionAuthData(sessionId);
-        await startSessionCreate(sessionId);
+        await recoverQrSession(
+          sessionId,
+          Boolean(req.body && req.body.forceNewSession === true)
+        );
       });
-      logWhatsApp(`[${sessionId}] recuperação de QR solicitada (nova sessão real iniciada)`);
+      logWhatsApp(`[${sessionId}] recuperação de QR solicitada (sessão restaurada)`);
       res.json({ ok: true, session: sessionId, status: 'connecting' });
     } catch (err) {
       logError(
@@ -2135,6 +2410,8 @@ app.post(
     const sessionId = req.resolvedSessionId;
     try {
       await destroySession(sessionId);
+      const state = getSessionState(sessionId);
+      state.userDisconnectedAt = Date.now();
       res.json({ ok: true, status: 'disconnected' });
     } catch (err) {
       logError(`[WhatsApp ${sessionId}] falha ao desconectar`);
@@ -2236,11 +2513,10 @@ app.post('/api/whatsapp/recover-qr', async (req, res) => {
   try {
     const sessionId = DOMNEX_DEFAULT_SESSION;
     await runSessionLifecycleOp(sessionId, async () => {
-      const state = getSessionState(sessionId);
-      await cancelInFlightCreate(state);
-      await destroySession(sessionId);
-      clearSessionAuthData(sessionId);
-      await startSessionCreate(sessionId);
+      await recoverQrSession(
+        sessionId,
+        Boolean(req.body && req.body.forceNewSession === true)
+      );
     });
     logWhatsApp(`[${sessionId}] recuperação de QR solicitada (rota legada)`);
     res.json({ ok: true, session: sessionId, status: 'connecting' });
@@ -2277,6 +2553,8 @@ app.get('/api/whatsapp/account', makeRequireConnected(DOMNEX_DEFAULT_SESSION), a
 app.post('/api/whatsapp/disconnect', async (req, res) => {
   try {
     await destroySession(DOMNEX_DEFAULT_SESSION);
+    const state = getSessionState(DOMNEX_DEFAULT_SESSION);
+    state.userDisconnectedAt = Date.now();
     res.json({ ok: true, status: 'disconnected' });
   } catch (err) {
     logError('[WhatsApp] falha ao desconectar');
@@ -2365,36 +2643,64 @@ app.post('/api/monitor', (req, res) => {
 
   if (typeof enabled === 'boolean') cfg.enabled = enabled;
 
-  if (parentGroupId !== undefined) {
-    if (parentGroupId === null || parentGroupId === '') {
-      cfg.parentGroupId = null;
-    } else if (
-      typeof parentGroupId === 'string' &&
-      /^[^\s@]+@g\.us$/i.test(parentGroupId)
-    ) {
-      cfg.parentGroupId = parentGroupId;
-    } else {
-      return res.status(400).json({ ok: false, error: 'parentGroupId invalido.' });
-    }
-  }
+  // Proteção de configuração persistida válida vs. sincronização do frontend.
+  // O frontend ainda pode não ter carregado os grupos reais e enviar
+  // parentGroupId='' + childGroupIds=[] (o getAllGroups/listChats retornou 0
+  // temporariamente), inclusive estando o socket JÁ 'connected' — o
+  // getAllGroups/listChats costuma terminar depois que o socket sobe. Portanto
+  // um update com parent vazio + children vazios NUNCA pode sobrescrever
+  // (zerar) uma configuração válida persistida em /data, independentemente do
+  // connectionState. Somente clearGroups:true (ação explícita do usuário,
+  // ex.: "esquecer grupos do monitor") consegue zerar parentGroupId e
+  // childGroupIds intencionalmente.
+  const incomingClearsGroups =
+    (parentGroupId === null || parentGroupId === '') &&
+    Array.isArray(childGroupIds) &&
+    childGroupIds.length === 0;
+  const hasValidPersistedGroups =
+    Boolean(cfg.parentGroupId) ||
+    (Array.isArray(cfg.childGroupIds) && cfg.childGroupIds.length > 0);
+  const explicitClearGroups = Boolean(req.body && req.body.clearGroups === true);
+  const guardGroupsWipe = incomingClearsGroups && hasValidPersistedGroups && !explicitClearGroups;
 
-  if (childGroupIds !== undefined) {
-    if (!Array.isArray(childGroupIds)) {
-      return res
-        .status(400)
-        .json({ ok: false, error: 'childGroupIds deve ser uma lista.' });
-    }
-    const seen = new Set();
-    const valid = childGroupIds.filter((id, index) => {
-      if (typeof id !== 'string' || !/^[^\s@]+@g\.us$/i.test(id)) {
-        return false;
+  if (guardGroupsWipe) {
+    logInfo(
+      `monitor ${sid}: update com parent vazio + children vazios ignorado para grupos (config persistida preservada: mãe=${
+        cfg.parentGroupId
+      } filho(s)=${cfg.childGroupIds.length} tenant=${cfg.tenantId || '—'})`
+    );
+  } else {
+    if (parentGroupId !== undefined) {
+      if (parentGroupId === null || parentGroupId === '') {
+        cfg.parentGroupId = null;
+      } else if (
+        typeof parentGroupId === 'string' &&
+        /^[^\s@]+@g\.us$/i.test(parentGroupId)
+      ) {
+        cfg.parentGroupId = parentGroupId;
+      } else {
+        return res.status(400).json({ ok: false, error: 'parentGroupId invalido.' });
       }
-      if (id === cfg.parentGroupId) return false;
-      if (seen.has(id)) return false;
-      seen.add(id);
-      return true;
-    });
-    cfg.childGroupIds = valid;
+    }
+
+    if (childGroupIds !== undefined) {
+      if (!Array.isArray(childGroupIds)) {
+        return res
+          .status(400)
+          .json({ ok: false, error: 'childGroupIds deve ser uma lista.' });
+      }
+      const seen = new Set();
+      const valid = childGroupIds.filter((id, index) => {
+        if (typeof id !== 'string' || !/^[^\s@]+@g\.us$/i.test(id)) {
+          return false;
+        }
+        if (id === cfg.parentGroupId) return false;
+        if (seen.has(id)) return false;
+        seen.add(id);
+        return true;
+      });
+      cfg.childGroupIds = valid;
+    }
   }
 
   if (childGroupDelays !== undefined) {
@@ -2997,6 +3303,11 @@ app.listen(PORT, HOST, () => {
   );
   if (restoreCandidates.length > 0) {
     for (const acc of restoreCandidates) {
+      // Requisito 4: ANTES de restaurar a sessão persistida, remover SOMENTE os
+      // locks transitórios stale (SingletonLock/SingletonSocket/SingletonCookie).
+      // A auth em /data/tokens/<sessionId> é preservada -> redeploy/restart do
+      // Railway não exige QR novamente.
+      removeSessionSingletonLocks(path.join(SESSION_DIR, acc.sessionId));
       logWhatsApp(`[${acc.sessionId}] sessão persistida detectada - restaurando em segundo plano`);
     }
     // Restaura sessões de forma distribuída para não travar várias páginas
@@ -3011,4 +3322,7 @@ app.listen(PORT, HOST, () => {
   } else {
     logWhatsApp('sem sessões persistidas - aguardando /connect');
   }
+  // Vigilância server-side 24/7: mantém monitor ativo e sessão conectada mesmo
+  // com PC/frontend desligados (nenhum keep-alive via Vercel é necessário).
+  startWatchdog();
 });
