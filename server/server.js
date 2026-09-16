@@ -150,6 +150,21 @@ function createSessionState(sessionId) {
     devicePhone: null,
     // Rota de grupos: sinaliza à resposta se a listagem veio do cache em memória.
     groupsFromCache: false,
+    // Sinaliza que a ÚLTIMA sincronização de grupos falhou por timeout (todas
+    // as estratégias listChats/getAllGroups/getAllChats exauridas, sem cache).
+    // A rota usa para responder WPP_GROUP_SYNC_TIMEOUT (nunca "0 grupos").
+    groupsSyncTimedOut: false,
+    // Contador de falhas CONSECUTIVAS de chamadas WPP reais (listChats,
+    // getHostDevice, probe) que deram timeout. Incrementado quando a chamada
+    // excede o limite e retorna null/timeout; resetado a cada evidência
+    // positiva de vida (mensagem recebida, listChats OK, getHostDevice OK,
+    // sendText OK, probe saudável). Acumula sinais de runtime WPP morto
+    // quando connectionState=connected mas o runtime não responde.
+    runtimeTimeoutFailures: 0,
+    // Timestamp da PRIMEIRA falha consecutiva do ciclo atual. Garante que a
+    // recuperação só ocorre após as falhas se estenderem por ~60s, evitando
+    // recuperar por uma rajada curta e transitória.
+    runtimeTimeoutFirstFailureAt: null,
   };
 }
 
@@ -486,11 +501,24 @@ async function refreshHostDevice(state) {
       WPP_ROUTE_TIMEOUT_MS,
       `getHostDevice (${state.sessionId})`
     );
-    if (!info) return;
+    if (!info) {
+      // getHostDevice não respondeu: sinal de runtime WPP travado.
+      state.runtimeTimeoutFailures += 1;
+      if (
+        !state.runtimeTimeoutFirstFailureAt ||
+        state.runtimeTimeoutFailures === 1
+      ) {
+        state.runtimeTimeoutFirstFailureAt = Date.now();
+      }
+      return;
+    }
     const raw = info || {};
     const me = raw.me || {};
     let number = state.devicePhone;
     let name = state.deviceName;
+    // getHostDevice respondeu: evidência positiva de vida do runtime.
+    state.runtimeTimeoutFailures = 0;
+    state.runtimeTimeoutFirstFailureAt = null;
     if (me.id && me.id.user) {
       number = String(me.id.user);
     } else if (raw.hostPhoneNumber) {
@@ -519,8 +547,11 @@ async function refreshHostDevice(state) {
 // ===== Eventos de mensagem por sessão =====
 function registerMessage(state, message) {
   if (!message) return;
-  // Evidência de vida: mensagem recebida -> zera falhas consecutivas de sonda.
+  // Evidência de vida: mensagem recebida -> zera falhas consecutivas de sonda
+  // e de runtime (runtime WPP está respondendo novamente).
   state.probeFailures = 0;
+  state.runtimeTimeoutFailures = 0;
+  state.runtimeTimeoutFirstFailureAt = null;
   try {
     const isGroup = !!message.isGroupMsg;
     const entry = {
@@ -1810,6 +1841,10 @@ function isMonitorEnabledForSession(sessionId) {
 //   'suspect'           - sonda inconclusiva (timeout/null/estado transitório):
 //                         NÃO fecha browser, NÃO recupera; tenta no próximo ciclo
 //   'degraded'          - evidência positiva/decisiva de quebra -> recuperação
+//
+// NOVO: runtimeTimeoutFailures detecta o caso "connectionState=connected mas
+// runtime WPP não responde" (listChats/getHostDevice/probe todos timeout).
+// Quando >= 3 falhas E sendOps=0, a sessão é declarada degraded para recovery.
 async function classifySessionHealth(state) {
   if (state.userDisconnectedAt && !isMonitorEnabledForSession(state.sessionId)) {
     return 'user_disconnected';
@@ -1828,19 +1863,49 @@ async function classifySessionHealth(state) {
   const probe = await probeSocketState(state.client);
   const upper = String(probe || '').toUpperCase();
 
-  // Sonda VÁLIDA + estado saudável = prova positiva de vida -> zera falhas.
+  // Sonda VÁLIDA + estado saudável = prova positiva de vida -> zera falhas
+  // (inclui runtimeTimeoutFailures: o runtime está respondendo novamente).
   if (WATCHDOG_HEALTHY_SOCKET_STATES.has(upper)) {
     state.probeFailures = 0;
+    state.runtimeTimeoutFailures = 0;
+    state.runtimeTimeoutFirstFailureAt = null;
     return 'healthy';
   }
 
-  // Sessão que o runtime marca como CONNECTED com cliente existente: uma sonda
-  // inconclusiva (timeout/null/erro transitório/estado não mapeado) significa
-  // UNKNOWN — NUNCA degraded. Só com evidência POSITIVA de quebra (browser
-  // fechado, DISCONNECTED, UNPAIRED, disconnectedMobile etc) há recuperação.
+  // Sessão que o runtime marca como CONNECTED com cliente existente:
+  // Verifica evidência POSITIVA de runtime morto via runtimeTimeoutFailures.
+  // Sempre exige sendOps=0 (nunca matar um envio em andamento).
   if (state.connectionState === 'connected') {
     state.probeFailures += 1;
     if (WATCHDOG_BREAK_SOCKET_STATES.has(upper)) return 'degraded';
+    // Probe timeout/null em sessão CONNECTED: sinal de runtime WPP travado.
+    // Conte como falha real de runtime (não apenas probe inconclusiva).
+    if (probe === null) {
+      state.runtimeTimeoutFailures += 1;
+      if (
+        !state.runtimeTimeoutFirstFailureAt ||
+        state.runtimeTimeoutFailures === 1
+      ) {
+        state.runtimeTimeoutFirstFailureAt = Date.now();
+      }
+    }
+    // Runtime WPP morto: connectionState=connected mas chamadas reais (listChats,
+    // getHostDevice, probe) dão timeout repetidamente. Necessita evidência POSITIVA
+    // de falha (>= 3 falhas consecutivas estendidas por >= ~60s) antes de recuperar.
+    const failuresExtendedFor = state.runtimeTimeoutFirstFailureAt
+      ? Date.now() - state.runtimeTimeoutFirstFailureAt
+      : 0;
+    if (
+      state.runtimeTimeoutFailures >= 3 &&
+      failuresExtendedFor >= 60_000 &&
+      (state.sendOps || 0) === 0
+    ) {
+      logWatchdog(
+        `[Watchdog] runtime WPP sem resposta - recuperação necessária (${state.sessionId}) ` +
+          `runtimeTimeoutFailures=${state.runtimeTimeoutFailures} spanMs=${failuresExtendedFor} sendOps=${state.sendOps || 0}`
+      );
+      return 'degraded';
+    }
     return 'suspect';
   }
 
@@ -1948,7 +2013,10 @@ async function recoverWhatsAppSession(sessionId) {
         `[Watchdog] recuperação falhou (${sessionId}): sessão terminou em error após recriar`
       );
     } else {
-      getSessionState(sessionId).probeFailures = 0;
+      const s = getSessionState(sessionId);
+      s.probeFailures = 0;
+      s.runtimeTimeoutFailures = 0;
+      s.runtimeTimeoutFirstFailureAt = null;
       logWatchdog(`[Watchdog] recuperação concluída (${sessionId})`);
     }
   } catch (err) {
@@ -2083,6 +2151,7 @@ app.use(
         'http://localhost:5173',
         'http://127.0.0.1:5173',
         'http://[::1]:5173',
+        'https://pulseflow-delta.vercel.app',
       ]);
       const productionOrigin = 'https://pulseflow.vercel.app';
       const previewOriginPattern = /^https:\/\/pulseflow-[a-z0-9-]+-domnex-tech\.vercel\.app$/i;
@@ -2239,32 +2308,162 @@ const groupsListCache = new Map(); // sessionId -> { groups: Array, at: number }
 const groupsListInFlight = new Map(); // sessionId -> Promise<Array> (single-flight)
 const GROUP_LIST_CACHE_TTL_MS = 5_000;
 
-// Busca REAL na API WPPConnect e normaliza para { id, name, participantCount }.
-// Estratégia: listChats é a API oficial (getAllGroups é deprecated). getAllGroups
-// é apenas FALLBACK quando listChats não existir. Nunca lança: em falha o chamador
-// decide (cache vs []), e comTimeout já enquadra o tempo.
+// Cache persistente em disco: preserva o último snapshot válido de grupos por
+// sessão. Em deploy/restart, o cache em memória some mas o disco sobrevive.
+// Se WPP estiver lento/travado, devolve o último snapshot persistido.
+// Produção (PULSEFLOW_STATE_DIR=/data): /data/groups-cache/<sessionId>.json
+const GROUPS_CACHE_DIR = path.join(STATE_DIR, 'groups-cache');
+
+function ensureGroupsCacheDir() {
+  try {
+    if (!existsSync(GROUPS_CACHE_DIR)) mkdirSync(GROUPS_CACHE_DIR, { recursive: true });
+  } catch {
+    // melhor esforço
+  }
+}
+
+function loadPersistedGroupsSnapshot(sessionId) {
+  try {
+    const filePath = path.join(GROUPS_CACHE_DIR, `${sessionId}.json`);
+    if (!existsSync(filePath)) return null;
+    const raw = readFileSync(filePath, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed.groups) && parsed.groups.length > 0) {
+      return parsed.groups;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function persistGroupsSnapshot(sessionId, groups) {
+  try {
+    ensureGroupsCacheDir();
+    const filePath = path.join(GROUPS_CACHE_DIR, `${sessionId}.json`);
+    writeFileSync(filePath, JSON.stringify({ groups, at: Date.now() }), 'utf8');
+  } catch {
+    // melhor esforço — falha de escrita NÃO deve bloquear a sessão
+  }
+}
+
+// No startup: carrega o último snapshot persistido de cada sessão para o cache
+// em memória. Assim, mesmo antes de qualquer listChats real, se o WPP estiver
+// lento/travado, os grupos já estão disponíveis para o frontend.
+function loadAllPersistedGroupsSnapshots() {
+  try {
+    ensureGroupsCacheDir();
+    if (!existsSync(GROUPS_CACHE_DIR)) return;
+    for (const file of readdirSync(GROUPS_CACHE_DIR)) {
+      if (!file.endsWith('.json')) continue;
+      const sessionId = file.slice(0, -'.json'.length);
+      try {
+        const raw = JSON.parse(readFileSync(path.join(GROUPS_CACHE_DIR, file), 'utf8'));
+        if (raw && Array.isArray(raw.groups) && raw.groups.length > 0) {
+          groupsListCache.set(sessionId, { groups: raw.groups, at: Date.now() });
+        }
+      } catch {
+        // ignora snapshot corrompido
+      }
+    }
+    if (groupsListCache.size > 0) {
+      logWhatsApp(`snapshots de grupos restaurados: ${[...groupsListCache.keys()].join(', ')}`);
+    }
+  } catch {
+    // melhor esforço
+  }
+}
+
+// Tempo máximo por ESTRATÉGIA no fallback de grupos. Com 3 estratégias e 3s
+// cada, o pior caso completo leva ~9s (mesmo teto do WPP_ROUTE_TIMEOUT_MS).
+const GROUP_LIST_STRATEGY_TIMEOUT_MS = 3_000;
+
+// Busca REAL na API WPPConnect com FALLBACK entre estratégias independentes.
+// Ordem: A) listChats -> B) getAllGroups -> C) getAllChats (filtrando @g.us).
+// Cada tentativa tem timeout PRÓPRIO: uma estratégia que trava NÃO bloqueia as
+// seguintes (antes o timeout envolvia a operação toda e matava o fallback).
+// O primeiro resultado não-vazio vence. Nunca lança: em falha o chamador
+// decide (cache vs []), e o chamador nunca derruba a sessão por listagem.
 function fetchRealGroups(sessionClient) {
   return (async () => {
-    let source = [];
+    const state = sessionStateForClient(sessionClient);
+    const sid = state ? state.sessionId : '?';
+    if (!sessionClient) return [];
+
+    let groups = [];
+
+    // Estratégia A — listChats (API oficial de chats).
     if (typeof sessionClient.listChats === 'function') {
-      const chats = await sessionClient.listChats({ onlyGroups: true });
-      source = chats || [];
-    } else if (typeof sessionClient.getAllGroups === 'function') {
-      source = await sessionClient.getAllGroups(false);
-    } else if (typeof sessionClient.getAllChats === 'function') {
-      const chats = await sessionClient.getAllChats();
-      source = (chats || []).filter((chat) => chat && chat.isGroup);
+      const chats = await withTimeout(
+        Promise.resolve(sessionClient.listChats({ onlyGroups: true })),
+        GROUP_LIST_STRATEGY_TIMEOUT_MS,
+        `listChats (${sid})`
+      );
+      const parsed = (Array.isArray(chats) ? chats : [])
+        .map(normalizeGroupSource)
+        .filter((g) => g && g.id);
+      if (parsed.length > 0) {
+        groups = parsed;
+        logWhatsApp(`[${sid}] grupos via listChats = ${parsed.length}`);
+      } else {
+        logWhatsApp(`[${sid}] listChats falhou/timeout - tentando getAllGroups`);
+      }
     } else {
-      throw new Error('Nenhuma API de consulta de grupos disponível.');
+      logWhatsApp(`[${sid}] listChats indisponível - tentando getAllGroups`);
     }
-    return (Array.isArray(source) ? source : [])
-      .map(normalizeGroupSource)
-      .filter((group) => group && group.id)
-      .sort((a, b) => {
-        const an = a.name || '';
-        const bn = b.name || '';
-        return an.localeCompare(bn, 'pt-BR') || a.id.localeCompare(b.id);
-      });
+
+    // Estratégia B — getAllGroups (deprecated, presente em muitas versões).
+    if (
+      groups.length === 0 &&
+      typeof sessionClient.getAllGroups === 'function'
+    ) {
+      const list = await withTimeout(
+        Promise.resolve(sessionClient.getAllGroups(false)),
+        GROUP_LIST_STRATEGY_TIMEOUT_MS,
+        `getAllGroups (${sid})`
+      );
+      const parsed = (Array.isArray(list) ? list : [])
+        .map(normalizeGroupSource)
+        .filter((g) => g && g.id);
+      if (parsed.length > 0) {
+        groups = parsed;
+        logWhatsApp(`[${sid}] grupos via getAllGroups = ${parsed.length}`);
+      } else {
+        logWhatsApp(`[${sid}] getAllGroups falhou/timeout - tentando getAllChats`);
+      }
+    }
+
+    // Estratégia C — getAllChats (filtra IDs @g.us).
+    if (
+      groups.length === 0 &&
+      typeof sessionClient.getAllChats === 'function'
+    ) {
+      const chats = await withTimeout(
+        Promise.resolve(sessionClient.getAllChats()),
+        GROUP_LIST_STRATEGY_TIMEOUT_MS,
+        `getAllChats (${sid})`
+      );
+      const filtered = (Array.isArray(chats) ? chats : []).filter(
+        (chat) =>
+          chat &&
+          (chat.isGroup || /@g\.us$/i.test(String(chat.id || '')))
+      );
+      const parsed = filtered
+        .map(normalizeGroupSource)
+        .filter((g) => g && g.id);
+      if (parsed.length > 0) {
+        groups = parsed;
+        logWhatsApp(`[${sid}] grupos via getAllChats = ${parsed.length}`);
+      } else {
+        logWhatsApp(`[${sid}] getAllChats falhou/timeout ou sem grupos`);
+      }
+    }
+
+    return groups.sort((a, b) => {
+      const an = a.name || '';
+      const bn = b.name || '';
+      return an.localeCompare(bn, 'pt-BR') || a.id.localeCompare(b.id);
+    });
   })();
 }
 
@@ -2294,6 +2493,7 @@ async function listGroupsForClient(sessionClient) {
       now - cachedEntry.at < GROUP_LIST_CACHE_TTL_MS
     ) {
       state.groupsFromCache = true;
+      state.groupsSyncTimedOut = false;
       return cachedEntry.groups;
     }
     logWhatsApp(`[${sessionId}] listagem de grupos iniciada`);
@@ -2302,7 +2502,7 @@ async function listGroupsForClient(sessionClient) {
       fetched = await withTimeout(
         fetchRealGroups(sessionClient),
         WPP_ROUTE_TIMEOUT_MS,
-        `listChats/getAllGroups (${sessionId})`
+        `fetchRealGroups (${sessionId})`
       );
     } catch {
       fetched = null;
@@ -2314,21 +2514,45 @@ async function listGroupsForClient(sessionClient) {
         groupsListCache.set(sessionId, { groups: fetched, at: Date.now() });
       }
       state.groupsFromCache = false;
-      const via =
-        typeof sessionClient.listChats === 'function' ? 'listChats' : 'getAllGroups';
-      logWhatsApp(`[${sessionId}] grupos carregados via ${via} = ${fetched.length}`);
+      state.groupsSyncTimedOut = false;
+      // Sucesso: reseta runtimeTimeoutFailures e persiste snapshot em disco.
+      if (fetched.length > 0) {
+        state.runtimeTimeoutFailures = 0;
+        state.runtimeTimeoutFirstFailureAt = null;
+        persistGroupsSnapshot(sessionId, fetched);
+      }
+      logWhatsApp(`[${sessionId}] listagem de grupos concluída (${fetched.length})`);
       return fetched;
     }
-    // Timeout/erro: usa o último resultado válido se houver.
+    // Timeout/erro de TODAS as estratégias: incrementa contador de falhas
+    // do runtime e marca a sincronização como FALHADA (não "0 grupos").
+    state.groupsSyncTimedOut = true;
+    state.runtimeTimeoutFailures += 1;
+    if (!state.runtimeTimeoutFirstFailureAt || state.runtimeTimeoutFailures === 1) {
+      state.runtimeTimeoutFirstFailureAt = Date.now();
+    }
+    // Usa o último resultado válido se houver (memória ou disco).
     if (cachedEntry && Array.isArray(cachedEntry.groups)) {
       state.groupsFromCache = true;
+      state.groupsSyncTimedOut = false;
       logWhatsApp(
-        `[${sessionId}] listagem de grupos timeout - usando cache ${cachedEntry.groups.length}`
+        `[${sessionId}] listagem de grupos timeout - usando cache memória ${cachedEntry.groups.length}`
       );
       return cachedEntry.groups;
     }
+    const diskSnapshot = loadPersistedGroupsSnapshot(sessionId);
+    if (diskSnapshot && diskSnapshot.length > 0) {
+      state.groupsFromCache = true;
+      state.groupsSyncTimedOut = false;
+      logWhatsApp(
+        `[${sessionId}] listagem de grupos timeout - usando cache disco ${diskSnapshot.length}`
+      );
+      return diskSnapshot;
+    }
     state.groupsFromCache = false;
-    logWhatsApp(`[${sessionId}] listagem de grupos falhou: timeout sem cache válido`);
+    logWhatsApp(`[${sessionId}] listagem de grupos falhou: timeout sem cache válido (runtimeTimeoutFailures=${state.runtimeTimeoutFailures})`);
+    // Retornar [] + groupsSyncTimedOut=true sinaliza a rota a responder a
+    // falha de sincronização como WPP_GROUP_SYNC_TIMEOUT (nunca como "0 grupos").
     return [];
   })();
 
@@ -2378,7 +2602,11 @@ async function sendViaClient(sessionClient, groupId, message) {
   if (sendState) sendState.sendOps += 1;
   try {
     const sent = await sessionClient.sendText(groupId, message);
-    if (sendState) sendState.probeFailures = 0;
+    if (sendState) {
+      sendState.probeFailures = 0;
+      sendState.runtimeTimeoutFailures = 0;
+      sendState.runtimeTimeoutFirstFailureAt = null;
+    }
     const messageId =
       (sent && sent.id && (sent.id._serialized || sent.id.id)) || null;
     return messageId;
@@ -2407,7 +2635,11 @@ async function sendProductWithMedia(sessionClient, groupId, message, imageUrl) {
         const messageId =
           (sent && sent.id && (sent.id._serialized || sent.id.id)) || null;
         logWhatsApp(`[auto-search] envio com mídia OK (${groupId})`);
-        if (sendState) sendState.probeFailures = 0;
+        if (sendState) {
+          sendState.probeFailures = 0;
+          sendState.runtimeTimeoutFailures = 0;
+          sendState.runtimeTimeoutFirstFailureAt = null;
+        }
         return { messageId, media: 'sent' };
       } catch (err) {
         logWhatsApp(
@@ -2420,7 +2652,11 @@ async function sendProductWithMedia(sessionClient, groupId, message, imageUrl) {
     const sent = await sessionClient.sendText(groupId, message);
     const messageId =
       (sent && sent.id && (sent.id._serialized || sent.id.id)) || null;
-    if (sendState) sendState.probeFailures = 0;
+    if (sendState) {
+      sendState.probeFailures = 0;
+      sendState.runtimeTimeoutFailures = 0;
+      sendState.runtimeTimeoutFirstFailureAt = null;
+    }
     return { messageId, media: 'text' };
   } finally {
     if (sendState) sendState.sendOps = Math.max(0, sendState.sendOps - 1);
@@ -2441,8 +2677,17 @@ app.get('/api/health', (req, res) => {
   res.json({ ok: true, service: 'domnex-whatsapp-server', session: DOMNEX_DEFAULT_SESSION });
 });
 
+// ===== Headers no-cache para rotas dinâmicas WPP =====
+// Previne que proxies/CDNs/HTTP caches retornem 304 ou respostas stale.
+// Rotas de grupos, status e conta precisam sempre de JSON atualizado.
+function setDynamicWppHeaders(_req, res, next) {
+  res.set('Cache-Control', 'no-store');
+  res.set('Pragma', 'no-cache');
+  next();
+}
+
 // ===== Contas (multisessão) =====
-app.get('/api/whatsapp/accounts', (req, res) => {
+app.get('/api/whatsapp/accounts', setDynamicWppHeaders, (req, res) => {
   res.json({ ok: true, accounts: buildAccountView(), maxAccounts: MAX_ACCOUNTS });
 });
 
@@ -2524,6 +2769,7 @@ app.delete(
 // ===== Rotas com sessão explícita (:sessionId) =====
 app.get(
   '/api/whatsapp/:sessionId/status',
+  setDynamicWppHeaders,
   resolveSessionId,
   (req, res) => {
     res.json(statusPayload(getSessionState(req.resolvedSessionId)));
@@ -2598,6 +2844,7 @@ app.post(
 
 app.get(
   '/api/whatsapp/:sessionId/account',
+  setDynamicWppHeaders,
   resolveSessionId,
   requireConnectedSession,
   async (req, res) => {
@@ -2648,6 +2895,7 @@ app.post(
 
 app.get(
   '/api/whatsapp/:sessionId/groups',
+  setDynamicWppHeaders,
   resolveSessionId,
   requireConnectedSession,
   async (req, res) => {
@@ -2656,7 +2904,21 @@ app.get(
       const state = getSessionState(sessionId);
       const groups = await listGroupsForClient(state.client);
       const cached = Boolean(state.groupsFromCache);
+      const syncTimedOut = Boolean(state.groupsSyncTimedOut);
       state.groupsFromCache = false;
+      state.groupsSyncTimedOut = false;
+      // TODAS as estratégias falharam por timeout e não há cache: o frontend
+      // NÃO pode interpretar como "0 grupos" — é FALHA de sincronização.
+      if (groups.length === 0 && syncTimedOut) {
+        return res.json({
+          ok: false,
+          groups: [],
+          cached: false,
+          runtimeTimeout: true,
+          total: 0,
+          error: 'WPP_GROUP_SYNC_TIMEOUT',
+        });
+      }
       res.json({
         ok: true,
         session: sessionId,
@@ -2701,7 +2963,7 @@ app.get(
 );
 
 // ===== Rotas legadas (compatibilidade, sempre a conta principal) =====
-app.get('/api/whatsapp/status', (req, res) => {
+app.get('/api/whatsapp/status', setDynamicWppHeaders, (req, res) => {
   res.json(statusPayload(getSessionState(DOMNEX_DEFAULT_SESSION)));
 });
 
@@ -2751,7 +3013,7 @@ app.post('/api/whatsapp/recover-qr', async (req, res) => {
   }
 });
 
-app.get('/api/whatsapp/account', makeRequireConnected(DOMNEX_DEFAULT_SESSION), async (req, res) => {
+app.get('/api/whatsapp/account', setDynamicWppHeaders, makeRequireConnected(DOMNEX_DEFAULT_SESSION), async (req, res) => {
   try {
     const state = getSessionState(DOMNEX_DEFAULT_SESSION);
     if (state.client && typeof state.client.getHostDevice === 'function') {
@@ -2790,12 +3052,26 @@ app.post('/api/whatsapp/disconnect', async (req, res) => {
   }
 });
 
-app.get('/api/whatsapp/groups', makeRequireConnected(DOMNEX_DEFAULT_SESSION), async (req, res) => {
+app.get('/api/whatsapp/groups', setDynamicWppHeaders, makeRequireConnected(DOMNEX_DEFAULT_SESSION), async (req, res) => {
   try {
     const state = getSessionState(DOMNEX_DEFAULT_SESSION);
     const groups = await listGroupsForClient(state.client);
     const cached = Boolean(state.groupsFromCache);
+    const syncTimedOut = Boolean(state.groupsSyncTimedOut);
     state.groupsFromCache = false;
+    state.groupsSyncTimedOut = false;
+    // Todas as estratégias falharam por timeout e não há cache: FALHA de
+    // sincronização (nunca deve parecer "0 grupos" válido no frontend).
+    if (groups.length === 0 && syncTimedOut) {
+      return res.json({
+        ok: false,
+        groups: [],
+        cached: false,
+        runtimeTimeout: true,
+        total: 0,
+        error: 'WPP_GROUP_SYNC_TIMEOUT',
+      });
+    }
     res.json({ ok: true, groups, total: groups.length, cached });
   } catch (err) {
     logError(`[WhatsApp] falha ao listar grupos: ${String((err && err.message) || err)}`);
@@ -3521,6 +3797,7 @@ if (!existsSync(SESSION_DIR)) {
 
 loadAccounts();
 loadMonitorConfig();
+loadAllPersistedGroupsSnapshots();
 
 app.listen(PORT, HOST, () => {
   logInfo(`API escutando em http://${HOST}:${PORT}`);

@@ -17,6 +17,19 @@ interface ApiErrorBody {
   error?: string;
 }
 
+/**
+ * Lançado quando o backend responde runtimeTimeout=true (todas as estratégias
+ * de listagem falharam e não há cache). Permite ao frontend distinguir uma
+ * sincronização que FALHOU de um resultado válido com zero grupos.
+ */
+export class GroupSyncTimeoutError extends Error {
+  readonly runtimeTimeout = true;
+  constructor() {
+    super('Falha ao sincronizar grupos');
+    this.name = 'GroupSyncTimeoutError';
+  }
+}
+
 async function apiFetch<T>(
   baseUrl: string,
   path: string,
@@ -36,18 +49,17 @@ async function apiFetch<T>(
     return undefined as unknown as T;
   }
 
+  // Sempre ler o JSON — mesmo em erros HTTP — para extrair mensagem
+  // controlada do backend (ex.: runtimeTimeout, WPP_RUNTIME_TIMEOUT).
+  const body = await res.json().catch(() => ({}));
+
   if (!res.ok) {
-    let message = `Erro HTTP ${res.status}`;
-    try {
-      const body = (await res.json()) as ApiErrorBody;
-      if (body && body.error) message = body.error;
-    } catch {
-      // mantém a mensagem padrão
-    }
+    const message =
+      (body as ApiErrorBody | undefined)?.error || `Erro HTTP ${res.status}`;
     throw new Error(message);
   }
 
-  return (await res.json()) as T;
+  return body as T;
 }
 
 // Monta o caminho da API: com sessão explícita, ou o caminho legado (conta
@@ -159,8 +171,17 @@ export class WppConnectProvider implements WhatsAppProvider {
   async getGroups(sessionId?: string): Promise<WhatsAppGroup[]> {
     const effective = sessionId || DOMNEX_DEFAULT_SESSION_ID;
     const data = await apiFetch<{
-      groups: WhatsAppGroup[];
+      ok?: boolean;
+      groups?: WhatsAppGroup[];
+      runtimeTimeout?: boolean;
+      cached?: boolean;
     }>(this.baseUrl, sessionPath(sessionId, '/groups'));
+    // Backend responde runtimeTimeout=true quando TODAS as estratégias de
+    // listagem falharam (timeout) e não há cache. Isso NÃO é "0 grupos":
+    // é falha de sincronização -> sinaliza ao hook/UI com erro tipado.
+    if (data.runtimeTimeout) {
+      throw new GroupSyncTimeoutError();
+    }
     return (data.groups || [])
       .map((group) => normalizeGroup(group, effective))
       .filter((group) => Boolean(group.id && group.id.trim()));

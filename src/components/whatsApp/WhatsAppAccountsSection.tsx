@@ -50,6 +50,7 @@ export const WhatsAppAccountsSection: React.FC = () => {
     error,
     qrBySession,
     syncingSession,
+    syncTimeoutBySession,
     addAccount,
     connectAccount,
     disconnectAccount,
@@ -202,13 +203,23 @@ export const WhatsAppAccountsSection: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-1.5 min-w-0">
-                      <Users className="w-3 h-3 text-[#64748B] shrink-0" />
-                      <span className="text-[10px] text-[#64748B] whitespace-nowrap">
-                        {groupCountFor(account.sessionId)}{' '}
-                        {groupCountFor(account.sessionId) === 1
-                          ? 'grupo'
-                          : 'grupos'}
-                      </span>
+                      {syncTimeoutBySession[account.sessionId] &&
+                      groupCountFor(account.sessionId) === 0 ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-red-700 whitespace-nowrap">
+                          <AlertTriangle className="w-3 h-3 shrink-0" />
+                          Falha ao sincronizar grupos
+                        </span>
+                      ) : (
+                        <>
+                          <Users className="w-3 h-3 text-[#64748B] shrink-0" />
+                          <span className="text-[10px] text-[#64748B] whitespace-nowrap">
+                            {groupCountFor(account.sessionId)}{' '}
+                            {groupCountFor(account.sessionId) === 1
+                              ? 'grupo'
+                              : 'grupos'}
+                          </span>
+                        </>
+                      )}
                     </div>
 
                     <StatusBadge status={account.status} />
@@ -225,9 +236,15 @@ export const WhatsAppAccountsSection: React.FC = () => {
                             leftIcon={
                               <RefreshCw className="w-3 h-3" />
                             }
-                            className="text-[11px]"
+                            className={`text-[11px] ${
+                              syncTimeoutBySession[account.sessionId]
+                                ? 'text-red-700 border-red-500/30 hover:border-red-500/50'
+                                : ''
+                            }`}
                           >
-                            Sincronizar grupos
+                            {syncTimeoutBySession[account.sessionId]
+                              ? 'Tentar sincronizar novamente'
+                              : 'Sincronizar grupos'}
                           </Button>
                           <Button
                             variant="outline"

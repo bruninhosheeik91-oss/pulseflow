@@ -5,6 +5,7 @@ import {
   DOMNEX_DEFAULT_SESSION_ID,
 } from '../../types/whatsApp';
 import { getWhatsAppProvider } from './provider';
+import { GroupSyncTimeoutError } from './wppConnectProvider';
 import {
   setSyncedGroupsForSession,
   clearGroupsForSession,
@@ -38,6 +39,9 @@ export function useWhatsAppAccounts() {
   const [syncingSession, setSyncingSession] = useState<string | null>(null);
   const [groupsBySession, setGroupsBySession] = useState<
     Record<string, WhatsAppGroup[]>
+  >({});
+  const [syncTimeoutBySession, setSyncTimeoutBySession] = useState<
+    Record<string, boolean>
   >({});
 
   const refreshAccounts = useCallback(async () => {
@@ -232,6 +236,11 @@ export function useWhatsAppAccounts() {
           delete next[sessionId];
           return next;
         });
+        setSyncTimeoutBySession((prev) => {
+          const next = { ...prev };
+          delete next[sessionId];
+          return next;
+        });
         await refreshAccounts();
         return { ok: true };
       } catch (err) {
@@ -254,10 +263,24 @@ export function useWhatsAppAccounts() {
       setSyncingSession(sessionId);
       try {
         const groups = await provider.getGroupsForSession(sessionId);
+        // Sincronização VÁLIDA (mesmo com zero grupos): atualiza e limpa
+        // qualquer estado de falha anterior.
         setSyncedGroupsForSession(groups, sessionId);
         setGroupsBySession((prev) => ({ ...prev, [sessionId]: groups }));
+        setSyncTimeoutBySession((prev) => {
+          const next = { ...prev };
+          delete next[sessionId];
+          return next;
+        });
         return { ok: true, count: groups.length };
       } catch (err) {
+        if (err instanceof GroupSyncTimeoutError) {
+          setSyncTimeoutBySession((prev) => ({ ...prev, [sessionId]: true }));
+          return {
+            ok: false,
+            error: 'Falha ao sincronizar grupos',
+          };
+        }
         return {
           ok: false,
           error:
@@ -277,6 +300,7 @@ export function useWhatsAppAccounts() {
     qrBySession,
     syncingSession,
     groupsBySession,
+    syncTimeoutBySession,
     refreshAccounts,
     addAccount,
     connectAccount,

@@ -11,6 +11,7 @@ import { setSyncedGroups } from './groupConfigStore';
 
 const PROVIDER_NOT_CONFIGURED_MESSAGE =
   'Provedor de conexão ainda não configurado.';
+const SYNC_RETRY_AFTER_MS = 30_000;
 
 /**
  * Controla a máquina de estados da conexão WhatsApp.
@@ -32,6 +33,8 @@ export function useWhatsAppConnection() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [groupsError, setGroupsError] = useState<string | null>(null);
   const mountedRef = useRef(true);
+  const lastSyncFailureAt = useRef(0);
+  const syncAttemptId = useRef(0);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -293,31 +296,62 @@ export function useWhatsAppConnection() {
     if (!provider) {
       const error = 'Provedor de conexão ainda não configurado.';
       setGroupsError(error);
+      lastSyncFailureAt.current = Date.now();
       return { ok: false as const, error };
     }
 
+    const attempt = ++syncAttemptId.current;
     setIsSyncing(true);
     setGroupsError(null);
     try {
       const result = await provider.getGroups();
-      if (mountedRef.current) setSyncedGroups(result);
-      return { ok: true as const };
+      if (!mountedRef.current || attempt !== syncAttemptId.current) {
+        return { ok: true as const };
+      }
+      if (Array.isArray(result) && result.length > 0) {
+        setSyncedGroups(result);
+        lastSyncFailureAt.current = 0;
+        return { ok: true as const };
+      }
+      // Backend respondeu com zero grupos e runtimeTimeout=false: sincronização
+      // VÁLIDA (a conta tem zero grupos de verdade). Isso NÃO é falha — o
+      // timeout real lança GroupSyncTimeoutError e cai no catch abaixo.
+      // Preserva os grupos persistidos (nunca apaga configuração monitor).
+      if (Array.isArray(result)) {
+        setGroupsError(null);
+        lastSyncFailureAt.current = 0;
+        return { ok: true as const };
+      }
     } catch (err) {
+      if (!mountedRef.current || attempt !== syncAttemptId.current) {
+        return { ok: false as const, error: 'desmounted' };
+      }
       const error =
         err instanceof Error
           ? err.message
           : 'Falha ao sincronizar os grupos.';
-      if (mountedRef.current) setGroupsError(error);
+      setGroupsError(error);
+      lastSyncFailureAt.current = Date.now();
       return { ok: false as const, error };
     } finally {
-      if (mountedRef.current) setIsSyncing(false);
+      if (mountedRef.current && attempt === syncAttemptId.current) {
+        setIsSyncing(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    if (status === 'connected') {
-      void syncGroups();
+    if (status !== 'connected') return;
+    // Evita re-trigger imediato após falha: espera SYNC_RETRY_AFTER_MS.
+    const sinceFailure = Date.now() - lastSyncFailureAt.current;
+    if (lastSyncFailureAt.current > 0 && sinceFailure < SYNC_RETRY_AFTER_MS) {
+      const delay = SYNC_RETRY_AFTER_MS - sinceFailure;
+      const timer = setTimeout(() => {
+        if (mountedRef.current) void syncGroups();
+      }, delay);
+      return () => clearTimeout(timer);
     }
+    void syncGroups();
   }, [status, syncGroups]);
 
   const sendMessage = useCallback(
