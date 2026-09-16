@@ -129,6 +129,14 @@ function createSessionState(sessionId) {
     // pode estar subindo (PAIRING/OPENING) e uma sonda prematura não deve
     // disparar recuperação em cliente recém-criado e saudável.
     clientGraceUntil: null,
+    // Watchdog: falhas CONSECUTIVAS de sonda (getConnectionState timeout/null/
+    // erro transitório). Zera a cada evidência positiva de vida (mensagem
+    // recebida, sendText OK, sonda válida). Evita degradar sessão saudável.
+    probeFailures: 0,
+    // Contador de operações de envio (sendText/sendImage) EM ANDAMENTO.
+    // Enquanto > 0 o watchdog ADIA qualquer recuperação para nunca matar um
+    // envio vivo (ex.: monitor Grupo Mãe → Filho).
+    sendOps: 0,
     // Vigilância de QR/init: evita "Gerando QR Code..." infinito quando o
     // WPPConnect fica sem canvas de QR real ("QR (undefined)" / sessão não
     // pareada) ou quando a inicialização trava (wapi.js failed / timeout).
@@ -502,6 +510,8 @@ async function refreshHostDevice(state) {
 // ===== Eventos de mensagem por sessão =====
 function registerMessage(state, message) {
   if (!message) return;
+  // Evidência de vida: mensagem recebida -> zera falhas consecutivas de sonda.
+  state.probeFailures = 0;
   try {
     const isGroup = !!message.isGroupMsg;
     const entry = {
@@ -957,6 +967,9 @@ async function handleMonitorAffiliateLink(sessionId, cfg, sourceUrl, msgId) {
   if (!cfg.childLastSendAt || typeof cfg.childLastSendAt !== 'object') {
     cfg.childLastSendAt = {};
   }
+  // Marca o envio EM ANDAMENTO para o watchdog adiar qualquer recuperação até
+  // acabar (nunca fecha o browser no meio de um sendText/sendImage em vivo).
+  st.sendOps += 1;
   for (const child of children) {
     try {
       const delaySeconds = Math.min(
@@ -997,6 +1010,8 @@ async function handleMonitorAffiliateLink(sessionId, cfg, sourceUrl, msgId) {
       monitorErrorLog(sessionId, `erro no envio para ${child}: ${cfg.lastError}`);
     }
   }
+  st.sendOps = Math.max(0, st.sendOps - 1);
+  st.probeFailures = 0;
 
   const now = new Date().toISOString();
   cfg.lastMessageAt = now;
@@ -1180,6 +1195,7 @@ async function handleMonitorReplication(sessionId, message) {
     // pipeline simultaneamente em duas entregas do listener.
     monitorDeduper.remember(msgId);
     monitorLog(sessionId, 'mensagem canônica recebida');
+    getSessionState(sessionId).probeFailures = 0;
     monitorLog(sessionId, 'grupo mãe validado');
 
     const monClient = getSessionState(sessionId).client;
@@ -1266,8 +1282,12 @@ async function handleMonitorReplication(sessionId, message) {
     }
 
     let sent = null;
+    // Marca o envio EM ANDAMENTO: o watchdog adia qualquer recuperação
+    // enquanto este sendText do monitor estiver vivo (nunca mata o browser).
+    st.sendOps += 1;
     try {
       sent = await st.client.sendText(target, canonical.body);
+      st.probeFailures = 0;
     } catch (err) {
       cfg.lastMessageAt = new Date().toISOString();
       cfg.lastMessageId = msgId;
@@ -1275,6 +1295,8 @@ async function handleMonitorReplication(sessionId, message) {
       saveMonitorConfig();
       monitorErrorLog(sessionId, `erro no envio: ${cfg.lastError}`);
       return;
+    } finally {
+      st.sendOps = Math.max(0, st.sendOps - 1);
     }
 
     const sentId =
@@ -1681,6 +1703,29 @@ const WATCHDOG_PROBE_TIMEOUT_MS = 6_000;
 const WATCHDOG_CLIENT_GRACE_MS = 90_000;
 // Log de "sessão saudável" no máximo a cada poucos minutos (evita spam).
 const WATCHDOG_HEALTHY_LOG_MIN_MS = 5 * 60_000;
+// Estados explícitos do socket que COMPROVAM saúde (sonda válida).
+const WATCHDOG_HEALTHY_SOCKET_STATES = new Set(['CONNECTED', 'OPENING', 'PAIRING']);
+// Evidência POSITIVA de quebra (browser comprovadamente fechado, aparelho
+// desconectado, estado morto explicitamente reportado pelo runtime). Uma
+// sessão CONNECTED só pode ser recuperada com uma destas evidências; timeout
+// de sonda NUNCA basta ("UNKNOWN/inconclusivo", não "degraded").
+const WATCHDOG_BREAK_SOCKET_STATES = new Set([
+  'CLOSED',
+  'BROWSER_CLOSE',
+  'SERVER_CLOSE',
+  'DISCONNECTED',
+  'DISCONNECTED_MOBILE',
+  'UNPAIRED',
+  'UNPAIRED_IDLE',
+  'CONFLICT',
+  'PROXYBLOCK',
+  'TOS_BLOCK',
+  'SMB_TOS_BLOCK',
+  'DEPRECATED_VERSION',
+]);
+// Tolerância de falhas consecutivas de sonda inconclusiva (null/timeout) para
+// sessões NÃO-connected antes de declarar degradação.
+const WATCHDOG_PROBE_FAILURES_TOLERANCE = 3;
 const watchdogNoted = new Map();
 const watchdogRecovering = new Set();
 let watchdogRunning = false;
@@ -1742,11 +1787,13 @@ function isMonitorEnabledForSession(sessionId) {
 }
 
 // Classifica a saúde da sessão:
-//   'healthy'           - conectada de fato (socket CONNECTED/OPENING/PAIRING)
+//   'healthy'           - vida comprovada (sonda válida: CONNECTED/OPENING/PAIRING)
 //   'in_progress'       - inicialização em andamento (não intervém)
 //   'user_action'       - aguardando QR real do usuário (não intervém)
 //   'user_disconnected' - desconexão explícita pelo usuário (respeitada)
-//   'degraded'          - estados mortos/timeout/browser fechado -> recuperação
+//   'suspect'           - sonda inconclusiva (timeout/null/estado transitório):
+//                         NÃO fecha browser, NÃO recupera; tenta no próximo ciclo
+//   'degraded'          - evidência positiva/decisiva de quebra -> recuperação
 async function classifySessionHealth(state) {
   if (state.userDisconnectedAt && !isMonitorEnabledForSession(state.sessionId)) {
     return 'user_disconnected';
@@ -1755,24 +1802,39 @@ async function classifySessionHealth(state) {
   if (state.connectionState === 'awaiting_qr') {
     return state.qrCode ? 'user_action' : 'degraded';
   }
-  if (state.client) {
-    // Cliente recém-criado ainda pode estar subindo o socket (PAIRING/OPENING);
-    // dentro da janela de tolerância não iniciamos recuperação.
-    if (state.clientGraceUntil && Date.now() < state.clientGraceUntil) {
-      return 'in_progress';
-    }
-    const probe = await probeSocketState(state.client);
-    const upper = String(probe || '').toUpperCase();
-    if (probe === null) return 'degraded';
-    if (upper === 'CONNECTED' || upper === 'OPENING' || upper === 'PAIRING') {
-      return 'healthy';
-    }
-    // TIMEOUT / CLOSED / UNPAIRED (sem confirmação inequívoca do usuário) ou
-    // qualquer outro estado morto: degradada -> recuperação.
-    return 'degraded';
+  if (!state.client) return 'degraded';
+  // Cliente recém-criado ainda pode estar subindo o socket (PAIRING/OPENING);
+  // dentro da janela de tolerância não iniciamos recuperação.
+  if (state.clientGraceUntil && Date.now() < state.clientGraceUntil) {
+    return 'in_progress';
   }
-  // Sem cliente: 'disconnected', 'error', 'connecting'/'reconnecting' presos
-  // (sem init em andamento) são estados mortos -> recuperação.
+
+  const probe = await probeSocketState(state.client);
+  const upper = String(probe || '').toUpperCase();
+
+  // Sonda VÁLIDA + estado saudável = prova positiva de vida -> zera falhas.
+  if (WATCHDOG_HEALTHY_SOCKET_STATES.has(upper)) {
+    state.probeFailures = 0;
+    return 'healthy';
+  }
+
+  // Sessão que o runtime marca como CONNECTED com cliente existente: uma sonda
+  // inconclusiva (timeout/null/erro transitório/estado não mapeado) significa
+  // UNKNOWN — NUNCA degraded. Só com evidência POSITIVA de quebra (browser
+  // fechado, DISCONNECTED, UNPAIRED, disconnectedMobile etc) há recuperação.
+  if (state.connectionState === 'connected') {
+    state.probeFailures += 1;
+    if (WATCHDOG_BREAK_SOCKET_STATES.has(upper)) return 'degraded';
+    return 'suspect';
+  }
+
+  // Sessão não-connected: sonda morta (null/timeout) pode ser transitória;
+  // tolera N falhas consecutivas antes de declarar degradação, mas um estado
+  // morto EXPLÍCITO degrada imediatamente.
+  state.probeFailures += 1;
+  if (probe === null && state.probeFailures < WATCHDOG_PROBE_FAILURES_TOLERANCE) {
+    return 'suspect';
+  }
   return 'degraded';
 }
 
@@ -1787,6 +1849,14 @@ function applyWatchdogNoted(health, sessionId) {
     watchdogNoted.set(sessionId, 'healthy');
     return;
   }
+  if (health === 'suspect') {
+    // Timeout de probe/probe inconclusiva NUNCA é "degradada"; apenas adia.
+    if (previous !== 'suspect') {
+      logWatchdog(`[Watchdog] probe inconclusiva - recuperação adiada (${sessionId})`);
+    }
+    watchdogNoted.set(sessionId, 'suspect');
+    return;
+  }
   if (health === 'in_progress' || health === 'user_action' || health === 'user_disconnected') {
     watchdogNoted.set(sessionId, health);
     return;
@@ -1794,7 +1864,7 @@ function applyWatchdogNoted(health, sessionId) {
   if (previous !== 'degraded') {
     const state = getSessionState(sessionId);
     logWatchdog(
-      `[Watchdog] sessão degradada (${sessionId}) estado=${state.connectionState}${
+      `[Watchdog] sessão realmente degradada (${sessionId}) estado=${state.connectionState}${
         state.lastError ? ` erro=${String(state.lastError).slice(0, 140)}` : ''
       }`
     );
@@ -1823,6 +1893,16 @@ function watchdogTargetSessionIds() {
 // transitórios e recria a sessão reutilizando /data/tokens/<sessionId>.
 async function recoverWhatsAppSession(sessionId) {
   if (watchdogRecovering.has(sessionId)) return;
+  const guardState = getSessionState(sessionId);
+  // Nunca recuperar com envio vivo: fechar o browser derruba sendText/sendImage
+  // em andamento (Protocol error ...Target closed). Adia até a operação acabar.
+  if ((guardState.sendOps || 0) > 0) {
+    if (watchdogNoted.get(sessionId) !== 'suspect') {
+      logWatchdog(`[Watchdog] probe inconclusiva - recuperação adiada (${sessionId}): envio em andamento`);
+    }
+    watchdogNoted.set(sessionId, 'suspect');
+    return;
+  }
   watchdogRecovering.add(sessionId);
   logWatchdog(`[Watchdog] recuperação iniciada (${sessionId})`);
   try {
@@ -1852,6 +1932,7 @@ async function recoverWhatsAppSession(sessionId) {
         `[Watchdog] recuperação falhou (${sessionId}): sessão terminou em error após recriar`
       );
     } else {
+      getSessionState(sessionId).probeFailures = 0;
       logWatchdog(`[Watchdog] recuperação concluída (${sessionId})`);
     }
   } catch (err) {
@@ -2177,43 +2258,69 @@ function validateSendBody(req, res) {
   return { groupId: groupId.trim(), message: message.trim() };
 }
 
+// Sessão dona de determinado cliente WPPConnect. Usada pelos envoyos para
+// sinalizar operação em andamento ao watchdog (sendOps) e zerar falhas de
+// sonda em sucesso (probeFailures). Busca O(1)-ish: poucas sessões.
+function sessionStateForClient(client) {
+  if (!client) return null;
+  for (const state of sessions.values()) {
+    if (state.client === client) return state;
+  }
+  return null;
+}
+
 async function sendViaClient(sessionClient, groupId, message) {
-  const sent = await sessionClient.sendText(groupId, message);
-  const messageId =
-    (sent && sent.id && (sent.id._serialized || sent.id.id)) || null;
-  return messageId;
+  const sendState = sessionStateForClient(sessionClient);
+  if (sendState) sendState.sendOps += 1;
+  try {
+    const sent = await sessionClient.sendText(groupId, message);
+    if (sendState) sendState.probeFailures = 0;
+    const messageId =
+      (sent && sent.id && (sent.id._serialized || sent.id.id)) || null;
+    return messageId;
+  } finally {
+    if (sendState) sendState.sendOps = Math.max(0, sendState.sendOps - 1);
+  }
 }
 
 // Envio com a foto REAL do produto (imageUrl vem somente do productOfferV2 da
 // Shopee, nunca do corpo da requisição). Usa sendImage por URL do WPPConnect.
 // Se a mídia falhar, cai para envio apenas de texto, sem perder o envio.
 async function sendProductWithMedia(sessionClient, groupId, message, imageUrl) {
-  const isUrl =
-    typeof imageUrl === 'string' && /^https?:\/\//i.test(imageUrl.trim());
-  if (isUrl) {
-    try {
-      const sent = await sessionClient.sendImage(
-        groupId,
-        imageUrl.trim(),
-        'produto.png',
-        message
-      );
-      const messageId =
-        (sent && sent.id && (sent.id._serialized || sent.id.id)) || null;
-      logWhatsApp(`[auto-search] envio com mídia OK (${groupId})`);
-      return { messageId, media: 'sent' };
-    } catch (err) {
-      logWhatsApp(
-        `[auto-search] mídia falhou (${groupId}); enviando apenas texto: ${sanitizeSendError(err)}`
-      );
+  const sendState = sessionStateForClient(sessionClient);
+  if (sendState) sendState.sendOps += 1;
+  try {
+    const isUrl =
+      typeof imageUrl === 'string' && /^https?:\/\//i.test(imageUrl.trim());
+    if (isUrl) {
+      try {
+        const sent = await sessionClient.sendImage(
+          groupId,
+          imageUrl.trim(),
+          'produto.png',
+          message
+        );
+        const messageId =
+          (sent && sent.id && (sent.id._serialized || sent.id.id)) || null;
+        logWhatsApp(`[auto-search] envio com mídia OK (${groupId})`);
+        if (sendState) sendState.probeFailures = 0;
+        return { messageId, media: 'sent' };
+      } catch (err) {
+        logWhatsApp(
+          `[auto-search] mídia falhou (${groupId}); enviando apenas texto: ${sanitizeSendError(err)}`
+        );
+      }
+    } else {
+      logWhatsApp(`[auto-search] sem imageUrl real; enviando apenas texto (${groupId})`);
     }
-  } else {
-    logWhatsApp(`[auto-search] sem imageUrl real; enviando apenas texto (${groupId})`);
+    const sent = await sessionClient.sendText(groupId, message);
+    const messageId =
+      (sent && sent.id && (sent.id._serialized || sent.id.id)) || null;
+    if (sendState) sendState.probeFailures = 0;
+    return { messageId, media: 'text' };
+  } finally {
+    if (sendState) sendState.sendOps = Math.max(0, sendState.sendOps - 1);
   }
-  const sent = await sessionClient.sendText(groupId, message);
-  const messageId =
-    (sent && sent.id && (sent.id._serialized || sent.id.id)) || null;
-  return { messageId, media: 'text' };
 }
 
 // Erro de envio sanitizado (nunca expõe segredos do tenant/Shopee).
