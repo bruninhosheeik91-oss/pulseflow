@@ -301,11 +301,16 @@ async function killSessionBrowserPosix(profilePath) {
 }
 
 // Remove apenas os locks transitórios do perfil. Nunca toca em autenticação.
+// rmSync é chamado INCONDICIONALMENTE porque existsSync() segue o symlink: um
+// SingletonLock/SingletonSocket/SingletonCookie persistido no volume /data pode
+// ser um symlink quebrado (target antigo que não existe mais) e existsSync
+// retornaria false, deixando o lock no perfil e fazendo o Chromium acusar
+// "profile appears to be in use". rmSync(..., { force: true }) remove também o
+// symlink quebrado sem segui-lo.
 function removeSessionSingletonLocks(profilePath) {
   for (const name of CHROMIUM_SINGLETON_LOCKS) {
     try {
-      const target = path.join(profilePath, name);
-      if (existsSync(target)) rmSync(target, { force: true });
+      rmSync(path.join(profilePath, name), { force: true });
     } catch (err) {
       logError(
         `[browser] falha ao remover lock transitório ${name}: ${String((err && err.message) || err)}`
@@ -1841,7 +1846,14 @@ async function recoverWhatsAppSession(sessionId) {
       removeSessionSingletonLocks(path.join(SESSION_DIR, sessionId));
       await startSessionCreate(sessionId);
     });
-    logWatchdog(`[Watchdog] recuperação concluída (${sessionId})`);
+    const afterState = getSessionState(sessionId).connectionState;
+    if (afterState === 'error') {
+      logWatchdog(
+        `[Watchdog] recuperação falhou (${sessionId}): sessão terminou em error após recriar`
+      );
+    } else {
+      logWatchdog(`[Watchdog] recuperação concluída (${sessionId})`);
+    }
   } catch (err) {
     logWatchdog(
       `[Watchdog] recuperação falhou (${sessionId}): ${String((err && err.message) || err)}`
