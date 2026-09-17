@@ -181,6 +181,10 @@ export function setSyncedGroupsForSession(
   syncedAt: string = new Date().toISOString()
 ) {
   const valid = tagGroupsWithSession(groups, sessionId);
+  // Resultado vazio (WPP travado/timeout/sem grupos) NUNCA apaga grupos já
+  // persistidos nem a configuração monitor (Grupo Mãe/Filho). A sincronização
+  // falhar não pode limpar a seleção do usuário.
+  if (valid.length === 0) return;
   const others = state.groups.filter((g) => g.sessionId !== sessionId);
   const nextGroups = [...others, ...valid];
   const ids = new Set(nextGroups.map((g) => g.id));

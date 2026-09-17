@@ -6,6 +6,7 @@ const cors = require('cors');
 const { create } = require('@wppconnect-team/wppconnect');
 const { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync, rmSync } = require('fs');
 const { spawn } = require('child_process');
+const crypto = require('crypto');
 const {
   createAffiliateCredentialsStore,
   EncryptionKeyMissingError,
@@ -75,7 +76,9 @@ const CHROME_PATH =
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const RECENT_LIMIT = 200;
 
-const SESSION_ID_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9-]*$/;
+// sessionId é TÉCNICO e interno (wa_xxxx): nunca aparece como nome visual.
+// O sublinhado é aceito pois os ids gerados ("wa_<hex>") o utilizam.
+const SESSION_ID_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9_-]*$/;
 
 // ===== Credenciais de Afiliados por Cliente (multi-tenant) =====
 // Cada cliente (tenant) mantém as PRÓPRIAS credenciais dos programas de
@@ -425,7 +428,83 @@ function setSessionState(state, next) {
 }
 
 // ===== Cadastro de contas (metadados persistidos, nunca tokens/cookies) =====
+// Modelo de conta: sessionId é o ID TÉCNICO (tokens, WPPConnect, monitor,
+// grupos, cache/persistência) e displayName é o NOME VISUAL definido pelo
+// usuário (editável via PATCH e nunca usado como pasta de tokens).
 let accounts = [];
+
+const ACCOUNT_NAME_MAX_LENGTH = 40;
+
+function normalizeAccountName(value) {
+  const raw = typeof value === 'string' ? value.trim() : '';
+  return raw.slice(0, ACCOUNT_NAME_MAX_LENGTH);
+}
+
+// Nomes herdados do modelo antigo (sessão "principal"/domnex-*) não servem
+// como nome visual: recebem um nome neutro migrado ("WhatsApp", "WhatsApp 1").
+function isLegacyAccountName(value) {
+  if (!value) return false;
+  return (
+    value === 'Conta principal' ||
+    /^domnex-/i.test(value) ||
+    /^Conta domnex-/i.test(value)
+  );
+}
+
+function accountDisplayName(acc) {
+  return normalizeAccountName(acc && (acc.displayName || acc.name)) || 'WhatsApp';
+}
+
+// Migra contas para displayName. Sessões legadas mantêm SESSION ID técnico
+// (preserva tokens/monitor) e ganham nome neutro editável; nomes válidos já
+// existentes são preservados. Garante unicidade case-insensitive entre contas.
+function migrateAccountDisplayNames() {
+  let changed = false;
+  for (const acc of accounts) {
+    const existing = normalizeAccountName(acc.displayName);
+    if (existing) {
+      acc.displayName = existing;
+      continue;
+    }
+    const legacy = acc.name != null ? String(acc.name).trim() : '';
+    if (legacy && !isLegacyAccountName(legacy)) {
+      acc.displayName = normalizeAccountName(legacy);
+    } else {
+      acc.displayName = '';
+    }
+  }
+  const taken = new Set();
+  for (const acc of accounts) {
+    const lower = acc.displayName.toLowerCase();
+    if (taken.has(lower)) {
+      acc.displayName = '';
+    } else {
+      taken.add(lower);
+    }
+  }
+  let index = 0;
+  const nextNeutral = () => {
+    for (;;) {
+      const candidate = index === 0 ? 'WhatsApp' : `WhatsApp ${index}`;
+      index += 1;
+      if (!taken.has(candidate.toLowerCase())) return candidate;
+    }
+  };
+  for (const acc of accounts) {
+    if (!acc.displayName) {
+      acc.displayName = nextNeutral();
+      taken.add(acc.displayName.toLowerCase());
+      changed = true;
+    }
+  }
+  for (const acc of accounts) {
+    if (acc.name !== acc.displayName) {
+      acc.name = acc.displayName;
+      changed = true;
+    }
+  }
+  return changed;
+}
 
 function loadAccounts() {
   try {
@@ -433,21 +512,39 @@ function loadAccounts() {
       const parsed = JSON.parse(readFileSync(ACCOUNTS_FILE, 'utf8'));
       if (Array.isArray(parsed.accounts)) {
         accounts = parsed.accounts.filter(
-          (acc) => acc && typeof acc.sessionId === 'string'
+          (acc) => acc && typeof acc.sessionId === 'string' && acc.sessionId
         );
       }
     }
   } catch (err) {
     logError(`falha ao ler contas: ${String((err && err.message) || err)}`);
   }
-  if (!accounts.some((acc) => acc.sessionId === DOMNEX_DEFAULT_SESSION)) {
-    accounts.unshift({
-      sessionId: DOMNEX_DEFAULT_SESSION,
-      name: 'Conta principal',
-      phone: null,
-      createdAt: new Date().toISOString(),
-    });
+  // Preserva sessões antigas que existam apenas como pasta de tokens: uma
+  // conta conectada antes não pode sumir só por não constar no registry.
+  let addedFromDisk = false;
+  const knownSids = new Set(accounts.map((acc) => acc.sessionId));
+  try {
+    if (existsSync(SESSION_DIR)) {
+      for (const entry of readdirSync(SESSION_DIR, { withFileTypes: true })) {
+        if (!entry.isDirectory()) continue;
+        if (SESSION_ID_PATTERN.test(entry.name) && !knownSids.has(entry.name)) {
+          accounts.push({
+            sessionId: entry.name,
+            displayName: '',
+            name: '',
+            phone: null,
+            createdAt: new Date().toISOString(),
+          });
+          knownSids.add(entry.name);
+          addedFromDisk = true;
+        }
+      }
+    }
+  } catch (err) {
+    logError(`falha ao varrer pastas de tokens: ${String((err && err.message) || err)}`);
   }
+  const changed = migrateAccountDisplayNames();
+  if (changed || addedFromDisk) saveAccounts();
 }
 
 function saveAccounts() {
@@ -464,24 +561,26 @@ function saveAccounts() {
   }
 }
 
+// sessionId GERADO automaticamente e imutável: nunca é informado pelo usuário,
+// nunca vira pasta baseada em nome visual (pastas usam STATE_DIR/tokens/<sid>).
 function nextSessionId() {
-  let index = 2;
   const taken = new Set(accounts.map((acc) => acc.sessionId));
-  while (index <= 99) {
-    const candidate = `domnex-${String(index).padStart(2, '0')}`;
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    const candidate = `wa_${crypto.randomBytes(4).toString('hex')}`;
     if (!taken.has(candidate)) return candidate;
-    index += 1;
   }
-  return `domnex-${Date.now().toString(36)}`;
+  return `wa_${Date.now().toString(36)}`;
 }
 
 function buildAccountView() {
   return accounts.map((acc) => {
     const st = getSessionState(acc.sessionId);
+    const displayName = accountDisplayName(acc);
     return {
       id: acc.sessionId,
       sessionId: acc.sessionId,
-      name: st.deviceName || acc.name || acc.sessionId,
+      displayName,
+      name: displayName,
       phone: st.devicePhone || acc.phone || null,
       status: st.connectionState,
       connectedAt: st.connectedAt,
@@ -532,10 +631,11 @@ async function refreshHostDevice(state) {
     if (number || name) {
       state.devicePhone = number;
       state.deviceName = name;
+      // displayName é definido pelo USUÁRIO e nunca é substituído pelo
+      // pushname do aparelho. Persiste apenas o telefone conhecido.
       const meta = accounts.find((acc) => acc.sessionId === state.sessionId);
-      if (meta) {
-        if (name) meta.name = name;
-        if (number) meta.phone = number;
+      if (meta && number && meta.phone !== number) {
+        meta.phone = number;
         saveAccounts();
       }
     }
@@ -2691,6 +2791,9 @@ app.get('/api/whatsapp/accounts', setDynamicWppHeaders, (req, res) => {
   res.json({ ok: true, accounts: buildAccountView(), maxAccounts: MAX_ACCOUNTS });
 });
 
+// Cria uma conta nova a partir do NOME VISUAL (displayName) do usuário.
+// O sessionId técnico é gerado automaticamente e a sessão começa na hora,
+// para o QR Code aparecer no card da conta assim que criada.
 app.post('/api/whatsapp/accounts', (req, res) => {
   if (MAX_ACCOUNTS > 0 && accounts.length >= MAX_ACCOUNTS) {
     return res.status(409).json({
@@ -2698,40 +2801,92 @@ app.post('/api/whatsapp/accounts', (req, res) => {
       error: `Limite de ${MAX_ACCOUNTS} contas atingido (definido por MAX_WHATSAPP_ACCOUNTS).`,
     });
   }
-  const { sessionId, name } = req.body || {};
-  let sid = typeof sessionId === 'string' && sessionId.trim() ? sessionId.trim() : nextSessionId();
-  if (!SESSION_ID_PATTERN.test(sid)) {
-    return res.status(400).json({ ok: false, error: 'sessionId invalido.' });
+  const { name } = req.body || {};
+  const displayName = normalizeAccountName(name);
+  if (!displayName) {
+    return res.status(400).json({ ok: false, error: 'Informe um nome para a conta.' });
   }
-  if (accounts.some((acc) => acc.sessionId === sid)) {
-    return res.status(409).json({ ok: false, error: 'Conta já existente.' });
+  const lower = displayName.toLowerCase();
+  if (
+    accounts.some(
+      (acc) => (acc.displayName || acc.name || '').trim().toLowerCase() === lower
+    )
+  ) {
+    return res
+      .status(409)
+      .json({ ok: false, error: `Já existe uma conta com o nome "${displayName}".` });
   }
+  const sid = nextSessionId();
   accounts.push({
     sessionId: sid,
-    name:
-      typeof name === 'string' && name.trim() ? name.trim() : `Conta ${sid}`,
+    displayName,
+    name: displayName,
     phone: null,
     createdAt: new Date().toISOString(),
   });
   saveAccounts();
-  // Estado da sessão passa a existir (ainda desconectado; QR após connect).
   getSessionState(sid);
-  logWhatsApp(`conta adicionada: ${sid}`);
+  logWhatsApp(`conta criada: ${sid} ("${displayName}")`);
+  // Inicia a sessão imediatamente: QR real é gerado em segundo plano.
+  void runSessionLifecycleOp(sid, () => startSessionCreate(sid)).catch((err) => {
+    logError(
+      `[WhatsApp ${sid}] falha ao iniciar sessão após criação: ${String(
+        (err && err.message) || err
+      )}`
+    );
+  });
   res.json({ ok: true, account: buildAccountView().find((a) => a.sessionId === sid) });
 });
 
+// ===== Renomear conta (apenas displayName) =====
+// Troca SOMENTE o nome visual. Não recria a sessão, não gera QR novo, não move
+// tokens, não toca no monitor nem nos grupos vinculados: sessionId é imutável.
+app.patch(
+  '/api/whatsapp/:sessionId/account',
+  setDynamicWppHeaders,
+  resolveSessionId,
+  (req, res) => {
+    const sessionId = req.resolvedSessionId;
+    const meta = accounts.find((acc) => acc.sessionId === sessionId);
+    if (!meta) {
+      return res.status(404).json({ ok: false, error: 'Conta não encontrada.' });
+    }
+    const { displayName } = req.body || {};
+    const next = normalizeAccountName(displayName);
+    if (!next) {
+      return res.status(400).json({ ok: false, error: 'Informe um nome para a conta.' });
+    }
+    const lower = next.toLowerCase();
+    if (
+      accounts.some(
+        (acc) =>
+          acc.sessionId !== sessionId &&
+          (acc.displayName || acc.name || '').trim().toLowerCase() === lower
+      )
+    ) {
+      return res
+        .status(409)
+        .json({ ok: false, error: `Já existe uma conta com o nome "${next}".` });
+    }
+    meta.displayName = next;
+    meta.name = next;
+    saveAccounts();
+    logWhatsApp(`conta renomeada: ${sessionId} -> "${next}"`);
+    res.json({
+      ok: true,
+      account: buildAccountView().find((a) => a.sessionId === sessionId),
+    });
+  }
+);
+
 // ===== Remoção definitiva de uma sessão (conta + estado + monitor + tokens) =====
+// Nenhuma conta é protegida por ser "principal": qualquer conta criada pelo
+// usuário pode ser removida (a confirmação acontece no próprio frontend).
 app.delete(
   '/api/whatsapp/:sessionId/account',
   resolveSessionId,
   async (req, res) => {
     const sessionId = req.resolvedSessionId;
-    if (sessionId === DOMNEX_DEFAULT_SESSION) {
-      return res.status(409).json({
-        ok: false,
-        error: 'A conta principal (domnex-main) não pode ser removida.',
-      });
-    }
     try {
       await destroySession(sessionId);
     } catch (err) {
@@ -2854,13 +3009,17 @@ app.get(
       if (state.client && typeof state.client.getHostDevice === 'function') {
         await refreshHostDevice(state);
       }
+      const meta = accounts.find((acc) => acc.sessionId === sessionId);
+      const displayName = accountDisplayName(meta);
       res.json({
         ok: true,
         account: {
           id: sessionId,
           sessionId,
           number: state.devicePhone,
-          name: state.deviceName,
+          displayName,
+          name: displayName,
+          phone: state.devicePhone,
           connectionStatus: state.connectionState,
           connectedAt: state.connectedAt,
           lastSyncAt: state.lastSyncAt,
@@ -3019,13 +3178,17 @@ app.get('/api/whatsapp/account', setDynamicWppHeaders, makeRequireConnected(DOMN
     if (state.client && typeof state.client.getHostDevice === 'function') {
       await refreshHostDevice(state);
     }
+    const meta = accounts.find((acc) => acc.sessionId === DOMNEX_DEFAULT_SESSION);
+    const displayName = accountDisplayName(meta);
     res.json({
       ok: true,
       account: {
         id: state.sessionId,
         sessionId: state.sessionId,
         number: state.devicePhone,
-        name: state.deviceName,
+        displayName,
+        name: displayName,
+        phone: state.devicePhone,
         connectionStatus: state.connectionState,
         connectedAt: state.connectedAt,
         lastSyncAt: state.lastSyncAt,

@@ -1,40 +1,31 @@
-import React, { useState } from 'react';
-import { useWhatsAppConnection } from '../../services/whatsApp/useWhatsAppConnection';
+import React from 'react';
 import { useWhatsAppGroupConfig } from '../../services/whatsApp/groupConfigStore';
-import { WhatsAppConnectionCard } from './WhatsAppConnectionCard';
-import { WhatsAppConnectModal } from './WhatsAppConnectModal';
 import { WhatsAppFlowSteps } from './WhatsAppFlowSteps';
 import { WhatsAppGroupsSection } from './WhatsAppGroupsSection';
 import { WhatsAppIntegrationHint } from './WhatsAppIntegrationHint';
 import { WhatsAppAccountsSection } from './WhatsAppAccountsSection';
+import { useWhatsAppAccounts } from '../../services/whatsApp/useWhatsAppAccounts';
 
 export const WhatsAppPage: React.FC = () => {
-  const {
-    status,
-    qrData,
-    errorMessage,
-    account,
-    isSyncing,
-    groupsError,
-    connect,
-    reconnect,
-    recover,
-    disconnect,
-    syncGroups,
-    sendMessage,
-  } = useWhatsAppConnection();
   const { groups } = useWhatsAppGroupConfig();
+  const {
+    accounts,
+    syncingSession,
+    syncTimeoutBySession,
+    syncGroupsFor,
+    sendMessage,
+  } = useWhatsAppAccounts();
 
-  const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
-
-  const handleConnect = () => {
-    setIsConnectModalOpen(true);
-    void connect();
-  };
-
-  const handleRetry = () => {
-    void recover();
-  };
+  const primaryAccount =
+    accounts.find((a) => a.status === 'connected') ?? accounts[0] ?? null;
+  const primarySessionId = primaryAccount?.sessionId ?? null;
+  const primaryConnected = primaryAccount?.status === 'connected';
+  const primarySyncing =
+    primarySessionId !== null && syncingSession === primarySessionId;
+  const primarySyncError =
+    primarySessionId !== null && syncTimeoutBySession[primarySessionId]
+      ? 'Falha ao sincronizar grupos'
+      : null;
 
   return (
     <div className="space-y-5">
@@ -44,49 +35,36 @@ export const WhatsAppPage: React.FC = () => {
           WhatsApp
         </h1>
         <p className="text-xs text-[#64748B] mt-1">
-          Conecte e gerencie a conta utilizada pelas automações do PULSE FLOW.
+          Conecte e gerencie as contas utilizadas pelas automações do PULSE FLOW.
         </p>
       </div>
 
       {/* Contas (multissessão) */}
       <WhatsAppAccountsSection />
 
-      {/* Connection */}
-      <WhatsAppConnectionCard
-        status={status}
-        account={account}
-        isSyncing={isSyncing}
-        onConnect={handleConnect}
-        onSyncGroups={() => void syncGroups()}
-        onReconnect={() => void reconnect()}
-        onDisconnect={() => void disconnect()}
-      />
-
       {/* Flow */}
       <WhatsAppFlowSteps />
 
       {/* Groups */}
       <WhatsAppGroupsSection
-        isConnected={status === 'connected'}
+        isConnected={primaryConnected}
         groups={groups}
-        isSyncing={isSyncing}
-        syncError={groupsError}
-        onSyncGroups={syncGroups}
-        onSend={sendMessage}
+        isSyncing={primarySyncing}
+        syncError={primarySyncError}
+        onSyncGroups={
+          primarySessionId
+            ? () => syncGroupsFor(primarySessionId)
+            : async () => ({ ok: false, error: 'Nenhuma conta conectada.' })
+        }
+        onSend={
+          primarySessionId
+            ? (groupId, message) => sendMessage(primarySessionId, groupId, message)
+            : async () => ({ ok: false, error: 'Nenhuma conta conectada.' })
+        }
       />
 
       {/* Integration */}
       <WhatsAppIntegrationHint />
-
-      {/* Connection modal */}
-      <WhatsAppConnectModal
-        isOpen={isConnectModalOpen}
-        status={status}
-        qrData={qrData}
-        errorMessage={errorMessage}
-        onClose={() => setIsConnectModalOpen(false)}
-        onRetry={handleRetry}
-      />
     </div>
   );
 };

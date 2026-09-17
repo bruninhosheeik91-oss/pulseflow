@@ -21,6 +21,9 @@ export interface WhatsAppAccount {
   id: string;
   sessionId: string;
   number: string;
+  /** Nome visual definido pelo usuário (editável). O sessionId é técnico. */
+  displayName: string;
+  /** Alias de exibição mantido por compatibilidade com telas existentes. */
   name: string;
   status: WhatsAppConnectionStatus;
   connectionStatus: WhatsAppConnectionStatus;

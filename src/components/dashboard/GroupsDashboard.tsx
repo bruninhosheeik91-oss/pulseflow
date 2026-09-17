@@ -48,9 +48,7 @@ function formatSyncTime(iso: string | null): string | null {
 
 function accountLabel(account: WhatsAppAccount | undefined): string | null {
   if (!account) return null;
-  const label = account.name || account.number || null;
-  if (label) return label;
-  return account.sessionId;
+  return account.displayName || account.name || account.number || 'WhatsApp';
 }
 
 function getGroupDisplayName(group: WhatsAppGroup): string {
@@ -262,7 +260,7 @@ export const GroupsDashboard: React.FC = () => {
                       {getGroupDisplayName(group)}
                     </div>
                     <div className="text-[10px] text-[#64748B] truncate max-w-[220px] font-mono">
-                      {group.sessionId ?? '—'}
+                      {group.id}
                     </div>
                   </td>
                   <td className="px-4 py-3 font-mono-numeric text-xs font-medium text-[#172033]">

@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  WhatsAppAccount,
-  WhatsAppGroup,
-  DOMNEX_DEFAULT_SESSION_ID,
-} from '../../types/whatsApp';
+import { WhatsAppAccount, WhatsAppGroup } from '../../types/whatsApp';
 import { getWhatsAppProvider } from './provider';
 import { GroupSyncTimeoutError } from './wppConnectProvider';
 import {
@@ -128,13 +124,13 @@ export function useWhatsAppAccounts() {
   }, []);
 
   const addAccount = useCallback(
-    async (name?: string): Promise<ActionResult> => {
+    async (displayName: string): Promise<ActionResult> => {
       const provider = getWhatsAppProvider();
       if (!provider) {
         return { ok: false, error: 'Provedor de conexão não configurado.' };
       }
       try {
-        await provider.createAccount(name);
+        await provider.createAccount(displayName);
         await refreshAccounts();
         return { ok: true };
       } catch (err) {
@@ -217,12 +213,6 @@ export function useWhatsAppAccounts() {
       if (!provider) {
         return { ok: false, error: 'Provedor de conexão não configurado.' };
       }
-      if (sessionId === DOMNEX_DEFAULT_SESSION_ID) {
-        return {
-          ok: false,
-          error: 'A conta principal (domnex-main) não pode ser removida.',
-        };
-      }
       try {
         await provider.removeAccount(sessionId);
         clearGroupsForSession(sessionId);
@@ -252,6 +242,50 @@ export function useWhatsAppAccounts() {
       }
     },
     [refreshAccounts]
+  );
+
+  const renameAccount = useCallback(
+    async (sessionId: string, displayName: string): Promise<ActionResult> => {
+      const provider = getWhatsAppProvider();
+      if (!provider) {
+        return { ok: false, error: 'Provedor de conexão não configurado.' };
+      }
+      try {
+        await provider.renameAccount(sessionId, displayName);
+        await refreshAccounts();
+        return { ok: true };
+      } catch (err) {
+        return {
+          ok: false,
+          error:
+            err instanceof Error ? err.message : 'Falha ao renomear a conta.',
+        };
+      }
+    },
+    [refreshAccounts]
+  );
+
+  const sendMessage = useCallback(
+    async (
+      sessionId: string,
+      to: string,
+      text: string
+    ): Promise<ActionResult> => {
+      const provider = getWhatsAppProvider();
+      if (!provider) {
+        return { ok: false, error: 'Provedor de conexão não configurado.' };
+      }
+      try {
+        await provider.sendMessage(to, text, sessionId);
+        return { ok: true };
+      } catch (err) {
+        return {
+          ok: false,
+          error: err instanceof Error ? err.message : 'Falha no envio.',
+        };
+      }
+    },
+    []
   );
 
   const syncGroupsFor = useCallback(
@@ -308,5 +342,7 @@ export function useWhatsAppAccounts() {
     recoverAccount,
     syncGroupsFor,
     removeAccount,
+    renameAccount,
+    sendMessage,
   };
 }

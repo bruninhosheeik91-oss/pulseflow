@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   AlertTriangle,
   Loader2,
   MessageCircle,
+  PenLine,
   Phone,
   Plus,
   QrCode,
@@ -12,14 +13,17 @@ import {
   Users,
 } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Modal } from '../ui/Modal';
 import {
   WhatsAppAccount,
   WHATSAPP_STATUS_LABELS,
   WhatsAppConnectionStatus,
-  DOMNEX_DEFAULT_SESSION_ID,
 } from '../../types/whatsApp';
 import { useWhatsAppAccounts } from '../../services/whatsApp/useWhatsAppAccounts';
 import { useWhatsAppGroupConfig } from '../../services/whatsApp/groupConfigStore';
+
+const ACCOUNT_NAME_MAX = 40;
 
 function StatusBadge({
   status,
@@ -57,20 +61,114 @@ export const WhatsAppAccountsSection: React.FC = () => {
     recoverAccount,
     syncGroupsFor,
     removeAccount,
+    renameAccount,
   } = useWhatsAppAccounts();
   const { groups } = useWhatsAppGroupConfig();
+
   const [busySession, setBusySession] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
+
+  // Modal "Nova conta WhatsApp"
+  const [newModalOpen, setNewModalOpen] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newNameError, setNewNameError] = useState<string | null>(null);
+  const [creatingAccount, setCreatingAccount] = useState(false);
+
+  // Modal "Renomear"
+  const [renameTarget, setRenameTarget] = useState<WhatsAppAccount | null>(
+    null
+  );
+  const [renameValue, setRenameValue] = useState('');
+  const [renameError, setRenameError] = useState<string | null>(null);
+  const [renaming, setRenaming] = useState(false);
 
   const groupCountFor = (sessionId: string) =>
     groups.filter((g) => g.sessionId === sessionId).length;
 
-  const handleAdd = async () => {
+  // ----- Nova conta -----
+  const openNewModal = () => {
+    setNewName('');
+    setNewNameError(null);
     setFeedback(null);
-    const result = await addAccount();
-    if (!result.ok) setFeedback(result.error);
+    setNewModalOpen(true);
   };
 
+  const closeNewModal = () => {
+    if (creatingAccount) return;
+    setNewModalOpen(false);
+  };
+
+  const handleCreateAccount = async () => {
+    const name = newName.trim();
+    if (!name) {
+      setNewNameError('Informe um nome para a conta.');
+      return;
+    }
+    if (name.length > ACCOUNT_NAME_MAX) {
+      setNewNameError(`Máximo de ${ACCOUNT_NAME_MAX} caracteres.`);
+      return;
+    }
+    const duplicate = accounts.some(
+      (a) => a.displayName.toLowerCase() === name.toLowerCase()
+    );
+    if (duplicate) {
+      setNewNameError('Já existe uma conta com este nome.');
+      return;
+    }
+    setNewNameError(null);
+    setCreatingAccount(true);
+    const result = await addAccount(name);
+    setCreatingAccount(false);
+    if (result.ok) {
+      setNewModalOpen(false);
+    } else {
+      setNewNameError(result.error);
+    }
+  };
+
+  // ----- Renomear -----
+  const openRename = (account: WhatsAppAccount) => {
+    setRenameTarget(account);
+    setRenameValue(account.displayName || account.name || '');
+    setRenameError(null);
+    setFeedback(null);
+  };
+
+  const closeRename = () => {
+    if (renaming) return;
+    setRenameTarget(null);
+  };
+
+  const handleRename = async () => {
+    if (!renameTarget) return;
+    const name = renameValue.trim();
+    if (!name) {
+      setRenameError('Informe um nome para a conta.');
+      return;
+    }
+    if (name.length > ACCOUNT_NAME_MAX) {
+      setRenameError(`Máximo de ${ACCOUNT_NAME_MAX} caracteres.`);
+      return;
+    }
+    if (
+      accounts.some(
+        (a) =>
+          a.sessionId !== renameTarget.sessionId &&
+          a.displayName.toLowerCase() === name.toLowerCase()
+      )
+    ) {
+      setRenameError('Já existe uma conta com este nome.');
+      return;
+    }
+    setRenameError(null);
+    setRenaming(true);
+    const result = await renameAccount(renameTarget.sessionId, name);
+    setRenaming(false);
+    if (result.ok) setRenameTarget(null);
+    else setRenameError(result.error);
+  };
+
+  // ----- Ações por conta -----
   const handleConnect = async (account: WhatsAppAccount) => {
     setFeedback(null);
     setBusySession(account.sessionId);
@@ -105,7 +203,7 @@ export const WhatsAppAccountsSection: React.FC = () => {
     setFeedback(null);
     if (
       !window.confirm(
-        `Remover a sessão "${account.name || account.sessionId}"?\nOs tokens e dados serão apagados permanentemente.`
+        `Remover a conta "${account.displayName || account.name || account.sessionId}"?\nOs tokens e dados serão apagados permanentemente.`
       )
     ) {
       return;
@@ -116,28 +214,44 @@ export const WhatsAppAccountsSection: React.FC = () => {
     if (!result.ok) setFeedback(result.error);
   };
 
+  // Fechar modais via Escape mesmo com state pendente é desativado pelo Modal
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      if (renaming || creatingAccount) return;
+      if (renameTarget) setRenameTarget(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [renaming, creatingAccount, renameTarget]);
+
+  const hasAccounts = accounts.length > 0;
+
   return (
     <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl overflow-hidden">
       <div className="flex items-start justify-between gap-4 p-5 pb-4 border-b border-[#E2E8F0]">
         <div>
           <h2 className="text-sm font-semibold text-[#172033] tracking-tight">
-            Contas conectadas
+            {hasAccounts ? 'Contas conectadas' : 'WhatsApp'}
           </h2>
           <p className="text-xs text-[#64748B] mt-0.5">
-            Múltiplas contas WhatsApp independentes — cada uma com QR, status e
-            grupos próprios.
+            {hasAccounts
+              ? 'Múltiplas contas WhatsApp independentes — cada uma com QR, status e grupos próprios.'
+              : 'Conecte seu primeiro aparelho para começar.'}
           </p>
         </div>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => void handleAdd()}
-          loading={loading}
-          leftIcon={<Plus className="w-3.5 h-3.5" />}
-          className="text-xs shrink-0"
-        >
-          Conectar outro WhatsApp
-        </Button>
+        {hasAccounts && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={openNewModal}
+            loading={loading}
+            leftIcon={<Plus className="w-3.5 h-3.5" />}
+            className="text-xs shrink-0"
+          >
+            Conectar novo WhatsApp
+          </Button>
+        )}
       </div>
 
       <div className="p-5">
@@ -158,14 +272,23 @@ export const WhatsAppAccountsSection: React.FC = () => {
             <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
-        ) : accounts.length === 0 ? (
+        ) : !hasAccounts ? (
           <div className="flex flex-col items-center gap-3 py-6 text-center">
             <div className="w-10 h-10 rounded-xl bg-[#E2E8F0] border border-[#BFDBFE] flex items-center justify-center">
               <MessageCircle className="w-4 h-4 text-[#2563EB]" />
             </div>
             <p className="text-xs text-[#64748B] leading-relaxed">
-              Nenhuma conta cadastrada. Conecte o primeiro WhatsApp.
+              Nenhuma conta WhatsApp conectada.
             </p>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={openNewModal}
+              leftIcon={<QrCode className="w-3.5 h-3.5" />}
+              className="text-xs font-semibold"
+            >
+              Conectar WhatsApp
+            </Button>
           </div>
         ) : (
           <ul className="space-y-2">
@@ -187,10 +310,7 @@ export const WhatsAppAccountsSection: React.FC = () => {
                       </div>
                       <div className="min-w-0">
                         <span className="text-xs font-medium text-[#172033] block truncate">
-                          {account.name || account.sessionId}
-                        </span>
-                        <span className="text-[10px] text-[#64748B] font-mono-numeric block truncate">
-                          {account.sessionId}
+                          {account.displayName || account.name || 'WhatsApp'}
                         </span>
                       </div>
                     </div>
@@ -233,9 +353,7 @@ export const WhatsAppAccountsSection: React.FC = () => {
                             onClick={() => void handleSync(account)}
                             loading={syncing}
                             disabled={busy}
-                            leftIcon={
-                              <RefreshCw className="w-3 h-3" />
-                            }
+                            leftIcon={<RefreshCw className="w-3 h-3" />}
                             className={`text-[11px] ${
                               syncTimeoutBySession[account.sessionId]
                                 ? 'text-red-700 border-red-500/30 hover:border-red-500/50'
@@ -260,7 +378,9 @@ export const WhatsAppAccountsSection: React.FC = () => {
                       ) : (
                         <div className="flex items-center gap-1.5 flex-wrap sm:justify-end">
                           <Button
-                            variant={account.status === 'error' ? 'secondary' : 'primary'}
+                            variant={
+                              account.status === 'error' ? 'secondary' : 'primary'
+                            }
                             size="xs"
                             onClick={() =>
                               account.status === 'error'
@@ -284,18 +404,27 @@ export const WhatsAppAccountsSection: React.FC = () => {
                         </div>
                       )}
 
-                      {account.sessionId !== DOMNEX_DEFAULT_SESSION_ID && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => void handleRemove(account)}
-                          loading={busy && !syncing && connected}
-                          title="Remover sessão"
-                          className="text-red-700/70 hover:text-red-700 hover:bg-red-500/10"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      )}
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => openRename(account)}
+                        disabled={busy}
+                        leftIcon={<PenLine className="w-3 h-3" />}
+                        className="text-[11px] text-[#64748B] hover:text-[#2563EB]"
+                      >
+                        Renomear
+                      </Button>
+
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => void handleRemove(account)}
+                        loading={busy && !syncing}
+                        title="Remover conta"
+                        className="text-red-700/70 hover:text-red-700 hover:bg-red-500/10"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
                     </div>
                   </div>
 
@@ -310,7 +439,7 @@ export const WhatsAppAccountsSection: React.FC = () => {
                         {qrData ? (
                           <img
                             src={qrData}
-                            alt={`QR Code da conta ${account.sessionId}`}
+                            alt={`QR Code da conta ${account.displayName || account.name || 'WhatsApp'}`}
                             className="w-full h-full object-contain"
                           />
                         ) : (
@@ -331,8 +460,9 @@ export const WhatsAppAccountsSection: React.FC = () => {
                       <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                       <span>
                         Falha na conexão: nenhum QR real foi gerado ou o WhatsApp
-                        não conectou. Use <b className="text-red-200">Tentar novamente</b>{' '}
-                        para reiniciar a sessão.
+                        não conectou. Use{' '}
+                        <b className="text-red-200">Tentar novamente</b> para
+                        reiniciar a sessão.
                       </span>
                     </div>
                   )}
@@ -342,6 +472,89 @@ export const WhatsAppAccountsSection: React.FC = () => {
           </ul>
         )}
       </div>
+
+      {/* Modal: nova conta */}
+      <Modal
+        isOpen={newModalOpen}
+        onClose={closeNewModal}
+        title="Nova conta WhatsApp"
+        subtitle="Defina um nome para identificar esta conta (aparece apenas para você)."
+        maxWidth="sm"
+      >
+        <div className="space-y-4">
+          <Input
+            label="Nome da conta"
+            placeholder="Ex: Loja Centro, Atendimento, Vendas..."
+            value={newName}
+            onChange={(e) => {
+              setNewName(e.target.value);
+              setNewNameError(null);
+            }}
+            error={newNameError ?? undefined}
+            maxLength={ACCOUNT_NAME_MAX}
+            autoFocus
+          />
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={closeNewModal}
+              disabled={creatingAccount}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => void handleCreateAccount()}
+              loading={creatingAccount}
+            >
+              Continuar
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal: renomear */}
+      <Modal
+        isOpen={renameTarget !== null}
+        onClose={closeRename}
+        title="Renomear conta"
+        maxWidth="sm"
+      >
+        <div className="space-y-4">
+          <Input
+            label="Nome da conta"
+            placeholder="Novo nome"
+            value={renameValue}
+            onChange={(e) => {
+              setRenameValue(e.target.value);
+              setRenameError(null);
+            }}
+            error={renameError ?? undefined}
+            maxLength={ACCOUNT_NAME_MAX}
+            autoFocus
+          />
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={closeRename}
+              disabled={renaming}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => void handleRename()}
+              loading={renaming}
+            >
+              Salvar
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

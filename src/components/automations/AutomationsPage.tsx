@@ -71,7 +71,7 @@ function realAutoSearchToAutomation(
       id: `${automation.destination.accountId}|${groupId}`,
       name: groupId,
       type: 'AUTO_SEARCH',
-      description: `Destino WhatsApp da conta ${automation.destination.accountId}`,
+      description: 'Destino WhatsApp automático',
       active: automation.active,
     })),
     capabilities: {

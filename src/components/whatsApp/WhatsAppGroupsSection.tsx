@@ -164,7 +164,9 @@ export const WhatsAppGroupsSection: React.FC<
               <Users className="w-4 h-4 text-[#2563EB]" />
             </div>
             <p className="text-xs text-[#64748B] leading-relaxed">
-              Nenhum grupo encontrado para esta conta.
+              {syncError
+                ? syncError
+                : 'Nenhum grupo encontrado para esta conta.'}
             </p>
             <Button
               variant="outline"
@@ -174,7 +176,7 @@ export const WhatsAppGroupsSection: React.FC<
               leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
               className="text-xs font-medium"
             >
-              Sincronizar grupos
+              Tentar novamente
             </Button>
           </div>
         ) : (
@@ -284,14 +286,9 @@ export const WhatsAppGroupsSection: React.FC<
                           )}
                         </div>
                         <div className="flex items-center gap-2 mt-0.5 min-w-0">
-                          <span className="text-[10px] text-[#64748B] font-mono-numeric block truncate">
-                            {formatGroupParticipantCount(group)} · {group.id}
-                          </span>
-                          {group.sessionId && (
-                            <span className="shrink-0 text-[9px] font-medium px-1.5 py-0.5 rounded bg-[#F1F5F9] border border-[#CBD5E1] text-[#64748B]">
-                              {group.sessionId}
-                            </span>
-                          )}
+                      <span className="text-[10px] text-[#64748B] font-mono-numeric block truncate">
+                          {formatGroupParticipantCount(group)}
+                        </span>
                         </div>
                       </div>
 

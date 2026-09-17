@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   Users,
   ArrowDown,
@@ -48,6 +48,7 @@ import {
   getMonitorStatus,
   MonitorServerStatus,
 } from '../../services/whatsApp/monitorService';
+import { useWhatsAppAccounts } from '../../services/whatsApp/useWhatsAppAccounts';
 
 const PLATFORM_ICONS = {
   WhatsApp: MessageSquare,
@@ -102,6 +103,17 @@ export const MonitorGroupPage: React.FC = () => {
   const parentGroup = groups.find((g) => g.id === parentGroupId) ?? null;
   const monitorSessionId =
     parentGroup?.sessionId ?? DOMNEX_DEFAULT_SESSION_ID;
+  const { accounts } = useWhatsAppAccounts();
+  const accountDisplayNameBySession = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const acc of accounts) {
+      map.set(acc.sessionId, acc.displayName || acc.name || 'WhatsApp');
+    }
+    return map;
+  }, [accounts]);
+  const sessionDisplayName = parentGroup?.sessionId
+    ? (accountDisplayNameBySession.get(parentGroup.sessionId) ?? 'WhatsApp')
+    : null;
 
   // Indicadores reais do monitor no backend (polling leve, dados honestos).
   useEffect(() => {
@@ -379,9 +391,9 @@ export const MonitorGroupPage: React.FC = () => {
                 <h2 className="text-sm font-semibold text-[#172033] tracking-tight">
                   Monitor
                 </h2>
-                {parentGroup?.sessionId && (
+                {parentGroup?.sessionId && sessionDisplayName && (
                   <span className="text-[10px] text-[#64748B] font-mono-numeric">
-                    · {parentGroup.sessionId}
+                    · {sessionDisplayName}
                   </span>
                 )}
               </div>
@@ -472,9 +484,9 @@ export const MonitorGroupPage: React.FC = () => {
                     Sincronizado do WhatsApp
                   </Badge>
                 )}
-                {parentGroup?.sessionId && (
+                {parentGroup?.sessionId && sessionDisplayName && (
                   <Badge variant="neutral" size="xs">
-                    Conta · {parentGroup.sessionId}
+                    Conta · {sessionDisplayName}
                   </Badge>
                 )}
                 <Badge variant={STATUS_BADGE[config.status]} size="xs">
@@ -543,9 +555,9 @@ export const MonitorGroupPage: React.FC = () => {
                 <span className="text-xs font-bold text-[#172033] mt-0.5 truncate max-w-full">
                   {config.name}
                 </span>
-                {parentGroup?.sessionId && (
+                {parentGroup?.sessionId && sessionDisplayName && (
                   <span className="text-[9px] text-[#64748B] font-mono-numeric mt-0.5">
-                    {parentGroup.sessionId}
+                    {sessionDisplayName}
                   </span>
                 )}
               </div>

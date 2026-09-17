@@ -14,5 +14,8 @@ server/node_modules/
 # Runtime state do backend (monitor-config, contas) — never versioned
 server/data/
 
+# Cache persistente de grupos por sessão (snapshot em disco)
+server/groups-cache/
+
 .vercel
 .env*

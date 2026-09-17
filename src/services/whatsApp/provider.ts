@@ -32,7 +32,10 @@ export interface WhatsAppProvider {
   /** Envia por uma sessão específica quando informada; sem sessionId usa a principal. */
   sendMessage(to: string, text: string, sessionId?: string): Promise<void>;
   listAccounts(): Promise<WhatsAppAccount[]>;
-  createAccount(name?: string): Promise<WhatsAppAccount>;
+  /** Cria uma conta com o nome visual informado (sessionId gerado no backend). */
+  createAccount(displayName: string): Promise<WhatsAppAccount>;
+  /** Renomeia apenas o displayName; nunca altera sessionId/tokens/sessão. */
+  renameAccount(sessionId: string, displayName: string): Promise<WhatsAppAccount>;
   /** Remove permanentemente uma sessão (conta + estado + tokens). */
   removeAccount(sessionId: string): Promise<void>;
 }

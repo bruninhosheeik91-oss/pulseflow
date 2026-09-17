@@ -100,19 +100,22 @@ function normalizeAccount(raw: {
   id?: string;
   sessionId?: string;
   number?: string | null;
+  displayName?: string | null;
   name?: string | null;
   status?: string;
   connectionStatus?: string;
   connectedAt?: string | null;
   lastSyncAt?: string | null;
 }): WhatsAppAccount {
-  const sessionId = raw.sessionId || raw.id || DOMNEX_DEFAULT_SESSION_ID;
+  const sessionId = (raw.sessionId || raw.id || '').trim() || '<unknown>';
   const status = normalizeStatus(raw.status ?? raw.connectionStatus);
+  const displayName = raw.displayName || raw.name || '';
   return {
     id: sessionId,
     sessionId,
     number: raw.number || '',
-    name: raw.name || '',
+    displayName,
+    name: displayName,
     status,
     connectionStatus: status,
     connectedAt: raw.connectedAt ?? null,
@@ -198,6 +201,7 @@ export class WppConnectProvider implements WhatsAppProvider {
           id?: string;
           sessionId?: string;
           number?: string | null;
+          displayName?: string | null;
           name?: string | null;
           connectionStatus?: string;
           status?: string;
@@ -219,6 +223,7 @@ export class WppConnectProvider implements WhatsAppProvider {
         id?: string;
         sessionId?: string;
         number?: string | null;
+        displayName?: string | null;
         name?: string | null;
         status?: string;
         connectedAt?: string | null;
@@ -228,13 +233,28 @@ export class WppConnectProvider implements WhatsAppProvider {
     return (data.accounts || []).map(normalizeAccount);
   }
 
-  async createAccount(name?: string): Promise<WhatsAppAccount> {
+  async createAccount(displayName: string): Promise<WhatsAppAccount> {
     const data = await apiFetch<{ account: WhatsAppAccount }>(
       this.baseUrl,
       '/api/whatsapp/accounts',
       {
         method: 'POST',
-        body: JSON.stringify({ name: name || undefined }),
+        body: JSON.stringify({ name: displayName }),
+      }
+    );
+    return normalizeAccount(data.account);
+  }
+
+  async renameAccount(
+    sessionId: string,
+    displayName: string
+  ): Promise<WhatsAppAccount> {
+    const data = await apiFetch<{ account: WhatsAppAccount }>(
+      this.baseUrl,
+      `/api/whatsapp/${encodeURIComponent(sessionId)}/account`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ displayName }),
       }
     );
     return normalizeAccount(data.account);
