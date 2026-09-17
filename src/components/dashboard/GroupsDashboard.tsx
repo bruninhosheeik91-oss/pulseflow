@@ -1,18 +1,25 @@
 import React from 'react';
 import {
-  Plug,
+  Link2,
   Smartphone,
   TrendingUp,
   UserPlus,
   Users,
 } from 'lucide-react';
-import { useWhatsAppGroupConfig } from '../../services/whatsApp/groupConfigStore';
+import {
+  applyServerSnapshots,
+  useWhatsAppGroupConfig,
+} from '../../services/whatsApp/groupConfigStore';
 import { useWhatsAppAccounts } from '../../services/whatsApp/useWhatsAppAccounts';
+import { getWhatsAppProvider } from '../../services/whatsApp/provider';
 import {
   WhatsAppAccount,
   WhatsAppGroup,
   WhatsAppConnectionStatus,
   DOMNEX_DEFAULT_SESSION_ID,
+  computeGroupMemberStats,
+  dedupeGroupsById,
+  formatMemberCount,
 } from '../../types/whatsApp';
 
 const STATUS_TONES: Record<WhatsAppConnectionStatus, string> = {
@@ -63,8 +70,12 @@ interface WhatsAppGroupRow {
 interface GroupStats {
   totalGroups: number;
   totalMembers: number;
-  groupsWithParticipants: number;
-  connectedGroups: number;
+  averageMembers: number | null;
+  knownGroups: number;
+  unknownGroups: number;
+  monitoredGroups: number;
+  destinationGroups: number;
+  hasParentGroup: boolean;
   connectedAccounts: number;
 }
 
@@ -72,12 +83,39 @@ export const GroupsDashboard: React.FC = () => {
   const config = useWhatsAppGroupConfig();
   const { accounts } = useWhatsAppAccounts();
 
+  // Hidratação REAL ao abrir: busca no servidor os snapshots que ele já
+  // conhece (rota cache-only, sem chamada WPP). Assim a Dashboard não depende
+  // exclusivamente do localStorage e nunca inventa horários de sincronização.
+  React.useEffect(() => {
+    const provider = getWhatsAppProvider();
+    if (!provider || typeof provider.getCachedGroups !== 'function') return;
+    let active = true;
+    void provider
+      .getCachedGroups()
+      .then((snapshots) => {
+        if (active) applyServerSnapshots(snapshots);
+      })
+      .catch(() => {
+        // Servidor indisponível: mantém os dados já persistidos localmente.
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // O mesmo grupo pode ser sincronizado por mais de uma conta; os indicadores
+  // gerais contam cada grupo real uma única vez (id único).
+  const uniqueGroups = React.useMemo(
+    () => dedupeGroupsById(config.groups),
+    [config.groups]
+  );
+
   const accountBySession = new Map<string, WhatsAppAccount>();
   accounts.forEach((account) => {
     accountBySession.set(account.sessionId, account);
   });
 
-  const rows: WhatsAppGroupRow[] = config.groups
+  const rows: WhatsAppGroupRow[] = uniqueGroups
     .map((group) => ({
       group,
       account: accountBySession.get(
@@ -85,37 +123,78 @@ export const GroupsDashboard: React.FC = () => {
       ),
     }))
     .sort((a, b) => {
-      const pa = a.group.participantCount;
-      const pb = b.group.participantCount;
-      if (pa !== null && pa !== undefined && pb !== null && pb !== undefined) {
-        return pb - pa;
-      }
+      const pa = a.group.memberCount;
+      const pb = b.group.memberCount;
+      const aKnown = typeof pa === 'number';
+      const bKnown = typeof pb === 'number';
+      if (aKnown && bKnown) return (pb as number) - (pa as number);
+      if (aKnown) return -1;
+      if (bKnown) return 1;
       return getGroupDisplayName(a.group).localeCompare(
         getGroupDisplayName(b.group)
       );
     });
 
+  const memberStats = computeGroupMemberStats(uniqueGroups);
+  const connectedAccounts = accounts.filter(
+    (a) => a.connectionStatus === 'connected'
+  ).length;
+  const hasParentGroup = Boolean(config.parentGroupId);
+  const destinationGroups = config.childGroupIds.length;
   const stats: GroupStats = {
-    totalGroups: config.groups.length,
-    totalMembers: config.groups.reduce(
-      (acc, g) => acc + (g.participantCount ?? 0),
-      0
-    ),
-    groupsWithParticipants: config.groups.filter(
-      (g) => g.participantCount !== null && g.participantCount !== undefined
-    ).length,
-    connectedGroups: rows.filter(
-      (r) => r.account?.connectionStatus === 'connected'
-    ).length,
-    connectedAccounts: accounts.filter(
-      (a) => a.connectionStatus === 'connected'
-    ).length,
+    totalGroups: memberStats.totalGroups,
+    totalMembers: memberStats.totalMembers,
+    averageMembers: memberStats.averageMembers,
+    knownGroups: memberStats.knownGroups,
+    unknownGroups: memberStats.totalGroups - memberStats.knownGroups,
+    // Monitor real: 1 Grupo Mãe (quando definido) + destinos vinculados.
+    monitoredGroups: (hasParentGroup ? 1 : 0) + destinationGroups,
+    destinationGroups,
+    hasParentGroup,
+    connectedAccounts,
   };
 
-  const syncedAtLabel = formatSyncTime(config.syncedAt);
-  const totalMembersLabel = stats.totalMembers === 0 && stats.totalGroups > 0
-    ? '—'
-    : stats.totalMembers.toLocaleString('pt-BR');
+  // Horários REAIS por conta. Sem timestamp conhecido, usa texto neutro em vez
+  // de inventar precisão (ex.: "agora").
+  const sessionSyncLabels = React.useMemo(() => {
+    const labels = new Set<string>();
+    rows.forEach(({ group }) => {
+      const key = group.sessionId ?? DOMNEX_DEFAULT_SESSION_ID;
+      const label = formatSyncTime(config.syncedAtBySession[key] ?? null);
+      if (label) labels.add(label);
+    });
+    return Array.from(labels);
+  }, [rows, config.syncedAtBySession]);
+
+  const syncSubtitle =
+    rows.length === 0
+      ? 'Grupos sincronizados no WhatsApp'
+      : sessionSyncLabels.length === 0
+      ? 'Grupos conhecidos pelo servidor'
+      : sessionSyncLabels.length === 1
+      ? `Última sincronização: ${sessionSyncLabels[0]}`
+      : 'Sincronizações por conta — veja a coluna Conta';
+
+  const totalMembersLabel =
+    stats.knownGroups === 0 && stats.totalGroups > 0
+      ? '—'
+      : formatMemberCount(stats.totalMembers);
+  const memberSubtitle =
+    stats.knownGroups > 0
+      ? [
+          `${stats.knownGroups} com contagem`,
+          stats.unknownGroups > 0
+            ? `${stats.unknownGroups} sem contagem`
+            : null,
+          stats.averageMembers !== null
+            ? `média de ${formatMemberCount(stats.averageMembers)}`
+            : null,
+        ]
+          .filter((part): part is string => Boolean(part))
+          .join(' · ')
+      : stats.totalGroups > 0
+      ? 'contagem de membros indisponível'
+      : 'aguardando sincronização';
 
   return (
     <div className="space-y-6">
@@ -154,32 +233,31 @@ export const GroupsDashboard: React.FC = () => {
               {totalMembersLabel}
             </span>
           </div>
-          <span className="text-[10px] text-[#64748B]">
-            {stats.groupsWithParticipants > 0
-              ? `somados de ${stats.groupsWithParticipants} de ${stats.totalGroups} grupos`
-              : stats.totalGroups > 0
-              ? 'contagem de membros indisponível'
-              : 'aguardando sincronização'}
-          </span>
+          <span className="text-[10px] text-[#64748B]">{memberSubtitle}</span>
         </div>
 
         <div className="dashboard-card bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-[0_4px_14px_rgba(15,23,42,0.05)]">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">
-              Grupos Conectados
+              Grupos Monitorados
             </span>
             <div className="w-8 h-8 rounded-lg bg-[#EFF6FF] border border-[#DBEAFE] flex items-center justify-center text-[#2563EB]">
-              <Plug className="w-3.5 h-3.5" />
+              <Link2 className="w-3.5 h-3.5" />
             </div>
           </div>
           <div className="mt-1.5 flex items-baseline gap-1.5">
             <span className="text-2xl font-bold font-mono-numeric text-[#172033] tracking-tight">
-              {stats.connectedGroups.toLocaleString('pt-BR')}
+              {stats.monitoredGroups.toLocaleString('pt-BR')}
             </span>
           </div>
           <span className="text-[10px] text-[#64748B]">
-            {stats.connectedAccounts.toLocaleString('pt-BR')} conta(s)
-            conectada(s)
+            {stats.hasParentGroup
+              ? `${stats.destinationGroups} ${
+                  stats.destinationGroups === 1
+                    ? 'destino vinculado'
+                    : 'destinos vinculados'
+                }`
+              : 'Grupo Mãe não definido'}
           </span>
         </div>
 
@@ -199,8 +277,8 @@ export const GroupsDashboard: React.FC = () => {
           </div>
           <span className="text-[10px] text-[#64748B]">
             {accounts.length === 0
-              ? 'registre uma conta no WhatsApp'
-              : 'contas registradas'}
+              ? 'registre uma conta em Conexões'
+              : `${stats.connectedAccounts} conectada(s) de ${accounts.length}`}
           </span>
         </div>
       </section>
@@ -212,11 +290,7 @@ export const GroupsDashboard: React.FC = () => {
             <h2 className="text-base font-semibold text-[#172033] tracking-tight">
               Visão dos Grupos
             </h2>
-            <p className="text-xs text-[#64748B] mt-0.5">
-              {syncedAtLabel
-                ? `Última sincronização: ${syncedAtLabel}`
-                : 'Grupos sincronizados no WhatsApp'}
-            </p>
+            <p className="text-xs text-[#64748B] mt-0.5">{syncSubtitle}</p>
           </div>
         </div>
 
@@ -250,7 +324,13 @@ export const GroupsDashboard: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {rows.map(({ group, account }) => (
+              {rows.map(({ group, account }) => {
+                const rowSyncedAt = formatSyncTime(
+                  config.syncedAtBySession[
+                    group.sessionId ?? DOMNEX_DEFAULT_SESSION_ID
+                  ] ?? null
+                );
+                return (
                 <tr
                   key={group.id}
                   className="border-b border-[#EEF2F7] last:border-0 hover:bg-[#F8FBFF] transition-colors"
@@ -264,10 +344,15 @@ export const GroupsDashboard: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-4 py-3 font-mono-numeric text-xs font-medium text-[#172033]">
-                    {group.participantCount ?? '—'}
+                    {formatMemberCount(group.memberCount)}
                   </td>
                   <td className="px-4 py-3 text-xs text-[#64748B]">
-                    {accountLabel(account) ?? '—'}
+                    <div>{accountLabel(account) ?? '—'}</div>
+                    {rowSyncedAt && (
+                      <div className="text-[10px] text-[#94A3B8]">
+                        Sincronizado em {rowSyncedAt}
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     {account ? (
@@ -282,7 +367,8 @@ export const GroupsDashboard: React.FC = () => {
                     )}
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         )}

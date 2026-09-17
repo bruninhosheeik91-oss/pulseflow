@@ -20,6 +20,18 @@ export interface GroupsSyncResult {
   syncInProgress: boolean;
   cached: boolean;
   retryAfterMs: number;
+  /** ISO da sincronização REAL deste snapshot (null quando desconhecido). */
+  syncedAt: string | null;
+}
+
+/**
+ * Snapshot de grupos já conhecido pelo servidor (memória ou arquivo persistido),
+ * lido SEM tocar no WPPConnect. Fonte da Dashboard ao abrir.
+ */
+export interface CachedGroupsSnapshot {
+  sessionId: string;
+  groups: WhatsAppGroup[];
+  syncedAt: string | null;
 }
 
 /**
@@ -47,6 +59,11 @@ export interface WhatsAppProvider {
    * andamento de falha real. Opcional para provedores legados.
    */
   getGroupsSyncResult?(sessionId?: string): Promise<GroupsSyncResult>;
+  /**
+   * Grupos já em cache no servidor para todas as contas, sem chamada WPP.
+   * Usado para hidratar a Dashboard ao abrir. Opcional para provedores legados.
+   */
+  getCachedGroups?(): Promise<CachedGroupsSnapshot[]>;
   /** Envia por uma sessão específica quando informada; sem sessionId usa a principal. */
   sendMessage(to: string, text: string, sessionId?: string): Promise<void>;
   listAccounts(): Promise<WhatsAppAccount[]>;

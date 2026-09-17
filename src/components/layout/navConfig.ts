@@ -35,7 +35,7 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { id: 'Dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'WhatsApp', label: 'WhatsApp', icon: MessageCircle },
+  { id: 'WhatsApp', label: 'Conexões', icon: MessageCircle },
   { id: 'Canais e Grupos', label: 'Canais e Grupos', icon: Radio },
   { id: 'Grupo Monitor', label: 'Grupo Monitor', icon: Users },
   { id: 'Espelhamento', label: 'Espelhamento', icon: Copy },

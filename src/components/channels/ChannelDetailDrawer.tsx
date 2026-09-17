@@ -21,7 +21,12 @@ import {
   Edit3,
   ExternalLink,
 } from 'lucide-react';
-import { DistributionChannel } from '../../types';
+import {
+  DistributionChannel,
+  TELEMETRY_UNAVAILABLE_LABEL,
+  TELEMETRY_UNAVAILABLE_VALUE,
+} from '../../types';
+import { formatMemberCount } from '../../types/whatsApp';
 import { MarketplaceBadge } from '../ui/MarketplaceBadge';
 import { Button } from '../ui/Button';
 
@@ -46,8 +51,6 @@ export const ChannelDetailDrawer: React.FC<ChannelDetailDrawerProps> = ({
     'instance' | 'campaigns' | 'history' | 'simulator'
   >('instance');
   const [copiedId, setCopiedId] = useState(false);
-  const [simulatedSending, setSimulatedSending] = useState(false);
-  const [simulatedSuccess, setSimulatedSuccess] = useState(false);
 
   if (!isOpen || !channel) return null;
 
@@ -62,14 +65,10 @@ export const ChannelDetailDrawer: React.FC<ChannelDetailDrawerProps> = ({
     setTimeout(() => setCopiedId(false), 2000);
   };
 
+  // Envio REAL (mesmo fluxo do rodapé). Não simula sucesso: o feedback vem do
+  // resultado verdadeiro do envio.
   const handleSimulateTest = () => {
-    setSimulatedSending(true);
-    setSimulatedSuccess(false);
-    setTimeout(() => {
-      setSimulatedSending(false);
-      setSimulatedSuccess(true);
-      setTimeout(() => setSimulatedSuccess(false), 3500);
-    }, 1200);
+    onSendTestMessage(channel);
   };
 
   return (
@@ -229,7 +228,7 @@ export const ChannelDetailDrawer: React.FC<ChannelDetailDrawerProps> = ({
                   Audiência
                 </span>
                 <span className="text-sm font-bold font-mono-numeric text-[#172033]">
-                  {channel.membersCount.toLocaleString('pt-BR')}
+                  {formatMemberCount(channel.membersCount)}
                 </span>
                 <span className="text-[10px] text-[#64748B] block">
                   {channel.type.includes('Canal') ? 'inscritos' : 'membros'}
@@ -240,11 +239,11 @@ export const ChannelDetailDrawer: React.FC<ChannelDetailDrawerProps> = ({
                 <span className="text-[10px] text-[#64748B] uppercase block">
                   Envios Hoje
                 </span>
-                <span className="text-sm font-bold font-mono-numeric text-[#2563EB]">
-                  {channel.stats.messagesToday} msgs
+                <span className="text-sm font-bold font-mono-numeric text-[#94A3B8]">
+                  {TELEMETRY_UNAVAILABLE_VALUE}
                 </span>
-                <span className="text-[10px] text-[#64748B] block font-mono-numeric">
-                  {channel.stats.messagesTotal} total
+                <span className="text-[10px] text-[#64748B] block">
+                  {TELEMETRY_UNAVAILABLE_LABEL}
                 </span>
               </div>
 
@@ -252,11 +251,11 @@ export const ChannelDetailDrawer: React.FC<ChannelDetailDrawerProps> = ({
                 <span className="text-[10px] text-[#64748B] uppercase block">
                   Cliques Hoje
                 </span>
-                <span className="text-sm font-bold font-mono-numeric text-[#3B82F6]">
-                  {channel.stats.clicksToday.toLocaleString('pt-BR')}
+                <span className="text-sm font-bold font-mono-numeric text-[#94A3B8]">
+                  {TELEMETRY_UNAVAILABLE_VALUE}
                 </span>
-                <span className="text-[10px] text-[#64748B] block font-mono-numeric">
-                  {channel.stats.clicksTotal.toLocaleString('pt-BR')} total
+                <span className="text-[10px] text-[#64748B] block">
+                  {TELEMETRY_UNAVAILABLE_LABEL}
                 </span>
               </div>
 
@@ -264,11 +263,11 @@ export const ChannelDetailDrawer: React.FC<ChannelDetailDrawerProps> = ({
                 <span className="text-[10px] text-[#64748B] uppercase block">
                   Taxa Entrega
                 </span>
-                <span className="text-sm font-bold font-mono-numeric text-emerald-700">
-                  {channel.stats.deliveryRate}%
+                <span className="text-sm font-bold font-mono-numeric text-[#94A3B8]">
+                  {TELEMETRY_UNAVAILABLE_VALUE}
                 </span>
-                <span className="text-[10px] text-emerald-700 block font-mono-numeric">
-                  {channel.stats.deliveryRate > 0 ? 'Sem bloqueios' : '—'}
+                <span className="text-[10px] text-[#64748B] block">
+                  {TELEMETRY_UNAVAILABLE_LABEL}
                 </span>
               </div>
             </div>
@@ -450,7 +449,7 @@ export const ChannelDetailDrawer: React.FC<ChannelDetailDrawerProps> = ({
                 <div className="p-8 text-center bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl">
                   <Clock className="w-8 h-8 text-[#64748B] mx-auto mb-2" />
                   <p className="text-xs text-[#64748B]">
-                    Nenhuma mensagem registrada nas últimas 24 horas.
+                    Nenhuma mensagem registrada para este canal.
                   </p>
                 </div>
               ) : (
@@ -537,26 +536,14 @@ export const ChannelDetailDrawer: React.FC<ChannelDetailDrawerProps> = ({
                   </p>
                 </div>
 
-                {simulatedSuccess && (
-                  <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 flex items-center gap-2 text-xs animate-in fade-in duration-200">
-                    <CheckCircle2 className="w-4 h-4 shrink-0" />
-                    <span>
-                      Mensagem de teste entregue com sucesso no canal {channel.name}.
-                    </span>
-                  </div>
-                )}
-
                 <Button
                   variant="primary"
                   size="sm"
                   onClick={handleSimulateTest}
-                  disabled={simulatedSending}
                   leftIcon={<Zap className="w-3.5 h-3.5" />}
                   className="w-full text-xs font-semibold py-2 cursor-pointer"
                 >
-                  {simulatedSending
-                    ? 'Conectando ao nó e enviando...'
-                    : 'Disparar Mensagem de Teste Agora'}
+                  Disparar Mensagem de Teste Agora
                 </Button>
               </div>
             </div>

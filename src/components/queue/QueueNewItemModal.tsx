@@ -19,6 +19,7 @@ import {
 } from '../../types';
 import { initialOffers } from '../../data/mockData';
 import { initialChannels } from '../../data/mockChannels';
+import { formatMemberCount } from '../../types/whatsApp';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 
@@ -391,7 +392,7 @@ ${affiliateUrl}`;
             )}
             {initialChannels.map((c) => (
               <option key={c.id} value={c.id}>
-                [{c.platform}] {c.name} ({c.membersCount.toLocaleString()} membros)
+                [{c.platform}] {c.name} ({formatMemberCount(c.membersCount)} membros)
               </option>
             ))}
           </select>

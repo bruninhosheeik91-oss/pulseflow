@@ -32,6 +32,7 @@ const {
 } = require('./linkConversion/tenantAutoSearchSendsStore.js');
 const { createTenantLinkListsStore } = require('./linkConversion/tenantLinkListsStore.js');
 const { createGroupsSyncEngine } = require('./whatsappGroups.js');
+const { normalizeGroupSource } = require('./whatsappGroupMembers.js');
 
 // Carrega server/.env (KEY=VAL, gitignored) para o runtime Node local, mesmo
 // padrão do helper test-real-shopee.js. Sem isso, `node server.js` rodaria sem
@@ -2377,44 +2378,8 @@ function statusPayload(state) {
   };
 }
 
-// Converte ids do WPPConnect ({ user, server, _serialized }) em string.
-function toSerializedId(id) {
-  if (!id) return null;
-  if (typeof id === 'string') return id;
-  if (id._serialized) return id._serialized;
-  const user = id.user || (id.id && id.id.user);
-  const server = id.server || (id.id && id.id.server);
-  if (user && server) return `${user}@${server}`;
-  return null;
-}
-
-// Normaliza um grupo real da API em { id, name, participantCount, isGroup }.
-// Campos ausentes viram null. Nenhum valor é inventado.
-function normalizeGroupSource(raw) {
-  const chat = raw || {};
-  const id = toSerializedId(chat.id);
-  if (!id || !/^[^\s@]+@g\.us$/i.test(id)) return null;
-  const lower = id.toLowerCase();
-  if (lower === 'status@broadcast' || id.includes('@broadcast') || id.includes('@newsletter')) {
-    return null;
-  }
-
-  const meta = chat.groupMetadata || null;
-  let participantCount = null;
-  if (meta && Number.isFinite(meta.size)) {
-    participantCount = meta.size;
-  } else if (meta && Array.isArray(meta.participants)) {
-    participantCount = meta.participants.length;
-  }
-
-  const rawName =
-    (typeof chat.name === 'string' && chat.name.trim()) ||
-    (typeof chat.formattedTitle === 'string' && chat.formattedTitle.trim()) ||
-    (meta && typeof meta.subject === 'string' && meta.subject.trim());
-  const name = rawName || null;
-
-  return { id, name, participantCount, isGroup: true };
-}
+// Normalização de grupos (id, nome, memberCount) e enriquecimento de membros
+// vivem em ./whatsappGroupMembers.js — fonte única do contrato { memberCount }.
 
 // Tempo máximo para chamadas WPP usadas por rotas HTTP (getHostDevice, etc).
 // A listagem de grupos tem disciplina própria no motor (ver whatsappGroups.js):
@@ -2435,6 +2400,27 @@ function ensureGroupsCacheDir() {
   }
 }
 
+// Snapshots antigos persistiram `participantCount`; migra para `memberCount`
+// sem perder valores (contrato único a partir de agora).
+function migratePersistedGroup(group) {
+  if (!group || typeof group !== 'object') return group;
+  const migrated = { ...group };
+  if (
+    migrated.memberCount === undefined &&
+    typeof migrated.participantCount === 'number'
+  ) {
+    migrated.memberCount = migrated.participantCount;
+  }
+  if (typeof migrated.memberCount !== 'number') migrated.memberCount = null;
+  delete migrated.participantCount;
+  return migrated;
+}
+
+function migratePersistedGroups(groups) {
+  if (!Array.isArray(groups)) return [];
+  return groups.map(migratePersistedGroup).filter((group) => group && group.id);
+}
+
 function loadPersistedGroupsSnapshot(sessionId) {
   try {
     const filePath = path.join(GROUPS_CACHE_DIR, `${sessionId}.json`);
@@ -2442,7 +2428,12 @@ function loadPersistedGroupsSnapshot(sessionId) {
     const raw = readFileSync(filePath, 'utf8');
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed.groups) && parsed.groups.length > 0) {
-      return parsed.groups;
+      return {
+        groups: migratePersistedGroups(parsed.groups),
+        // Instante REAL de geração do snapshot (epoch ms). Snapshots legados
+        // sem `at` retornam null — nunca inventamos a hora atual.
+        syncedAt: Number.isFinite(parsed.at) ? parsed.at : null,
+      };
     }
     return null;
   } catch {
@@ -2474,7 +2465,11 @@ function loadAllPersistedGroupsSnapshots() {
       try {
         const raw = JSON.parse(readFileSync(path.join(GROUPS_CACHE_DIR, file), 'utf8'));
         if (raw && Array.isArray(raw.groups) && raw.groups.length > 0) {
-          groupsSyncEngine.seedCache(sessionId, raw.groups);
+          groupsSyncEngine.seedCache(
+            sessionId,
+            migratePersistedGroups(raw.groups),
+            Number.isFinite(raw.at) ? raw.at : null
+          );
           restored.push(sessionId);
         }
       } catch {
@@ -2515,6 +2510,7 @@ async function listGroupsSyncForClient(sessionClient) {
       syncInProgress: false,
       runtimeTimeout: false,
       retryAfterMs: 0,
+      syncedAt: null,
     };
   }
   const result = await groupsSyncEngine.listGroups(state.sessionId, sessionClient);
@@ -2546,6 +2542,7 @@ function groupsRoutePayload(sessionId, result) {
       cached: false,
       runtimeTimeout: true,
       retryAfterMs: result.retryAfterMs || 0,
+      syncedAt: null,
       error: 'WPP_GROUP_SYNC_TIMEOUT',
     };
   }
@@ -2558,6 +2555,9 @@ function groupsRoutePayload(sessionId, result) {
     warmingUp: Boolean(result.warmingUp),
     syncInProgress: Boolean(result.syncInProgress),
     retryAfterMs: result.retryAfterMs || 0,
+    // ISO do snapshot real (null quando desconhecido). Usado pelo frontend para
+    // exibir "última sincronização" por conta sem depender de localStorage.
+    syncedAt: result.syncedAt || null,
   };
 }
 
@@ -2684,6 +2684,34 @@ function setDynamicWppHeaders(_req, res, next) {
 // ===== Contas (multisessão) =====
 app.get('/api/whatsapp/accounts', setDynamicWppHeaders, (req, res) => {
   res.json({ ok: true, accounts: buildAccountView(), maxAccounts: MAX_ACCOUNTS });
+});
+
+// ===== Grupos em cache (SEM tocar no WPPConnect) =====
+// Lê apenas os snapshots já conhecidos (memória ou GROUPS_CACHE_DIR). É a fonte
+// usada pela Dashboard ao abrir: mostra grupos reais sem disparar listChats,
+// preservando warm-up/single-flight e o timestamp REAL de cada sincronização.
+app.get('/api/whatsapp/groups/cached', setDynamicWppHeaders, (req, res) => {
+  try {
+    const sessions = [];
+    for (const account of buildAccountView()) {
+      const snap = groupsSyncEngine.getCachedGroups(account.sessionId);
+      if (!snap.groups || snap.groups.length === 0) continue;
+      sessions.push({
+        sessionId: account.sessionId,
+        groups: snap.groups,
+        total: snap.groups.length,
+        syncedAt: snap.syncedAt || null,
+      });
+    }
+    res.json({ ok: true, sessions });
+  } catch (err) {
+    logError(
+      `[WhatsApp] falha ao ler snapshots de grupos em cache: ${String(
+        (err && err.message) || err
+      )}`
+    );
+    res.status(500).json({ ok: false, error: 'Falha ao ler grupos em cache.' });
+  }
 });
 
 // Cria uma conta nova a partir do NOME VISUAL (displayName) do usuário.

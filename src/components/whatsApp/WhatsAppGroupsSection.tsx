@@ -16,7 +16,7 @@ import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import {
   WhatsAppGroup,
-  formatGroupParticipantCount,
+  formatGroupMemberCount,
   getGroupDisplayName,
 } from '../../types/whatsApp';
 import {
@@ -307,7 +307,7 @@ export const WhatsAppGroupsSection: React.FC<
                         </div>
                         <div className="flex items-center gap-2 mt-0.5 min-w-0">
                       <span className="text-[10px] text-[#64748B] font-mono-numeric block truncate">
-                          {formatGroupParticipantCount(group)}
+                          {formatGroupMemberCount(group)}
                         </span>
                         </div>
                       </div>

@@ -7,7 +7,11 @@ import {
   Radio,
   AlertTriangle,
 } from 'lucide-react';
-import { ChannelQuickFilter } from '../../types';
+import {
+  ChannelQuickFilter,
+  TELEMETRY_UNAVAILABLE_LABEL,
+  TELEMETRY_UNAVAILABLE_VALUE,
+} from '../../types';
 
 interface ChannelsMetricsBarProps {
   activeFilter: ChannelQuickFilter;
@@ -114,11 +118,11 @@ export const ChannelsMetricsBar: React.FC<ChannelsMetricsBarProps> = ({
             <span className="text-[10px] text-[#64748B] uppercase font-semibold tracking-wider block">
               Disparos Hoje
             </span>
-            <span className="text-base font-bold font-mono-numeric text-[#2563EB]">
-              {summaryStats.messagesToday} msgs
+            <span className="text-base font-bold font-mono-numeric text-[#94A3B8]">
+              {TELEMETRY_UNAVAILABLE_VALUE}
             </span>
-            <span className="text-[10px] text-emerald-700 block font-mono-numeric">
-              100% no horário programado
+            <span className="text-[10px] text-[#64748B] block">
+              {TELEMETRY_UNAVAILABLE_LABEL}
             </span>
           </div>
           <div className="p-2.5 rounded-lg bg-[#EFF6FF] border border-[#E2E8F0] text-[#2563EB]">
@@ -132,11 +136,11 @@ export const ChannelsMetricsBar: React.FC<ChannelsMetricsBarProps> = ({
             <span className="text-[10px] text-[#64748B] uppercase font-semibold tracking-wider block">
               Cliques Gerados Hoje
             </span>
-            <span className="text-base font-bold font-mono-numeric text-[#3B82F6]">
-              {summaryStats.clicksToday.toLocaleString('pt-BR')}
+            <span className="text-base font-bold font-mono-numeric text-[#94A3B8]">
+              {TELEMETRY_UNAVAILABLE_VALUE}
             </span>
-            <span className="text-[10px] text-[#64748B] block font-mono-numeric">
-              ~{(summaryStats.clicksToday / (summaryStats.messagesToday || 1)).toFixed(0)} cliques / disparo
+            <span className="text-[10px] text-[#64748B] block">
+              {TELEMETRY_UNAVAILABLE_LABEL}
             </span>
           </div>
           <div className="p-2.5 rounded-lg bg-[#EFF6FF] border border-[#E2E8F0] text-[#3B82F6]">
@@ -150,11 +154,11 @@ export const ChannelsMetricsBar: React.FC<ChannelsMetricsBarProps> = ({
             <span className="text-[10px] text-[#64748B] uppercase font-semibold tracking-wider block">
               Taxa de Entrega
             </span>
-            <span className="text-base font-bold font-mono-numeric text-emerald-700">
-              {summaryStats.avgDeliveryRate.toFixed(1)}%
+            <span className="text-base font-bold font-mono-numeric text-[#94A3B8]">
+              {TELEMETRY_UNAVAILABLE_VALUE}
             </span>
-            <span className="text-[10px] text-emerald-700 block font-mono-numeric">
-              Proteção anti-ban ativa
+            <span className="text-[10px] text-[#64748B] block">
+              {TELEMETRY_UNAVAILABLE_LABEL}
             </span>
           </div>
           <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-emerald-700">

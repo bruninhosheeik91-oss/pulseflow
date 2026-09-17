@@ -10,7 +10,12 @@ import {
   Clock,
   Layers,
 } from 'lucide-react';
-import { DistributionChannel } from '../../types';
+import {
+  DistributionChannel,
+  TELEMETRY_UNAVAILABLE_LABEL,
+  TELEMETRY_UNAVAILABLE_VALUE,
+} from '../../types';
+import { formatMemberCount } from '../../types/whatsApp';
 
 interface ChannelTableProps {
   channels: DistributionChannel[];
@@ -139,7 +144,7 @@ export const ChannelTable: React.FC<ChannelTableProps> = ({
                       <Users className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />
                       <div>
                         <span className="font-bold font-mono-numeric text-[#172033] block">
-                          {ch.membersCount.toLocaleString('pt-BR')}
+                          {formatMemberCount(ch.membersCount)}
                         </span>
                         <span className="text-[10px] text-[#64748B] block">
                           {ch.type.includes('Canal') ? 'inscritos' : 'membros'}
@@ -162,23 +167,22 @@ export const ChannelTable: React.FC<ChannelTableProps> = ({
                     </div>
                   </td>
 
-                  {/* Disparos Hoje */}
+                  {/* Disparos / Cliques / Entrega: telemetria real indisponível */}
                   <td className="py-3 px-3 text-center">
-                    <span className="font-bold font-mono-numeric text-[#172033]">
-                      {ch.stats.messagesToday} msgs
+                    <span className="font-bold font-mono-numeric text-[#94A3B8]">
+                      {TELEMETRY_UNAVAILABLE_VALUE}
                     </span>
-                    <span className="text-[10px] text-[#64748B] block font-mono-numeric">
-                      {ch.stats.messagesTotal} total
+                    <span className="text-[10px] text-[#64748B] block">
+                      {TELEMETRY_UNAVAILABLE_LABEL}
                     </span>
                   </td>
 
-                  {/* Cliques / Entrega */}
                   <td className="py-3 px-3 text-center">
-                    <span className="font-bold font-mono-numeric text-[#2563EB]">
-                      {ch.stats.clicksToday.toLocaleString('pt-BR')}
+                    <span className="font-bold font-mono-numeric text-[#94A3B8]">
+                      {TELEMETRY_UNAVAILABLE_VALUE}
                     </span>
-                    <span className="text-[10px] text-emerald-700 block font-mono-numeric">
-                      {ch.stats.deliveryRate}% entrega
+                    <span className="text-[10px] text-[#64748B] block">
+                      {TELEMETRY_UNAVAILABLE_LABEL}
                     </span>
                   </td>
 

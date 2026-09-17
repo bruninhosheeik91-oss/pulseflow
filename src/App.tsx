@@ -151,8 +151,9 @@ export default function App() {
         return { title: 'Canais e Grupos', subtitle: 'Distribuição em WhatsApp e Telegram, instâncias ativas e telemetria' };
       case 'WhatsApp':
         return {
-          title: 'WhatsApp',
-          subtitle: 'Conecte e gerencie a conta utilizada pelas automações do PULSE FLOW.',
+          title: 'Conexões',
+          subtitle:
+            'Gerencie as contas e canais conectados às automações do PULSE FLOW.',
         };
       case 'Links de Redirecionamento':
         return { title: 'Links de Redirecionamento', subtitle: 'Configuração de links de redirecionamento para afiliados' };

@@ -19,6 +19,10 @@
  *    é considerada órfã e liberada.
  */
 
+const {
+  enrichGroupsMemberCounts: defaultEnrichMemberCounts,
+} = require('./whatsappGroupMembers.js');
+
 class WppCallTimeoutError extends Error {
   constructor(label, ms) {
     super(`${label || 'chamada WPP'} excedeu o limite de ${ms}ms`);
@@ -48,6 +52,17 @@ function createGroupsSyncEngine(options = {}) {
     : 12_000;
   const orphanMs = Number.isFinite(options.orphanMs) ? options.orphanMs : 60_000;
   const cacheTtlMs = Number.isFinite(options.cacheTtlMs) ? options.cacheTtlMs : 5_000;
+  // Contagem de membros: fallback getGroupMembersIds com concorrência limitada.
+  const memberCountTimeoutMs = Number.isFinite(options.memberCountTimeoutMs)
+    ? options.memberCountTimeoutMs
+    : 6_000;
+  const memberCountConcurrency = Number.isFinite(options.memberCountConcurrency)
+    ? Math.max(1, Math.trunc(options.memberCountConcurrency))
+    : 2;
+  const enrichMemberCounts =
+    typeof options.enrichMemberCounts === 'function'
+      ? options.enrichMemberCounts
+      : defaultEnrichMemberCounts;
 
   const now = typeof options.now === 'function' ? options.now : () => Date.now();
   const normalizeGroupSource =
@@ -77,6 +92,10 @@ function createGroupsSyncEngine(options = {}) {
         attempt: null,
         cacheGroups: null,
         cacheAt: 0,
+        // Momento REAL do snapshot de grupos (epoch ms): do arquivo persistido
+        // ou da última listagem WPP bem-sucedida. NUNCA é atualizado ao apenas
+        // ler o cache — evita sugerir sincronização recente sem sincronizar.
+        cacheSyncedAt: null,
         diskChecked: false,
       };
       states.set(sessionId, s);
@@ -94,9 +113,28 @@ function createGroupsSyncEngine(options = {}) {
         syncInProgress: false,
         runtimeTimeout: false,
         retryAfterMs: 0,
+        syncedAt: null,
       },
       extra || {}
     );
+  }
+
+  // ISO do snapshot real (arquivo persistido ou última listagem WPP). null
+  // quando desconhecido — nunca inventa "agora" só por ler o cache.
+  function syncedAtIso(sessionId) {
+    const s = internal(sessionId);
+    const at = s.cacheSyncedAt;
+    if (!at) return null;
+    try {
+      return new Date(at).toISOString();
+    } catch {
+      return null;
+    }
+  }
+
+  function withSyncedAt(sessionId, result) {
+    result.syncedAt = syncedAtIso(sessionId);
+    return result;
   }
 
   function parseGroups(value, filterGroupUs) {
@@ -121,10 +159,20 @@ function createGroupsSyncEngine(options = {}) {
       s.diskChecked = true;
       try {
         const persisted = loadPersistedSnapshot(sessionId);
-        if (Array.isArray(persisted) && persisted.length > 0) {
-          s.cacheGroups = persisted;
+        // Contrato novo: { groups, syncedAt }. Contrato antigo: array puro.
+        const persistedGroups = Array.isArray(persisted)
+          ? persisted
+          : persisted && Array.isArray(persisted.groups)
+          ? persisted.groups
+          : null;
+        const persistedAt = Array.isArray(persisted)
+          ? null
+          : persisted && persisted.syncedAt;
+        if (Array.isArray(persistedGroups) && persistedGroups.length > 0) {
+          s.cacheGroups = persistedGroups;
           s.cacheAt = now();
-          return persisted;
+          if (Number.isFinite(persistedAt)) s.cacheSyncedAt = persistedAt;
+          return persistedGroups;
         }
       } catch {
         // melhor esforço
@@ -210,6 +258,45 @@ function createGroupsSyncEngine(options = {}) {
     return { groups, timedOut: false };
   }
 
+  /**
+   * Enriquecimento de memberCount por grupo, com concorrência limitada.
+   *  - Usa o último snapshot como "valores anteriores" para preservar a
+   *    contagem quando o WPP falha/timeout (nunca sobrescreve número por 0/null).
+   *  - Nunca derruba a sincronização: qualquer falha é absorvida.
+   */
+  async function enrichGroups(sessionId, client, groups) {
+    if (!Array.isArray(groups) || groups.length === 0) return groups;
+    const s = internal(sessionId);
+    const prior = Array.isArray(s.cacheGroups) ? s.cacheGroups : [];
+    const previousCounts = new Map();
+    for (const group of prior) {
+      if (group && typeof group.memberCount === 'number') {
+        previousCounts.set(group.id, group.memberCount);
+      }
+    }
+    try {
+      await enrichMemberCounts(groups, client, {
+        previousCounts,
+        timeoutMs: memberCountTimeoutMs,
+        concurrency: memberCountConcurrency,
+        log,
+      });
+    } catch (err) {
+      logError(`[${sessionId}] falha no enriquecimento de membros: ${String(err)}`);
+    }
+    // Garante preservação mesmo quando o cliente não expõe getGroupMembersIds.
+    for (const group of groups) {
+      if (
+        group &&
+        (group.memberCount === null || group.memberCount === undefined)
+      ) {
+        const previous = previousCounts.get(group.id);
+        group.memberCount = typeof previous === 'number' ? previous : null;
+      }
+    }
+    return groups;
+  }
+
   async function runAttempt(sessionId, client) {
     const s = internal(sessionId);
     let groups = [];
@@ -262,8 +349,12 @@ function createGroupsSyncEngine(options = {}) {
     }
 
     if (groups.length > 0) {
+      // memberCount REAL: tenta o payload de listChats e cai para
+      // getGroupMembersIds com concorrência limitada (máx. 2 por sessão).
+      groups = await enrichGroups(sessionId, client, groups);
       s.cacheGroups = groups;
       s.cacheAt = now();
+      s.cacheSyncedAt = s.cacheAt;
       s.retryAfterAt = 0;
       try {
         persistSnapshot(sessionId, groups);
@@ -311,12 +402,15 @@ function createGroupsSyncEngine(options = {}) {
     // 1) Warm-up pós-login: não tocar no WPP de forma alguma.
     if (s.warmupUntil && t < s.warmupUntil) {
       const groups = cachedGroups(sessionId);
-      return makeResult('warming', {
-        groups,
-        cached: groups.length > 0,
-        warmingUp: true,
-        retryAfterMs: s.warmupUntil - t,
-      });
+      return withSyncedAt(
+        sessionId,
+        makeResult('warming', {
+          groups,
+          cached: groups.length > 0,
+          warmingUp: true,
+          retryAfterMs: s.warmupUntil - t,
+        })
+      );
     }
 
     // 2) Operação WPP REAL ainda viva: jamais iniciar outra (single-flight real).
@@ -324,12 +418,15 @@ function createGroupsSyncEngine(options = {}) {
       const age = t - s.realOp.startedAt;
       if (age < orphanMs) {
         const groups = cachedGroups(sessionId);
-        return makeResult('syncing', {
-          groups,
-          cached: groups.length > 0,
-          syncInProgress: true,
-          retryAfterMs: Math.max(1, orphanMs - age),
-        });
+        return withSyncedAt(
+          sessionId,
+          makeResult('syncing', {
+            groups,
+            cached: groups.length > 0,
+            syncInProgress: true,
+            retryAfterMs: Math.max(1, orphanMs - age),
+          })
+        );
       }
       // Órfã (passou do limite de segurança): libera para nova tentativa.
       log(
@@ -343,30 +440,39 @@ function createGroupsSyncEngine(options = {}) {
       const retryAfterMs = s.retryAfterAt - t;
       const groups = cachedGroups(sessionId);
       if (groups.length > 0) {
-        return makeResult('ok', { groups, cached: true, retryAfterMs });
+        return withSyncedAt(
+          sessionId,
+          makeResult('ok', { groups, cached: true, retryAfterMs })
+        );
       }
-      return makeResult('timeout', {
-        groups: [],
-        runtimeTimeout: true,
-        retryAfterMs,
-      });
+      return withSyncedAt(
+        sessionId,
+        makeResult('timeout', {
+          groups: [],
+          runtimeTimeout: true,
+          retryAfterMs,
+        })
+      );
     }
 
     // 4) Cache fresco: responde sem consultar o WPP.
     if (s.cacheAt && t - s.cacheAt < cacheTtlMs) {
-      return makeResult('ok', {
-        groups: Array.isArray(s.cacheGroups) ? s.cacheGroups : [],
-        cached: true,
-      });
+      return withSyncedAt(
+        sessionId,
+        makeResult('ok', {
+          groups: Array.isArray(s.cacheGroups) ? s.cacheGroups : [],
+          cached: true,
+        })
+      );
     }
 
     // 5) Single-flight de tentativa HTTP concorrente.
-    if (s.attempt) return s.attempt;
+    if (s.attempt) return withSyncedAt(sessionId, await s.attempt);
 
     const attempt = runAttempt(sessionId, client);
     s.attempt = attempt;
     try {
-      return await attempt;
+      return withSyncedAt(sessionId, await attempt);
     } finally {
       if (s.attempt === attempt) s.attempt = null;
     }
@@ -393,12 +499,28 @@ function createGroupsSyncEngine(options = {}) {
     s.realOp = null;
   }
 
-  function seedCache(sessionId, groups) {
+  function seedCache(sessionId, groups, syncedAt) {
     if (!sessionId || !Array.isArray(groups) || groups.length === 0) return;
     const s = internal(sessionId);
     s.cacheGroups = groups;
     s.cacheAt = now();
     s.diskChecked = true;
+    // syncedAt vem do arquivo persistido (epoch ms). Sem ele, mantém null para
+    // não sugerir uma sincronização que nunca aconteceu.
+    if (Number.isFinite(syncedAt)) s.cacheSyncedAt = syncedAt;
+  }
+
+  /**
+   * Leitura cache-only (arquivo persistido ou memória): NUNCA toca no WPP.
+   * Retorna o último snapshot conhecido e o instante REAL em que foi gerado.
+   */
+  function getCachedGroups(sessionId) {
+    if (!sessionId) return { groups: [], syncedAt: null };
+    const groups = cachedGroups(sessionId);
+    return {
+      groups: Array.isArray(groups) ? groups : [],
+      syncedAt: syncedAtIso(sessionId),
+    };
   }
 
   function _getInternalState(sessionId) {
@@ -412,6 +534,7 @@ function createGroupsSyncEngine(options = {}) {
 
   return {
     listGroups,
+    getCachedGroups,
     noteConnected,
     noteDisconnected,
     seedCache,

@@ -47,6 +47,7 @@ import {
   sendAutoSearchTest,
   updateAutoSearchAutomation,
 } from '../../services/affiliatePrograms/affiliateProgramsService';
+import { formatMemberCountLabel } from '../../types/whatsApp';
 
 interface AutomationDraft {
   id?: string;
@@ -736,9 +737,9 @@ export const AutoSearchFormScreen: React.FC<Props> = ({
                                     >
                                       {group.name || group.id}
                                     </span>
-                                    {group.participantCount != null && (
+                                    {group.memberCount != null && (
                                       <span className="text-[10px] text-[#64748B]">
-                                        {group.participantCount} participantes
+                                        {formatMemberCountLabel(group.memberCount)}
                                       </span>
                                     )}
                                   </span>

@@ -10,6 +10,7 @@ import {
   WhatsAppAccount,
   WhatsAppGroup,
 } from '../../types/whatsApp';
+
 import { getWhatsAppProvider } from '../../services/whatsApp/provider';
 import {
   addChildGroup,
@@ -71,7 +72,8 @@ function channelFromRealGroup(
     platform: 'WhatsApp',
     type: 'Grupo WhatsApp',
     status,
-    membersCount: group.participantCount ?? 0,
+    membersCount:
+      typeof group.memberCount === 'number' ? group.memberCount : null,
     description: isMonitorSource
       ? `Grupo Mãe do monitor na conta ${account.name || account.sessionId}.`
       : isActiveDestination
@@ -94,7 +96,7 @@ function channelFromRealGroup(
     recentMessages: [],
     createdAt: account.lastSyncAt
       ? new Date(account.lastSyncAt).toLocaleString('pt-BR')
-      : 'Sincronizado agora',
+      : '—',
   };
 }
 
@@ -317,7 +319,12 @@ export const ChannelsPage: React.FC = () => {
         if (activeFilter === 'Telegram' && ch.platform !== 'Telegram') return false;
         if (activeFilter === 'Conectados' && ch.status !== 'Conectado') return false;
         if (activeFilter === 'Atenção' && ch.status !== 'Atenção') return false;
-        if (activeFilter === 'Alta Audiência' && ch.membersCount < 5000) return false;
+        if (
+          activeFilter === 'Alta Audiência' &&
+          (ch.membersCount === null || ch.membersCount < 5000)
+        ) {
+          return false;
+        }
         if (selectedPlatform !== 'Todos' && ch.platform !== selectedPlatform) return false;
         if (selectedStatus !== 'Todos' && ch.status !== selectedStatus) return false;
         if (searchQuery.trim()) {
@@ -333,7 +340,11 @@ export const ChannelsPage: React.FC = () => {
         return true;
       })
       .sort((a, b) => {
-        if (sortOption === 'audience') return b.membersCount - a.membersCount;
+        if (sortOption === 'audience') {
+          const av = a.membersCount ?? -1;
+          const bv = b.membersCount ?? -1;
+          return bv - av;
+        }
         if (sortOption === 'dispatches') return b.stats.messagesToday - a.stats.messagesToday;
         if (sortOption === 'delivery') return b.stats.deliveryRate - a.stats.deliveryRate;
         if (sortOption === 'recent') return b.id.localeCompare(a.id);
@@ -349,13 +360,18 @@ export const ChannelsPage: React.FC = () => {
       telegram: channels.filter((c) => c.platform === 'Telegram').length,
       connected: channels.filter((c) => c.status === 'Conectado').length,
       attention: channels.filter((c) => c.status === 'Atenção').length,
-      highAudience: channels.filter((c) => c.membersCount >= 5000).length,
+      highAudience: channels.filter(
+        (c) => c.membersCount !== null && c.membersCount >= 5000
+      ).length,
     }),
     [channels]
   );
 
   const summaryStats = useMemo(() => {
-    const totalAudience = channels.reduce((acc, c) => acc + c.membersCount, 0);
+    const totalAudience = channels.reduce(
+      (acc, c) => acc + (typeof c.membersCount === 'number' ? c.membersCount : 0),
+      0
+    );
     const messagesToday = channels.reduce((acc, c) => acc + c.stats.messagesToday, 0);
     const clicksToday = channels.reduce((acc, c) => acc + c.stats.clicksToday, 0);
     const avgDeliveryRate = channels.length

@@ -4,7 +4,12 @@ import {
   WhatsAppGroup,
   DOMNEX_DEFAULT_SESSION_ID,
 } from '../../types/whatsApp';
-import { WhatsAppProvider, WhatsAppQrPayload, GroupsSyncResult } from './provider';
+import {
+  WhatsAppProvider,
+  WhatsAppQrPayload,
+  GroupsSyncResult,
+  CachedGroupsSnapshot,
+} from './provider';
 
 const DEFAULT_BASE_URL = 'http://localhost:3001';
 
@@ -84,12 +89,21 @@ function normalizeStatus(raw: unknown): WhatsAppConnectionStatus {
 }
 
 function normalizeGroup(group: WhatsAppGroup, sessionId: string): WhatsAppGroup {
+  // Tolerância a payloads legados com participantCount (backend antigo).
+  const legacy = group as WhatsAppGroup & {
+    participantCount?: number | null;
+  };
+  const memberCount =
+    typeof group.memberCount === 'number'
+      ? group.memberCount
+      : typeof legacy.participantCount === 'number'
+      ? legacy.participantCount
+      : null;
   return {
     id: group.id,
     name:
       typeof group.name === 'string' && group.name.trim() ? group.name : null,
-    participantCount:
-      typeof group.participantCount === 'number' ? group.participantCount : null,
+    memberCount,
     isGroup: true as const,
     whatsappAccountId: sessionId,
     sessionId,
@@ -186,6 +200,7 @@ export class WppConnectProvider implements WhatsAppProvider {
       warmingUp?: boolean;
       syncInProgress?: boolean;
       retryAfterMs?: number;
+      syncedAt?: string | null;
     }>(this.baseUrl, sessionPath(sessionId, '/groups'));
     // Backend responde runtimeTimeout=true apenas quando a sincronização FALHOU
     // (timeout real, após warm-up) e não há cache. Isso NÃO é "0 grupos".
@@ -201,7 +216,39 @@ export class WppConnectProvider implements WhatsAppProvider {
       syncInProgress: Boolean(data.syncInProgress),
       cached: Boolean(data.cached),
       retryAfterMs: Number(data.retryAfterMs) || 0,
+      syncedAt: typeof data.syncedAt === 'string' ? data.syncedAt : null,
     };
+  }
+
+  /**
+   * Hidrata a Dashboard com os grupos já conhecidos pelo SERVIDOR, sem tocar
+   * no WPPConnect. Retorna apenas as contas que possuem snapshot em cache.
+   */
+  async getCachedGroups(): Promise<CachedGroupsSnapshot[]> {
+    const data = await apiFetch<{
+      ok?: boolean;
+      sessions?: Array<{
+        sessionId?: string;
+        groups?: WhatsAppGroup[];
+        syncedAt?: string | null;
+      }>;
+    }>(this.baseUrl, '/api/whatsapp/groups/cached');
+
+    const snapshots: CachedGroupsSnapshot[] = [];
+    for (const entry of data.sessions || []) {
+      const sessionId = (entry.sessionId || '').trim();
+      if (!sessionId) continue;
+      const groups = (entry.groups || [])
+        .map((group) => normalizeGroup(group, sessionId))
+        .filter((group) => Boolean(group.id && group.id.trim()));
+      if (groups.length === 0) continue;
+      snapshots.push({
+        sessionId,
+        groups,
+        syncedAt: typeof entry.syncedAt === 'string' ? entry.syncedAt : null,
+      });
+    }
+    return snapshots;
   }
 
   async getGroupsForSession(sessionId: string): Promise<WhatsAppGroup[]> {

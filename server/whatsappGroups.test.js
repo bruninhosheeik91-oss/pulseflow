@@ -5,28 +5,9 @@ const {
   createGroupsSyncEngine,
   WppCallTimeoutError,
 } = require('./whatsappGroups.js');
+const { normalizeGroupSource } = require('./whatsappGroupMembers.js');
 
 // ---------------------------------------------------------------- helpers ---
-
-function toSerializedId(id) {
-  if (!id) return null;
-  if (typeof id === 'string') return id;
-  if (id._serialized) return id._serialized;
-  return null;
-}
-
-// Mesma semântica do normalizeGroupSource do server (agora injetado).
-function normalizeGroupSource(raw) {
-  const chat = raw || {};
-  const id = toSerializedId(chat.id);
-  if (!id || !/^[^\s@]+@g\.us$/i.test(id)) return null;
-  return {
-    id,
-    name: typeof chat.name === 'string' ? chat.name : null,
-    participantCount: null,
-    isGroup: true,
-  };
-}
 
 function makeClock(start = 1_000_000) {
   let t = start;
@@ -285,6 +266,86 @@ function testTimeoutErrorType() {
   assert.strictEqual(err.kind, 'timeout');
 }
 
+// H) Sincronização real informa syncedAt; leitura de cache NÃO o atualiza.
+async function testSyncedAtFromRealSnapshot() {
+  const clock = makeClock();
+  const engine = createGroupsSyncEngine(baseOptions(clock));
+  const client = { listChats: () => Promise.resolve([group('1@g.us', 'Um')]) };
+
+  const r = await engine.listGroups('wa_x', client);
+  assert.strictEqual(r.status, 'ok');
+  assert.ok(
+    typeof r.syncedAt === 'string' && !Number.isNaN(Date.parse(r.syncedAt)),
+    'H: sincronização real informa syncedAt ISO'
+  );
+  const first = r.syncedAt;
+
+  clock.advance(1_000);
+  const cached = await engine.listGroups('wa_x', client);
+  assert.strictEqual(cached.cached, true, 'H: segunda leitura vem do cache');
+  assert.strictEqual(
+    cached.syncedAt,
+    first,
+    'H: cache preserva o horário REAL (não muda só por ler)'
+  );
+}
+
+// I) Snapshot persistido é lido SEM tocar no WPP e mantém o `at` original.
+function testGetCachedGroupsReadsPersistedSnapshot() {
+  const clock = makeClock();
+  const persistedAt = clock.now() - 120_000;
+  const engine = createGroupsSyncEngine(
+    baseOptions(clock, {
+      loadPersistedSnapshot: () => ({
+        groups: [group('9@g.us', 'Nove')],
+        syncedAt: persistedAt,
+      }),
+    })
+  );
+
+  const snap = engine.getCachedGroups('wa_x');
+  assert.strictEqual(snap.groups.length, 1, 'I: grupos do snapshot retornados');
+  assert.strictEqual(
+    snap.syncedAt,
+    new Date(persistedAt).toISOString(),
+    'I: syncedAt é o instante REAL do arquivo'
+  );
+
+  const again = engine.getCachedGroups('wa_x');
+  assert.strictEqual(again.groups.length, 1);
+  assert.strictEqual(again.syncedAt, snap.syncedAt, 'I: leitura é estável');
+}
+
+// J) seedCache propaga o timestamp real vindo do disco.
+function testSeedCacheKeepsRealTimestamp() {
+  const clock = makeClock();
+  const seededAt = clock.now() - 60_000;
+  const engine = createGroupsSyncEngine(baseOptions(clock));
+  engine.seedCache('wa_x', [group('7@g.us', 'Sete')], seededAt);
+
+  const snap = engine.getCachedGroups('wa_x');
+  assert.strictEqual(snap.groups.length, 1);
+  assert.strictEqual(snap.syncedAt, new Date(seededAt).toISOString());
+}
+
+// K) Snapshot legado sem `at` -> syncedAt null (nunca inventa "agora").
+function testLegacySnapshotWithoutTimestamp() {
+  const clock = makeClock();
+  const engine = createGroupsSyncEngine(
+    baseOptions(clock, {
+      loadPersistedSnapshot: () => [group('5@g.us', 'Cinco')],
+    })
+  );
+
+  const snap = engine.getCachedGroups('wa_x');
+  assert.strictEqual(snap.groups.length, 1);
+  assert.strictEqual(
+    snap.syncedAt,
+    null,
+    'K: sem timestamp real não inventa horário'
+  );
+}
+
 async function run() {
   const tests = [
     ['warm-up após MAIN bloqueia WPP', testWarmupBlocksWpp],
@@ -296,6 +357,10 @@ async function run() {
     ['vazio válido não é timeout', testValidEmptyIsNotTimeout],
     ['operação órfã (>60s) é liberada', testOrphanOperationIsReleased],
     ['WppCallTimeoutError é tipado', testTimeoutErrorType],
+    ['syncedAt real + cache não atualiza horário (H)', testSyncedAtFromRealSnapshot],
+    ['getCachedGroups lê snapshot sem WPP (I)', testGetCachedGroupsReadsPersistedSnapshot],
+    ['seedCache preserva timestamp real (J)', testSeedCacheKeepsRealTimestamp],
+    ['snapshot legado sem at -> syncedAt null (K)', testLegacySnapshotWithoutTimestamp],
   ];
 
   let failures = 0;

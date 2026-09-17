@@ -56,7 +56,11 @@ export const ChannelFormModal: React.FC<ChannelFormModalProps> = ({
       setIdentifier(initialChannel.identifier);
       setInstanceName(initialChannel.instanceName);
       setAntiFloodDelay(initialChannel.antiFloodDelay);
-      setMembersCount(String(initialChannel.membersCount));
+      setMembersCount(
+        typeof initialChannel.membersCount === 'number'
+          ? String(initialChannel.membersCount)
+          : ''
+      );
       setSelectedCampaigns(initialChannel.linkedCampaigns);
       setShowQrSimulation(false);
     } else {

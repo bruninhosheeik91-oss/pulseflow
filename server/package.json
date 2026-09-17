@@ -10,7 +10,8 @@
     "test:api": "node linkConversion/tests/shopeeApiClient.test.js",
     "test:monitor": "node monitorPipeline.test.js && node monitorOfferMessage.test.js",
     "test:accounts": "node whatsappAccounts.test.js",
-    "test:groups": "node whatsappGroups.test.js"
+    "test:groups": "node whatsappGroups.test.js",
+    "test:members": "node whatsappMembers.test.js"
   },
   "dependencies": {
     "@wppconnect-team/wppconnect": "^2.3.3",

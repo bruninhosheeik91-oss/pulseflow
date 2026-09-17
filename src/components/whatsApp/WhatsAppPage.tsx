@@ -39,10 +39,10 @@ export const WhatsAppPage: React.FC = () => {
       {/* Header */}
       <div className="pb-1">
         <h1 className="text-xl font-bold text-[#172033] tracking-tight">
-          WhatsApp
+          Conexões
         </h1>
         <p className="text-xs text-[#64748B] mt-1">
-          Conecte e gerencie as contas utilizadas pelas automações do PULSE FLOW.
+          Gerencie as contas e canais conectados às automações do PULSE FLOW.
         </p>
       </div>
 

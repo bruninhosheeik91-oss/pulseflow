@@ -191,7 +191,7 @@ export type AutoSearchAutomationPayload = Partial<
 export interface AutoSearchGroup {
   id: string;
   name: string | null;
-  participantCount: number | null;
+  memberCount: number | null;
   isGroup?: boolean;
 }
 

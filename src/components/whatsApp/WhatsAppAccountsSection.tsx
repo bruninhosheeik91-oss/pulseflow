@@ -234,7 +234,7 @@ export const WhatsAppAccountsSection: React.FC = () => {
       <div className="flex items-start justify-between gap-4 p-5 pb-4 border-b border-[#E2E8F0]">
         <div>
           <h2 className="text-sm font-semibold text-[#172033] tracking-tight">
-            {hasAccounts ? 'Contas conectadas' : 'WhatsApp'}
+            Contas WhatsApp
           </h2>
           <p className="text-xs text-[#64748B] mt-0.5">
             {hasAccounts

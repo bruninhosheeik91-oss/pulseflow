@@ -508,7 +508,8 @@ export interface DistributionChannel {
   platform: ChannelPlatform;
   type: ChannelType;
   status: ChannelStatus;
-  membersCount: number;
+  /** Quantidade real de membros/inscritos; null = desconhecido (nunca 0 por falha). */
+  membersCount: number | null;
   description: string;
   identifier: string; // Ex: 1203630294182910@g.us ou @radar_ofertas_vip
   instanceName: string; // Ex: Evolution Node BR #01 ou Bot @DomnexDealsBot
@@ -543,6 +544,12 @@ export type ChannelSortOption =
   | 'delivery'
   | 'name'
   | 'recent';
+
+// Telemetria de disparos/cliques/entrega ainda NÃO é coletada em tempo real.
+// Enquanto não houver dado real, a UI mostra estado neutro em vez de números
+// ou percentuais fixos que pareceriam medições verdadeiras.
+export const TELEMETRY_UNAVAILABLE_VALUE = '—';
+export const TELEMETRY_UNAVAILABLE_LABEL = 'Dados ainda não disponíveis';
 
 // ----------------------------------------------------
 // MÓDULO HISTÓRICO — Registros de Disparos e Auditoria

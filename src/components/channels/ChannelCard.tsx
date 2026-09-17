@@ -13,7 +13,11 @@ import {
   BatteryCharging,
   Layers,
 } from 'lucide-react';
-import { DistributionChannel } from '../../types';
+import {
+  DistributionChannel,
+  TELEMETRY_UNAVAILABLE_LABEL,
+} from '../../types';
+import { formatMemberCount } from '../../types/whatsApp';
 
 interface ChannelCardProps {
   channel: DistributionChannel;
@@ -140,7 +144,7 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
           <div className="flex items-center gap-1.5">
             <Users className="w-3.5 h-3.5 text-[#2563EB]" />
             <span className="font-mono-numeric font-bold text-[#172033]">
-              {channel.membersCount.toLocaleString('pt-BR')}
+              {formatMemberCount(channel.membersCount)}
             </span>
             <span className="text-[11px] text-[#64748B]">
               {channel.type.includes('Canal') ? 'inscritos' : 'membros'}
@@ -172,34 +176,12 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
           </div>
         </div>
 
-        {/* Daily Performance Grid */}
-        <div className="grid grid-cols-3 gap-2 p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-center">
-          <div>
-            <span className="text-[10px] text-[#64748B] uppercase block">
-              Envios Hoje
-            </span>
-            <span className="text-xs font-bold font-mono-numeric text-[#172033]">
-              {channel.stats.messagesToday} msgs
-            </span>
-          </div>
-
-          <div>
-            <span className="text-[10px] text-[#64748B] uppercase block">
-              Cliques Hoje
-            </span>
-            <span className="text-xs font-bold font-mono-numeric text-[#2563EB]">
-              {channel.stats.clicksToday.toLocaleString('pt-BR')}
-            </span>
-          </div>
-
-          <div>
-            <span className="text-[10px] text-[#64748B] uppercase block">
-              Taxa Entrega
-            </span>
-            <span className="text-xs font-bold font-mono-numeric text-emerald-700">
-              {channel.stats.deliveryRate}%
-            </span>
-          </div>
+        {/* Desempenho do dia: telemetria real ainda não é coletada */}
+        <div className="p-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-center">
+          <span className="text-[10px] text-[#64748B] uppercase block">
+            Desempenho do Dia
+          </span>
+          <span className="text-xs text-[#94A3B8]">{TELEMETRY_UNAVAILABLE_LABEL}</span>
         </div>
       </div>
 

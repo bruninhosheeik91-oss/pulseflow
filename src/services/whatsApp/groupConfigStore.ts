@@ -4,13 +4,17 @@ import {
   DOMNEX_DEFAULT_SESSION_ID,
 } from '../../types/whatsApp';
 import { updateMonitorServerConfig } from './monitorService';
+import { CachedGroupsSnapshot } from './provider';
 
 const STORAGE_KEY = 'domnex.whatsapp.groups.v1';
 export const DEFAULT_CHANNEL_ANTIFLOOD_SECONDS = 30;
 
 export interface WhatsAppGroupConfig {
   groups: WhatsAppGroup[];
+  /** Instante da sincronização mais recente entre todas as contas. */
   syncedAt: string | null;
+  /** Instante REAL de sincronização por conta (sessionId). */
+  syncedAtBySession: Record<string, string | null>;
   parentGroupId: string | null;
   parentSessionId: string | null;
   childGroupIds: string[];
@@ -20,11 +24,39 @@ export interface WhatsAppGroupConfig {
 const EMPTY_CONFIG: WhatsAppGroupConfig = {
   groups: [],
   syncedAt: null,
+  syncedAtBySession: {},
   parentGroupId: null,
   parentSessionId: null,
   childGroupIds: [],
   childGroupDelays: {},
 };
+
+function normalizeSyncedAtMap(value: unknown): Record<string, string | null> {
+  const result: Record<string, string | null> = {};
+  if (!value || typeof value !== 'object') return result;
+  for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
+    if (!key) continue;
+    if (typeof raw === 'string') result[key] = raw;
+    else if (raw === null) result[key] = null;
+  }
+  return result;
+}
+
+// Instante mais recente do mapa por conta. É o valor exibido no cabeçalho;
+// a precisão por conta fica em syncedAtBySession.
+function latestSyncedAt(map: Record<string, string | null>): string | null {
+  let latest: string | null = null;
+  let latestMs = -Infinity;
+  for (const value of Object.values(map)) {
+    if (!value) continue;
+    const ms = new Date(value).getTime();
+    if (Number.isFinite(ms) && ms >= latestMs) {
+      latestMs = ms;
+      latest = value;
+    }
+  }
+  return latest;
+}
 
 function normalizeDelay(value: unknown): number {
   const number = Number(value);
@@ -35,15 +67,45 @@ function normalizeDelay(value: unknown): number {
 function isWhatsAppGroup(value: unknown): value is WhatsAppGroup {
   if (!value || typeof value !== 'object') return false;
   const g = value as Record<string, unknown>;
+  const hasMemberCount =
+    g.memberCount === undefined ||
+    g.memberCount === null ||
+    typeof g.memberCount === 'number';
+  const hasLegacyCount =
+    g.participantCount === undefined ||
+    g.participantCount === null ||
+    typeof g.participantCount === 'number';
   return (
     typeof g.id === 'string' &&
     Boolean(g.id) &&
     (g.name === null || typeof g.name === 'string') &&
-    (g.participantCount === null || typeof g.participantCount === 'number') &&
+    hasMemberCount &&
+    hasLegacyCount &&
     g.isGroup === true &&
     (g.whatsappAccountId === null || typeof g.whatsappAccountId === 'string') &&
     (g.sessionId === null || typeof g.sessionId === 'string')
   );
+}
+
+// Migra snapshots antigos em localStorage (participantCount -> memberCount),
+// sem descartar grupos válidos nem perder contagens.
+function migrateStoredGroup(value: unknown): WhatsAppGroup | null {
+  if (!isWhatsAppGroup(value)) return null;
+  const legacy = value as WhatsAppGroup & { participantCount?: number | null };
+  const memberCount =
+    typeof value.memberCount === 'number'
+      ? value.memberCount
+      : typeof legacy.participantCount === 'number'
+      ? legacy.participantCount
+      : null;
+  return {
+    id: value.id,
+    name: value.name,
+    memberCount,
+    isGroup: true,
+    whatsappAccountId: value.whatsappAccountId,
+    sessionId: value.sessionId,
+  };
 }
 
 function readFromStorage(): WhatsAppGroupConfig {
@@ -53,7 +115,9 @@ function readFromStorage(): WhatsAppGroupConfig {
     if (!raw) return EMPTY_CONFIG;
     const parsed = JSON.parse(raw) as Record<string, unknown>;
     const groups = Array.isArray(parsed.groups)
-      ? parsed.groups.filter(isWhatsAppGroup)
+      ? parsed.groups
+          .map(migrateStoredGroup)
+          .filter((group): group is WhatsAppGroup => group !== null)
       : [];
     const ids = new Set(groups.map((g) => g.id));
     const parentGroupId =
@@ -86,9 +150,14 @@ function readFromStorage(): WhatsAppGroupConfig {
       childGroupDelays[group.id] = normalizeDelay(storedDelays[group.id]);
     }
 
+    const syncedAtBySession = normalizeSyncedAtMap(parsed.syncedAtBySession);
+    const storedSyncedAt =
+      typeof parsed.syncedAt === 'string' ? parsed.syncedAt : null;
+
     return {
       groups,
-      syncedAt: typeof parsed.syncedAt === 'string' ? parsed.syncedAt : null,
+      syncedAt: latestSyncedAt(syncedAtBySession) ?? storedSyncedAt,
+      syncedAtBySession,
       parentGroupId,
       parentSessionId,
       childGroupIds,
@@ -175,18 +244,12 @@ function tagGroupsWithSession(
     }));
 }
 
-export function setSyncedGroupsForSession(
-  groups: WhatsAppGroup[],
-  sessionId: string,
-  syncedAt: string = new Date().toISOString()
-) {
-  const valid = tagGroupsWithSession(groups, sessionId);
-  // Resultado vazio (WPP travado/timeout/sem grupos) NUNCA apaga grupos já
-  // persistidos nem a configuração monitor (Grupo Mãe/Filho). A sincronização
-  // falhar não pode limpar a seleção do usuário.
-  if (valid.length === 0) return;
-  const others = state.groups.filter((g) => g.sessionId !== sessionId);
-  const nextGroups = [...others, ...valid];
+// Reconstrói a configuração preservando Grupo Mãe/Filho e anti-flood a partir
+// do conjunto de grupos informado + timestamps por conta.
+function buildConfigWithGroups(
+  nextGroups: WhatsAppGroup[],
+  syncedAtBySession: Record<string, string | null>
+): WhatsAppGroupConfig {
   const ids = new Set(nextGroups.map((g) => g.id));
   const parentGroupId =
     state.parentGroupId && ids.has(state.parentGroupId)
@@ -204,14 +267,77 @@ export function setSyncedGroupsForSession(
   for (const group of nextGroups) {
     childGroupDelays[group.id] = normalizeDelay(state.childGroupDelays[group.id]);
   }
-  commit({
+  return {
     groups: nextGroups,
-    syncedAt,
+    syncedAt: latestSyncedAt(syncedAtBySession),
+    syncedAtBySession,
     parentGroupId,
     parentSessionId,
     childGroupIds,
     childGroupDelays,
-  });
+  };
+}
+
+export function setSyncedGroupsForSession(
+  groups: WhatsAppGroup[],
+  sessionId: string,
+  syncedAt: string = new Date().toISOString()
+) {
+  const valid = tagGroupsWithSession(groups, sessionId);
+  // Resultado vazio (WPP travado/timeout/sem grupos) NUNCA apaga grupos já
+  // persistidos nem a configuração monitor (Grupo Mãe/Filho). A sincronização
+  // falhar não pode limpar a seleção do usuário.
+  if (valid.length === 0) return;
+  const others = state.groups.filter((g) => g.sessionId !== sessionId);
+  const nextGroups = [...others, ...valid];
+  commit(
+    buildConfigWithGroups(nextGroups, {
+      ...state.syncedAtBySession,
+      [sessionId]: syncedAt,
+    })
+  );
+}
+
+/**
+ * Hidrata a configuração com os snapshots REAIS que o servidor já conhece
+ * (rota cache-only). Substitui os grupos de uma conta apenas quando o servidor
+ * tem uma versão mais recente do que a registrada localmente — nunca rebaixa
+ * dados mais novos nem inventa timestamps.
+ */
+export function applyServerSnapshots(snapshots: CachedGroupsSnapshot[]) {
+  if (!Array.isArray(snapshots) || snapshots.length === 0) return;
+  let nextGroups = [...state.groups];
+  const nextSyncedAtBySession = { ...state.syncedAtBySession };
+  let changed = false;
+
+  for (const snapshot of snapshots) {
+    if (!snapshot || !snapshot.sessionId || !Array.isArray(snapshot.groups)) {
+      continue;
+    }
+    const valid = tagGroupsWithSession(snapshot.groups, snapshot.sessionId);
+    if (valid.length === 0) continue;
+
+    const localAt = state.syncedAtBySession[snapshot.sessionId] ?? null;
+    const serverAt = snapshot.syncedAt ?? null;
+    const localMs = localAt ? new Date(localAt).getTime() : NaN;
+    const serverMs = serverAt ? new Date(serverAt).getTime() : NaN;
+    // Sem timestamp local: aceita o snapshot do servidor. Com timestamp local:
+    // só substitui se o servidor tiver uma versão comprovadamente mais recente.
+    const shouldApply =
+      !Number.isFinite(localMs) ||
+      (Number.isFinite(serverMs) && serverMs > localMs);
+    if (!shouldApply) continue;
+
+    nextGroups = [
+      ...nextGroups.filter((g) => g.sessionId !== snapshot.sessionId),
+      ...valid,
+    ];
+    nextSyncedAtBySession[snapshot.sessionId] = serverAt;
+    changed = true;
+  }
+
+  if (!changed) return;
+  commit(buildConfigWithGroups(nextGroups, nextSyncedAtBySession));
 }
 
 export function setSyncedGroups(
@@ -294,9 +420,12 @@ export function clearGroupsForSession(sessionId: string) {
   const childGroupDelays = Object.fromEntries(
     Object.entries(state.childGroupDelays).filter(([id]) => !removedIds.has(id))
   );
+  const syncedAtBySession = { ...state.syncedAtBySession };
+  delete syncedAtBySession[sessionId];
   commit({
     groups: remaining,
-    syncedAt: state.syncedAt,
+    syncedAt: latestSyncedAt(syncedAtBySession),
+    syncedAtBySession,
     parentGroupId:
       state.parentGroupId && ids.has(state.parentGroupId)
         ? state.parentGroupId

@@ -327,6 +327,7 @@ export function useWhatsAppAccounts() {
                 syncInProgress: false,
                 cached: false,
                 retryAfterMs: 0,
+                syncedAt: null,
               };
 
         if (result.warmingUp) {
@@ -349,7 +350,11 @@ export function useWhatsAppAccounts() {
         const groups = result.groups;
         // Sincronização VÁLIDA (mesmo com zero grupos): atualiza e limpa
         // qualquer estado de falha/warm-up/sincronização anterior.
-        setSyncedGroupsForSession(groups, sessionId);
+        setSyncedGroupsForSession(
+          groups,
+          sessionId,
+          result.syncedAt ?? undefined
+        );
         setGroupsBySession((prev) => ({ ...prev, [sessionId]: groups }));
         clearFlagBySession(setSyncTimeoutBySession, sessionId);
         clearFlagBySession(setWarmingUpBySession, sessionId);
