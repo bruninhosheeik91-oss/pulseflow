@@ -56,6 +56,7 @@ export function updateMonitorServerConfig(config: {
   parentGroupId: string | null;
   childGroupIds: string[];
   childGroupDelays?: Record<string, number>;
+  enabled?: boolean;
 }): Promise<MonitorServerStatus> {
   return api<MonitorServerStatus>('/api/monitor', {
     method: 'POST',
@@ -64,6 +65,7 @@ export function updateMonitorServerConfig(config: {
       parentGroupId: config.parentGroupId,
       childGroupIds: config.childGroupIds,
       childGroupDelays: config.childGroupDelays || {},
+      enabled: config.enabled,
     }),
   });
 }

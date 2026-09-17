@@ -37,6 +37,7 @@ import { getGroupDisplayName, DOMNEX_DEFAULT_SESSION_ID } from '../../types/what
 import {
   replaceChildGroups,
   removeChildGroup,
+  setMonitorEnabled,
   useWhatsAppGroupConfig,
 } from '../../services/whatsApp/groupConfigStore';
 import {
@@ -48,6 +49,7 @@ import {
   getMonitorStatus,
   MonitorServerStatus,
 } from '../../services/whatsApp/monitorService';
+import { resolveMonitorUiState } from './monitorUiState';
 import { useWhatsAppAccounts } from '../../services/whatsApp/useWhatsAppAccounts';
 
 const PLATFORM_ICONS = {
@@ -246,14 +248,44 @@ export const MonitorGroupPage: React.FC = () => {
     );
   };
 
-  const handleToggleStatus = () => {
+  const handleToggleStatus = async () => {
     if (!config) return;
-    const next = config.status === 'paused' ? 'configured' : 'paused';
-    setConfig((prev) => (prev ? { ...prev, status: next } : prev));
-    showToast(
-      next === 'paused' ? 'Grupo Monitor pausado.' : 'Grupo Monitor retomado.',
-      'info'
-    );
+    if (monitorReachable !== true) {
+      showToast(
+        'Servidor de conexão indisponível — tente novamente mais tarde.',
+        'info'
+      );
+      return;
+    }
+    const targetEnabled = isPaused;
+    if (
+      targetEnabled &&
+      !(parentGroup && childGroupIds.length > 0)
+    ) {
+      showToast(
+        'Defina o Grupo Mãe e pelo menos um destino para retomar o monitor.',
+        'info'
+      );
+      return;
+    }
+    try {
+      const updated = await setMonitorEnabled(targetEnabled);
+      setMonitor(updated);
+      setMonitorReachable(true);
+      setConfig((prev) =>
+        prev
+          ? { ...prev, status: targetEnabled ? 'configured' : 'paused' }
+          : prev
+      );
+      showToast(
+        targetEnabled
+          ? 'Grupo Monitor retomado.'
+          : 'Grupo Monitor pausado.',
+        'info'
+      );
+    } catch {
+      showToast('Não foi possível alterar o estado do monitor.', 'info');
+    }
   };
 
   const handleSaveLinks = (ids: string[]) => {
@@ -325,10 +357,12 @@ export const MonitorGroupPage: React.FC = () => {
     </button>
   );
 
-  const isPaused = config?.status === 'paused';
-  const monitorActive =
-    monitorReachable === true &&
-    Boolean(monitor?.enabled && monitor?.parentGroupId);
+  const { isPaused, active: monitorActive } = resolveMonitorUiState(
+    monitor,
+    monitorReachable,
+    config?.status === 'paused'
+  );
+  const statusForBadge: MonitorGroupStatus = isPaused ? 'paused' : 'configured';
 
   return (
     <div className="space-y-5">
@@ -370,18 +404,21 @@ export const MonitorGroupPage: React.FC = () => {
         </div>
       ) : (
         <>
-          {/* Integration banner */}
-          <div className="flex items-start gap-2.5 px-3.5 py-3 rounded-lg bg-amber-500/[0.07] border border-amber-500/20">
-            <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
-            <p className="text-[11px] text-amber-700/90 leading-relaxed">
-              <span className="font-semibold text-amber-700">
-                Requer integração.
-              </span>{' '}
-              As mensagens enviadas ao grupo central serão capturadas e
-              preparadas para distribuição apenas quando houver integração
-              tecnicamente suportada.
-            </p>
-          </div>
+          {/* Integration banner: exibido apenas quando o backend não responde.
+              Com backend acessível o monitor é suportado e o banner é removido. */}
+          {monitorReachable === false && (
+            <div className="flex items-start gap-2.5 px-3.5 py-3 rounded-lg bg-amber-500/[0.07] border border-amber-500/20">
+              <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+              <p className="text-[11px] text-amber-700/90 leading-relaxed">
+                <span className="font-semibold text-amber-700">
+                  Requer integração.
+                </span>{' '}
+                As mensagens enviadas ao grupo central serão capturadas e
+                preparadas para distribuição apenas quando houver integração
+                tecnicamente suportada.
+              </p>
+            </div>
+          )}
 
           {/* Monitor real (backend) */}
           <div className="bg-[#FFFFFF] border border-[#DCE3EC] rounded-xl p-5">
@@ -489,12 +526,14 @@ export const MonitorGroupPage: React.FC = () => {
                     Conta · {sessionDisplayName}
                   </Badge>
                 )}
-                <Badge variant={STATUS_BADGE[config.status]} size="xs">
+                <Badge variant={STATUS_BADGE[statusForBadge]} size="xs">
                   {isPaused ? 'Pausada' : 'Configurada'}
                 </Badge>
-                <Badge variant="warning" size="xs">
-                  Requer integração
-                </Badge>
+                {monitorReachable === false && (
+                  <Badge variant="warning" size="xs">
+                    Requer integração
+                  </Badge>
+                )}
                 <Button
                   variant="outline"
                   size="xs"

@@ -4,6 +4,7 @@ import {
   DOMNEX_DEFAULT_SESSION_ID,
 } from '../../types/whatsApp';
 import { updateMonitorServerConfig } from './monitorService';
+import type { MonitorServerStatus } from './monitorService';
 import { CachedGroupsSnapshot } from './provider';
 
 const STORAGE_KEY = 'domnex.whatsapp.groups.v1';
@@ -19,6 +20,12 @@ export interface WhatsAppGroupConfig {
   parentSessionId: string | null;
   childGroupIds: string[];
   childGroupDelays: Record<string, number>;
+  /**
+   * Intenção explícita do usuário para o estado do monitor.
+   * null = automático (ativo quando há Grupo Mãe + destino);
+   * false = pausado pelo usuário; true = retomado pelo usuário.
+   */
+  monitorEnabled: boolean | null;
 }
 
 const EMPTY_CONFIG: WhatsAppGroupConfig = {
@@ -29,6 +36,7 @@ const EMPTY_CONFIG: WhatsAppGroupConfig = {
   parentSessionId: null,
   childGroupIds: [],
   childGroupDelays: {},
+  monitorEnabled: null,
 };
 
 function normalizeSyncedAtMap(value: unknown): Record<string, string | null> {
@@ -153,6 +161,10 @@ function readFromStorage(): WhatsAppGroupConfig {
     const syncedAtBySession = normalizeSyncedAtMap(parsed.syncedAtBySession);
     const storedSyncedAt =
       typeof parsed.syncedAt === 'string' ? parsed.syncedAt : null;
+    const monitorEnabled =
+      typeof parsed.monitorEnabled === 'boolean'
+        ? parsed.monitorEnabled
+        : null;
 
     return {
       groups,
@@ -162,6 +174,7 @@ function readFromStorage(): WhatsAppGroupConfig {
       parentSessionId,
       childGroupIds,
       childGroupDelays,
+      monitorEnabled,
     };
   } catch {
     return EMPTY_CONFIG;
@@ -196,19 +209,59 @@ function activeChildDelays(): Record<string, number> {
   return result;
 }
 
-// Espelha Grupo Mãe, destinos e anti-flood no backend real do monitor.
+// Um monitor válido exige Grupo Mãe + pelo menos 1 destino. Fora disso o
+// monitor NUNCA deve ficar ativo no backend.
+function monitorConfigValid(): boolean {
+  return Boolean(
+    state.parentGroupId && state.childGroupIds.length > 0
+  );
+}
+
+// Espelha Grupo Mãe, destinos, anti-flood e o estado ativo/inativo no backend
+// real do monitor. enabled:true somente quando existe Grupo Mãe + destino(s) e
+// o usuário não pausou (monitorEnabled !== false); caso contrário envia
+// enabled:false (config inválida ou pausa explícita).
 function syncMonitorServerConfig() {
+  const enabled = monitorConfigValid() && state.monitorEnabled !== false;
   try {
     void updateMonitorServerConfig({
       sessionId: state.parentSessionId ?? DOMNEX_DEFAULT_SESSION_ID,
       parentGroupId: state.parentGroupId,
       childGroupIds: state.childGroupIds,
       childGroupDelays: activeChildDelays(),
+      enabled,
     }).catch(() => {
       // backend indisponível; sincronização refeita na próxima alteração
     });
   } catch {
     // nenhuma alteração de seleção pode ser bloqueada por falha de rede
+  }
+}
+
+// Altera o estado REAL do backend (Pausar/Retomar) e persiste a intenção do
+// usuário, para que sincronizações de grupos não reativem o monitor pausado.
+// NUNCA envia grupos vazios: reutiliza a configuração corrente para não
+// disparar o wipe-guard do servidor.
+export async function setMonitorEnabled(
+  enabled: boolean
+): Promise<MonitorServerStatus> {
+  const previous = state.monitorEnabled;
+  state = { ...state, monitorEnabled: enabled };
+  persist();
+  listeners.forEach((listener) => listener());
+  try {
+    return await updateMonitorServerConfig({
+      sessionId: state.parentSessionId ?? DOMNEX_DEFAULT_SESSION_ID,
+      parentGroupId: state.parentGroupId,
+      childGroupIds: state.childGroupIds,
+      childGroupDelays: activeChildDelays(),
+      enabled: enabled && monitorConfigValid(),
+    });
+  } catch {
+    state = { ...state, monitorEnabled: previous };
+    persist();
+    listeners.forEach((listener) => listener());
+    throw new Error('Não foi possível atualizar o estado do monitor.');
   }
 }
 
@@ -275,6 +328,7 @@ function buildConfigWithGroups(
     parentSessionId,
     childGroupIds,
     childGroupDelays,
+    monitorEnabled: state.monitorEnabled,
   };
 }
 
@@ -437,6 +491,7 @@ export function clearGroupsForSession(sessionId: string) {
         : null,
     childGroupIds: state.childGroupIds.filter((id) => ids.has(id)),
     childGroupDelays,
+    monitorEnabled: state.monitorEnabled,
   });
 }
 
