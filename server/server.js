@@ -455,6 +455,27 @@ function accountDisplayName(acc) {
   return normalizeAccountName(acc && (acc.displayName || acc.name)) || 'WhatsApp';
 }
 
+// REGRA FUNDAMENTAL: accounts.length reflete SOMENTE contas criadas
+// explicitamente pelo usuário (createdByUser === true). Pasta de token no
+// disco, sessão antiga, domnex-main/domnex-* e qualquer registro sem a flag
+// são LEGACY/ORPHAN: podem continuar fisicamente em /data/tokens, mas NUNCA
+// aparecem no registry, na API ou na UI.
+function isUserCreatedAccount(acc) {
+  return Boolean(
+    acc &&
+      typeof acc.sessionId === 'string' &&
+      acc.sessionId &&
+      acc.createdByUser === true
+  );
+}
+
+// true apenas se o sessionId corresponde a uma conta ativa criada pelo usuário.
+function isActiveUserSession(sessionId) {
+  return accounts.some(
+    (acc) => acc.sessionId === sessionId && isUserCreatedAccount(acc)
+  );
+}
+
 // Migra contas para displayName. Sessões legadas mantêm SESSION ID técnico
 // (preserva tokens/monitor) e ganham nome neutro editável; nomes válidos já
 // existentes são preservados. Garante unicidade case-insensitive entre contas.
@@ -510,41 +531,27 @@ function loadAccounts() {
   try {
     if (existsSync(ACCOUNTS_FILE)) {
       const parsed = JSON.parse(readFileSync(ACCOUNTS_FILE, 'utf8'));
-      if (Array.isArray(parsed.accounts)) {
-        accounts = parsed.accounts.filter(
-          (acc) => acc && typeof acc.sessionId === 'string' && acc.sessionId
-        );
+      if (Array.isArray(parsed.accounts) && parsed.accounts.length > 0) {
+        // Registry = FONTE DE VERDADE, mas somente para contas criadas pelo
+        // usuário. Registros legados (domnex-*, domnex-main, "Conta principal",
+        // ou qualquer sessão sem createdByUser=true) são tratados como
+        // LEGACY/ORPHAN: permanecem no disco (/data/tokens) mas saem da
+        // lista ativa. ORPHAN não é conta.
+        const userAccounts = parsed.accounts.filter(isUserCreatedAccount);
+        const hadOrphans = parsed.accounts.some((acc) => !isUserCreatedAccount(acc));
+        accounts = userAccounts;
+        // Re-escreve accounts.json sem os registros legados: o arquivo passa a
+        // conter SOMENTE contas criadas pelo usuário (os tokens NÃO são apagados).
+        if (hadOrphans) saveAccounts();
       }
     }
   } catch (err) {
     logError(`falha ao ler contas: ${String((err && err.message) || err)}`);
   }
-  // Preserva sessões antigas que existam apenas como pasta de tokens: uma
-  // conta conectada antes não pode sumir só por não constar no registry.
-  let addedFromDisk = false;
-  const knownSids = new Set(accounts.map((acc) => acc.sessionId));
-  try {
-    if (existsSync(SESSION_DIR)) {
-      for (const entry of readdirSync(SESSION_DIR, { withFileTypes: true })) {
-        if (!entry.isDirectory()) continue;
-        if (SESSION_ID_PATTERN.test(entry.name) && !knownSids.has(entry.name)) {
-          accounts.push({
-            sessionId: entry.name,
-            displayName: '',
-            name: '',
-            phone: null,
-            createdAt: new Date().toISOString(),
-          });
-          knownSids.add(entry.name);
-          addedFromDisk = true;
-        }
-      }
-    }
-  } catch (err) {
-    logError(`falha ao varrer pastas de tokens: ${String((err && err.message) || err)}`);
-  }
-  const changed = migrateAccountDisplayNames();
-  if (changed || addedFromDisk) saveAccounts();
+  // PASTA DE TOKEN NÃO É CONTA. Uma sessão antiga que exista APENAS como pasta
+  // em /data/tokens (ex.: domnex-main) NUNCA é adotada automaticamente: ficará
+  // órfã no disco para sempre, sem aparecer no sistema.
+  if (migrateAccountDisplayNames()) saveAccounts();
 }
 
 function saveAccounts() {
@@ -573,7 +580,7 @@ function nextSessionId() {
 }
 
 function buildAccountView() {
-  return accounts.map((acc) => {
+  return accounts.filter(isUserCreatedAccount).map((acc) => {
     const st = getSessionState(acc.sessionId);
     const displayName = accountDisplayName(acc);
     return {
@@ -586,6 +593,7 @@ function buildAccountView() {
       connectedAt: st.connectedAt,
       lastSyncAt: st.lastSyncAt,
       createdAt: acc.createdAt,
+      createdByUser: acc.createdByUser === true,
     };
   });
 }
@@ -2054,17 +2062,20 @@ function applyWatchdogNoted(health, sessionId) {
 }
 
 // Sessões que o backend mantém vivas: monitor ativo, tokens persistidos em
-// /data/tokens/<sessionId> ou cliente em memória (não deixa cair).
+// /data/tokens/<sessionId> ou cliente em memória (não deixa cair). O watchdog
+// SÓ trabalha com contas ativas criadas pelo usuário (createdByUser=true):
+// sessões legadas/órfãs (domnex-*) nunca são ressuscitadas por ele.
 function watchdogTargetSessionIds() {
   const targets = new Set();
   for (const acc of accounts) {
+    if (!isUserCreatedAccount(acc)) continue;
     const sid = acc.sessionId;
     if (!sid) continue;
     if (isMonitorEnabledForSession(sid)) targets.add(sid);
     if (existsSync(path.join(SESSION_DIR, sid))) targets.add(sid);
   }
   for (const [sid, state] of sessions) {
-    if (state.client) targets.add(sid);
+    if (state.client && isActiveUserSession(sid)) targets.add(sid);
   }
   return [...targets];
 }
@@ -2823,6 +2834,7 @@ app.post('/api/whatsapp/accounts', (req, res) => {
     name: displayName,
     phone: null,
     createdAt: new Date().toISOString(),
+    createdByUser: true,
   });
   saveAccounts();
   getSessionState(sid);
@@ -3121,12 +3133,32 @@ app.get(
   }
 );
 
-// ===== Rotas legadas (compatibilidade, sempre a conta principal) =====
+// ===== Rotas legadas (compatibilidade técnica interna) =====
+// DOMNEX_DEFAULT_SESSION (domnex-main) nunca é uma conta criada pelo usuário.
+// Estas rotas apenas REFLETEM um estado técnico já existente em memória: NENHUM
+// código abaixo cria conta, adota pasta de token ou inicia sessão automaticamente
+// quando não existe uma conta ativa criada pelo usuário.
 app.get('/api/whatsapp/status', setDynamicWppHeaders, (req, res) => {
+  if (!isActiveUserSession(DOMNEX_DEFAULT_SESSION)) {
+    return res.json({
+      ok: true,
+      session: DOMNEX_DEFAULT_SESSION,
+      status: 'disconnected',
+      connected: false,
+      qrPending: false,
+      error: null,
+    });
+  }
   res.json(statusPayload(getSessionState(DOMNEX_DEFAULT_SESSION)));
 });
 
 app.post('/api/whatsapp/connect', (req, res) => {
+  if (!isActiveUserSession(DOMNEX_DEFAULT_SESSION)) {
+    return res.status(404).json({
+      ok: false,
+      error: 'Nenhuma conta criada pelo usuário. Crie uma conta para conectar.',
+    });
+  }
   const sessionId = DOMNEX_DEFAULT_SESSION;
   logWhatsApp(`[${sessionId}] connect solicitado`);
   const state = getSessionState(sessionId);
@@ -3147,6 +3179,9 @@ app.post('/api/whatsapp/connect', (req, res) => {
 
 app.get('/api/whatsapp/qr',
   (req, res) => {
+    if (!isActiveUserSession(DOMNEX_DEFAULT_SESSION)) {
+      return res.status(204).json({ qr: null });
+    }
     const qr = getSessionState(DOMNEX_DEFAULT_SESSION).qrCode;
     if (!qr) {
       return res.status(204).json({ qr: null });
@@ -3156,6 +3191,12 @@ app.get('/api/whatsapp/qr',
 );
 
 app.post('/api/whatsapp/recover-qr', async (req, res) => {
+  if (!isActiveUserSession(DOMNEX_DEFAULT_SESSION)) {
+    return res.status(404).json({
+      ok: false,
+      error: 'Nenhuma conta criada pelo usuário. Crie uma conta para conectar.',
+    });
+  }
   try {
     const sessionId = DOMNEX_DEFAULT_SESSION;
     await runSessionLifecycleOp(sessionId, async () => {
@@ -3201,6 +3242,9 @@ app.get('/api/whatsapp/account', setDynamicWppHeaders, makeRequireConnected(DOMN
 });
 
 app.post('/api/whatsapp/disconnect', async (req, res) => {
+  if (!isActiveUserSession(DOMNEX_DEFAULT_SESSION)) {
+    return res.json({ ok: true, status: 'disconnected' });
+  }
   try {
     await destroySession(DOMNEX_DEFAULT_SESSION);
     const state = getSessionState(DOMNEX_DEFAULT_SESSION);
@@ -3257,6 +3301,9 @@ app.post('/api/whatsapp/send', makeRequireConnected(DOMNEX_DEFAULT_SESSION), asy
 });
 
 app.get('/api/whatsapp/messages/recent', (req, res) => {
+  if (!isActiveUserSession(DOMNEX_DEFAULT_SESSION)) {
+    return res.json({ ok: true, messages: [] });
+  }
   const state = getSessionState(DOMNEX_DEFAULT_SESSION);
   res.json({ ok: true, messages: state.recentMessages.slice(-50).reverse() });
 });
@@ -3964,9 +4011,12 @@ loadAllPersistedGroupsSnapshots();
 
 app.listen(PORT, HOST, () => {
   logInfo(`API escutando em http://${HOST}:${PORT}`);
-  const restoreCandidates = accounts.filter((acc) =>
-    existsSync(path.join(SESSION_DIR, acc.sessionId))
-  );
+  // Auto-start/recovery APENAS para contas registradas com createdByUser=true.
+  // Sessões legadas (domnex-main, domnex-*) NÃO são iniciadas só porque existe
+  // token antigo em /data/tokens: tokens permanecem intactos no disco.
+  const restoreCandidates = accounts
+    .filter(isUserCreatedAccount)
+    .filter((acc) => existsSync(path.join(SESSION_DIR, acc.sessionId)));
   if (restoreCandidates.length > 0) {
     for (const acc of restoreCandidates) {
       // Requisito 4: ANTES de restaurar a sessão persistida, remover SOMENTE os

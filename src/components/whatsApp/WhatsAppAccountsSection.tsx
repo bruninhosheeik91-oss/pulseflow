@@ -237,7 +237,7 @@ export const WhatsAppAccountsSection: React.FC = () => {
           <p className="text-xs text-[#64748B] mt-0.5">
             {hasAccounts
               ? 'Múltiplas contas WhatsApp independentes — cada uma com QR, status e grupos próprios.'
-              : 'Conecte seu primeiro aparelho para começar.'}
+              : 'Conecte seu primeiro WhatsApp para começar.'}
           </p>
         </div>
         {hasAccounts && (
@@ -277,9 +277,14 @@ export const WhatsAppAccountsSection: React.FC = () => {
             <div className="w-10 h-10 rounded-xl bg-[#E2E8F0] border border-[#BFDBFE] flex items-center justify-center">
               <MessageCircle className="w-4 h-4 text-[#2563EB]" />
             </div>
-            <p className="text-xs text-[#64748B] leading-relaxed">
-              Nenhuma conta WhatsApp conectada.
-            </p>
+            <div>
+              <p className="text-sm font-semibold text-[#172033] tracking-tight">
+                Nenhuma conta WhatsApp conectada
+              </p>
+              <p className="text-xs text-[#64748B] mt-1 leading-relaxed">
+                Conecte seu primeiro WhatsApp para começar.
+              </p>
+            </div>
             <Button
               variant="primary"
               size="sm"
