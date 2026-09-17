@@ -30,6 +30,8 @@ interface WhatsAppGroupsSectionProps {
   isConnected: boolean;
   groups: WhatsAppGroup[];
   isSyncing: boolean;
+  isWarmingUp?: boolean;
+  isSyncInProgress?: boolean;
   syncError: string | null;
   onSyncGroups: () => Promise<{ ok: boolean; error?: string }>;
   onSend: (
@@ -42,7 +44,16 @@ type Feedback = { type: 'success' | 'error'; text: string } | null;
 
 export const WhatsAppGroupsSection: React.FC<
   WhatsAppGroupsSectionProps
-> = ({ isConnected, groups, isSyncing, syncError, onSyncGroups, onSend }) => {
+> = ({
+  isConnected,
+  groups,
+  isSyncing,
+  isWarmingUp = false,
+  isSyncInProgress = false,
+  syncError,
+  onSyncGroups,
+  onSend,
+}) => {
   const { parentGroupId, childGroupIds } = useWhatsAppGroupConfig();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGroupId, setSelectedGroupId] = useState('');
@@ -149,13 +160,22 @@ export const WhatsAppGroupsSection: React.FC<
               Conecte seu WhatsApp para importar seus grupos reais.
             </p>
           </div>
-        ) : isSyncing && !hasGroups ? (
+        ) : isWarmingUp && !hasGroups ? (
           <div className="flex flex-col items-center gap-3 py-6 text-center">
             <div className="w-10 h-10 rounded-xl bg-[#E2E8F0] border border-[#BFDBFE] flex items-center justify-center">
               <RefreshCw className="w-4 h-4 text-[#2563EB] animate-spin" />
             </div>
             <p className="text-xs text-[#64748B] leading-relaxed">
-              Sincronizando grupos reais da conta conectada...
+              Finalizando sincronização do WhatsApp...
+            </p>
+          </div>
+        ) : (isSyncing || isSyncInProgress) && !hasGroups ? (
+          <div className="flex flex-col items-center gap-3 py-6 text-center">
+            <div className="w-10 h-10 rounded-xl bg-[#E2E8F0] border border-[#BFDBFE] flex items-center justify-center">
+              <RefreshCw className="w-4 h-4 text-[#2563EB] animate-spin" />
+            </div>
+            <p className="text-xs text-[#64748B] leading-relaxed">
+              Sincronizando grupos...
             </p>
           </div>
         ) : !hasGroups ? (
@@ -181,7 +201,7 @@ export const WhatsAppGroupsSection: React.FC<
           </div>
         ) : (
           <div className="space-y-4">
-            {isSyncing && (
+            {(isSyncing || isSyncInProgress) && (
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#2563EB]/10 border border-[#2563EB]/25 text-[11px] text-[#2563EB]">
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                 Sincronizando grupos...
@@ -192,7 +212,7 @@ export const WhatsAppGroupsSection: React.FC<
               <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg bg-red-500/10 border border-red-500/25 text-[11px] text-red-700 leading-relaxed">
                 <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                 <div className="min-w-0">
-                  <span className="font-semibold block">Falha ao sincronizar grupos.</span>
+                  <span className="font-semibold block">Não foi possível sincronizar os grupos.</span>
                   <span className="text-red-700/90 block">{syncError}</span>
                 </div>
               </div>

@@ -12,6 +12,8 @@ export const WhatsAppPage: React.FC = () => {
     accounts,
     syncingSession,
     syncTimeoutBySession,
+    warmingUpBySession,
+    syncInProgressBySession,
     syncGroupsFor,
     sendMessage,
   } = useWhatsAppAccounts();
@@ -22,9 +24,14 @@ export const WhatsAppPage: React.FC = () => {
   const primaryConnected = primaryAccount?.status === 'connected';
   const primarySyncing =
     primarySessionId !== null && syncingSession === primarySessionId;
+  const primaryWarmingUp =
+    primarySessionId !== null && Boolean(warmingUpBySession[primarySessionId]);
+  const primarySyncInProgress =
+    primarySessionId !== null &&
+    Boolean(syncInProgressBySession[primarySessionId]);
   const primarySyncError =
     primarySessionId !== null && syncTimeoutBySession[primarySessionId]
-      ? 'Falha ao sincronizar grupos'
+      ? 'Não foi possível sincronizar os grupos.'
       : null;
 
   return (
@@ -50,6 +57,8 @@ export const WhatsAppPage: React.FC = () => {
         isConnected={primaryConnected}
         groups={groups}
         isSyncing={primarySyncing}
+        isWarmingUp={primaryWarmingUp}
+        isSyncInProgress={primarySyncInProgress}
         syncError={primarySyncError}
         onSyncGroups={
           primarySessionId

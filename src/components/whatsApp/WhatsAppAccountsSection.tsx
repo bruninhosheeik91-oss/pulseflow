@@ -55,6 +55,8 @@ export const WhatsAppAccountsSection: React.FC = () => {
     qrBySession,
     syncingSession,
     syncTimeoutBySession,
+    warmingUpBySession,
+    syncInProgressBySession,
     addAccount,
     connectAccount,
     disconnectAccount,
@@ -328,11 +330,22 @@ export const WhatsAppAccountsSection: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-1.5 min-w-0">
-                      {syncTimeoutBySession[account.sessionId] &&
+                      {warmingUpBySession[account.sessionId] &&
                       groupCountFor(account.sessionId) === 0 ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#2563EB] whitespace-nowrap">
+                          <RefreshCw className="w-3 h-3 shrink-0 animate-spin" />
+                          Finalizando sincronização do WhatsApp...
+                        </span>
+                      ) : syncInProgressBySession[account.sessionId] ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#2563EB] whitespace-nowrap">
+                          <RefreshCw className="w-3 h-3 shrink-0 animate-spin" />
+                          Sincronizando...
+                        </span>
+                      ) : syncTimeoutBySession[account.sessionId] &&
+                        groupCountFor(account.sessionId) === 0 ? (
                         <span className="inline-flex items-center gap-1 text-[10px] font-medium text-red-700 whitespace-nowrap">
                           <AlertTriangle className="w-3 h-3 shrink-0" />
-                          Falha ao sincronizar grupos
+                          Não foi possível sincronizar os grupos
                         </span>
                       ) : (
                         <>

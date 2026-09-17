@@ -4,7 +4,7 @@ import {
   WhatsAppGroup,
   DOMNEX_DEFAULT_SESSION_ID,
 } from '../../types/whatsApp';
-import { WhatsAppProvider, WhatsAppQrPayload } from './provider';
+import { WhatsAppProvider, WhatsAppQrPayload, GroupsSyncResult } from './provider';
 
 const DEFAULT_BASE_URL = 'http://localhost:3001';
 
@@ -172,22 +172,36 @@ export class WppConnectProvider implements WhatsAppProvider {
   }
 
   async getGroups(sessionId?: string): Promise<WhatsAppGroup[]> {
+    const result = await this.getGroupsSyncResult(sessionId);
+    return result.groups;
+  }
+
+  async getGroupsSyncResult(sessionId?: string): Promise<GroupsSyncResult> {
     const effective = sessionId || DOMNEX_DEFAULT_SESSION_ID;
     const data = await apiFetch<{
       ok?: boolean;
       groups?: WhatsAppGroup[];
       runtimeTimeout?: boolean;
       cached?: boolean;
+      warmingUp?: boolean;
+      syncInProgress?: boolean;
+      retryAfterMs?: number;
     }>(this.baseUrl, sessionPath(sessionId, '/groups'));
-    // Backend responde runtimeTimeout=true quando TODAS as estratégias de
-    // listagem falharam (timeout) e não há cache. Isso NÃO é "0 grupos":
-    // é falha de sincronização -> sinaliza ao hook/UI com erro tipado.
+    // Backend responde runtimeTimeout=true apenas quando a sincronização FALHOU
+    // (timeout real, após warm-up) e não há cache. Isso NÃO é "0 grupos".
     if (data.runtimeTimeout) {
       throw new GroupSyncTimeoutError();
     }
-    return (data.groups || [])
+    const groups = (data.groups || [])
       .map((group) => normalizeGroup(group, effective))
       .filter((group) => Boolean(group.id && group.id.trim()));
+    return {
+      groups,
+      warmingUp: Boolean(data.warmingUp),
+      syncInProgress: Boolean(data.syncInProgress),
+      cached: Boolean(data.cached),
+      retryAfterMs: Number(data.retryAfterMs) || 0,
+    };
   }
 
   async getGroupsForSession(sessionId: string): Promise<WhatsAppGroup[]> {

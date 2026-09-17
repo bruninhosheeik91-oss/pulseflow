@@ -10,6 +10,19 @@ export interface WhatsAppQrPayload {
 }
 
 /**
+ * Resultado detalhado da sincronização de grupos do backend.
+ * warmingUp: sessão recém-conectada (MAIN) ainda em warm-up — NÃO é erro.
+ * syncInProgress: já existe uma operação WPP real pendente — NÃO iniciar outra.
+ */
+export interface GroupsSyncResult {
+  groups: WhatsAppGroup[];
+  warmingUp: boolean;
+  syncInProgress: boolean;
+  cached: boolean;
+  retryAfterMs: number;
+}
+
+/**
  * Camada de serviço desacoplada para conexão WhatsApp.
  *
  * A implementação concreta será fornecida após a escolha do provedor
@@ -29,6 +42,11 @@ export interface WhatsAppProvider {
   getGroups(sessionId?: string): Promise<WhatsAppGroup[]>;
   /** Grupos de uma conta específica, já etiquetados com a sessão de origem. */
   getGroupsForSession(sessionId: string): Promise<WhatsAppGroup[]>;
+  /**
+   * Sincronização detalhada: distingue warm-up pós-login de sincronização em
+   * andamento de falha real. Opcional para provedores legados.
+   */
+  getGroupsSyncResult?(sessionId?: string): Promise<GroupsSyncResult>;
   /** Envia por uma sessão específica quando informada; sem sessionId usa a principal. */
   sendMessage(to: string, text: string, sessionId?: string): Promise<void>;
   listAccounts(): Promise<WhatsAppAccount[]>;

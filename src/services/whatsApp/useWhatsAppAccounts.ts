@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { WhatsAppAccount, WhatsAppGroup } from '../../types/whatsApp';
 import { getWhatsAppProvider } from './provider';
 import { GroupSyncTimeoutError } from './wppConnectProvider';
@@ -39,6 +40,27 @@ export function useWhatsAppAccounts() {
   const [syncTimeoutBySession, setSyncTimeoutBySession] = useState<
     Record<string, boolean>
   >({});
+  const [warmingUpBySession, setWarmingUpBySession] = useState<
+    Record<string, boolean>
+  >({});
+  const [syncInProgressBySession, setSyncInProgressBySession] = useState<
+    Record<string, boolean>
+  >({});
+
+  const clearFlagBySession = useCallback(
+    (
+      setter: Dispatch<SetStateAction<Record<string, boolean>>>,
+      sessionId: string
+    ) => {
+      setter((prev) => {
+        if (prev[sessionId] === undefined) return prev;
+        const next = { ...prev };
+        delete next[sessionId];
+        return next;
+      });
+    },
+    []
+  );
 
   const refreshAccounts = useCallback(async () => {
     const provider = getWhatsAppProvider();
@@ -296,23 +318,51 @@ export function useWhatsAppAccounts() {
       }
       setSyncingSession(sessionId);
       try {
-        const groups = await provider.getGroupsForSession(sessionId);
+        const result =
+          typeof provider.getGroupsSyncResult === 'function'
+            ? await provider.getGroupsSyncResult(sessionId)
+            : {
+                groups: await provider.getGroupsForSession(sessionId),
+                warmingUp: false,
+                syncInProgress: false,
+                cached: false,
+                retryAfterMs: 0,
+              };
+
+        if (result.warmingUp) {
+          // Sessão recém-conectada (MAIN) em warm-up: NÃO é erro e NÃO é
+          // runtime morto. A UI mostra "finalizando sincronização".
+          setWarmingUpBySession((prev) => ({ ...prev, [sessionId]: true }));
+          clearFlagBySession(setSyncInProgressBySession, sessionId);
+          clearFlagBySession(setSyncTimeoutBySession, sessionId);
+          return { ok: true };
+        }
+
+        if (result.syncInProgress) {
+          // Já existe operação WPP real pendente: NÃO duplicar request.
+          setSyncInProgressBySession((prev) => ({ ...prev, [sessionId]: true }));
+          clearFlagBySession(setWarmingUpBySession, sessionId);
+          clearFlagBySession(setSyncTimeoutBySession, sessionId);
+          return { ok: true };
+        }
+
+        const groups = result.groups;
         // Sincronização VÁLIDA (mesmo com zero grupos): atualiza e limpa
-        // qualquer estado de falha anterior.
+        // qualquer estado de falha/warm-up/sincronização anterior.
         setSyncedGroupsForSession(groups, sessionId);
         setGroupsBySession((prev) => ({ ...prev, [sessionId]: groups }));
-        setSyncTimeoutBySession((prev) => {
-          const next = { ...prev };
-          delete next[sessionId];
-          return next;
-        });
+        clearFlagBySession(setSyncTimeoutBySession, sessionId);
+        clearFlagBySession(setWarmingUpBySession, sessionId);
+        clearFlagBySession(setSyncInProgressBySession, sessionId);
         return { ok: true, count: groups.length };
       } catch (err) {
         if (err instanceof GroupSyncTimeoutError) {
           setSyncTimeoutBySession((prev) => ({ ...prev, [sessionId]: true }));
+          clearFlagBySession(setWarmingUpBySession, sessionId);
+          clearFlagBySession(setSyncInProgressBySession, sessionId);
           return {
             ok: false,
-            error: 'Falha ao sincronizar grupos',
+            error: 'Não foi possível sincronizar os grupos.',
           };
         }
         return {
@@ -324,7 +374,7 @@ export function useWhatsAppAccounts() {
         setSyncingSession(null);
       }
     },
-    []
+    [clearFlagBySession]
   );
 
   return {
@@ -335,6 +385,8 @@ export function useWhatsAppAccounts() {
     syncingSession,
     groupsBySession,
     syncTimeoutBySession,
+    warmingUpBySession,
+    syncInProgressBySession,
     refreshAccounts,
     addAccount,
     connectAccount,
