@@ -24,6 +24,7 @@ const {
   resolveMonitorRoute,
   createMonitorDeduper,
 } = require('./monitorPipeline.js');
+const sessionListeners = require('./sessionListeners.js');
 const {
   createTenantAutomationsStore,
 } = require('./linkConversion/tenantAutomationsStore.js');
@@ -107,6 +108,19 @@ function logWatchdog(message) {
   console.log(`[Watchdog] ${new Date().toISOString()} ${message}`);
 }
 
+// Dependências injetadas na lógica de ciclo de vida dos listeners
+// (server/sessionListeners.js): mantém server.js como único ponto de orquestração
+// e o módulo puramente testável.
+const listenerDeps = {
+  logWhatsApp,
+  logError,
+  monitorLog,
+  monitorErrorLog,
+  registerMessage,
+  handleMonitorReplication,
+  handleSocketState,
+};
+
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // ===== Sessões (uma por conta WhatsApp) =====
@@ -170,6 +184,15 @@ function createSessionState(sessionId) {
     // recuperação só ocorre após as falhas se estenderem por ~60s, evitando
     // recuperar por uma rajada curta e transitória.
     runtimeTimeoutFirstFailureAt: null,
+    // Geração monotônica do REGISTRO de listeners. Cada re-registro
+    // (reload/reconexão/watchdog/MAIN) avança o contador: callbacks de um
+    // registro obsoleto são invalidados via isCurrent() e descartados via
+    // disposable.dispose(). Enquanto initGen protege entre inicializações,
+    // listenGen protege entre registros da MESMA inicialização.
+    listenGen: 0,
+    // Registro ativo de listeners (server/sessionListeners.js): cliente, geração,
+    // listenGen, timestamp e disposables de onMessage/onAnyMessage/onStateChange.
+    listenerRegistry: null,
   };
 }
 
@@ -1488,6 +1511,7 @@ function handleStatusFind(state, generation, statusSession) {
         setSessionState(state, 'connecting');
       }
       logWhatsApp(`[${state.sessionId}] sessão autenticada no WhatsApp Web`);
+      sessionListeners.ensureSessionListeners(state, 'MAIN/isLogged', { force: true }, listenerDeps);
       break;
     case 'qrReadSuccess':
       state.qrCode = null;
@@ -1530,6 +1554,9 @@ function handleSocketState(state, generation, socketState) {
       clearQrWatchdog(state);
       setSessionState(state, 'connected');
       void refreshHostDevice(state);
+      // Re-registra os listeners a cada (re)conexão para curar os relays mortos
+      // da página (wapi reinjetada após recarregar o WhatsApp Web).
+      sessionListeners.ensureSessionListeners(state, 'socket CONNECTED', { force: true }, listenerDeps);
       break;
     case 'OPENING':
     case 'PAIRING':
@@ -1731,7 +1758,10 @@ async function createSession(sessionId) {
       void refreshHostDevice(state);
     }
 
-    registerSessionListeners(state, generation);
+    // Registro inicial dos listeners (idempotente/reconciliável). ensure é
+    // usado também em CONNECTED/MAIN/watchdog/recovery para re-registrar após
+    // reload, reinjeção de wapi e reconexão sem acumular listeners duplicados.
+    sessionListeners.ensureSessionListeners(state, 'init', {}, listenerDeps);
   } catch (err) {
     if (state.initGen === generation) {
       await handleCreateFailure(state, generation, err);
@@ -1740,79 +1770,10 @@ async function createSession(sessionId) {
   return state;
 }
 
-// Listeners reais da API v2.3.3 (sem client.on).
-// Cada registro é isolado: falha em listener NUNCA derruba a sessão.
-// generation: callbacks do cliente anterior (inicialização obsoleta) são
-// descartados para nunca corromperem o estado da inicialização corrente.
-function registerSessionListeners(state, generation) {
-  const sessionClient = state.client;
-  if (sessionClient && typeof sessionClient.onMessage === 'function') {
-    try {
-      sessionClient.onMessage((message) => {
-        if (state.initGen !== generation) return;
-        registerMessage(state, message);
-      });
-      logWhatsApp(`[${state.sessionId}] listener onMessage registrado`);
-    } catch (err) {
-      logError(
-        `[WhatsApp ${state.sessionId}] falha ao registrar onMessage: ${String((err && err.message) || err)}`
-      );
-    }
-  } else {
-    logError(`[WhatsApp ${state.sessionId}] onMessage indisponível no cliente`);
-  }
-
-  // O monitor usa onAnyMessage (oficial): sem ele, mensagens enviadas pela
-  // própria conta (fromMe) não são entregues pelo onMessage.
-  const monitorListenerFn =
-    sessionClient && typeof sessionClient.onAnyMessage === 'function'
-      ? sessionClient.onAnyMessage.bind(sessionClient)
-      : sessionClient && typeof sessionClient.onMessage === 'function'
-      ? sessionClient.onMessage.bind(sessionClient)
-      : null;
-  if (monitorListenerFn) {
-    try {
-      monitorListenerFn((message) => {
-        if (state.initGen !== generation) return;
-        void handleMonitorReplication(state.sessionId, message);
-      });
-      logWhatsApp(
-        `[${state.sessionId}] listener monitor (Grupo Mãe → Filho) registrado (${
-          typeof sessionClient.onAnyMessage === 'function'
-            ? 'onAnyMessage'
-            : 'onMessage'
-        })`
-      );
-    } catch (err) {
-      monitorErrorLog(
-        state.sessionId,
-        `falha ao registrar listener do monitor: ${String((err && err.message) || err)}`
-      );
-    }
-  } else {
-    monitorErrorLog(state.sessionId, 'listener do monitor indisponível no cliente');
-  }
-
-  if (sessionClient && typeof sessionClient.onStateChange === 'function') {
-    try {
-      sessionClient.onStateChange((socketState) => {
-        if (state.initGen !== generation) return;
-        handleSocketState(state, generation, socketState);
-      });
-      logWhatsApp(`[${state.sessionId}] listener onStateChange registrado`);
-    } catch (err) {
-      logError(
-        `[WhatsApp ${state.sessionId}] falha ao registrar onStateChange: ${String((err && err.message) || err)}`
-      );
-    }
-  } else {
-    logError(`[WhatsApp ${state.sessionId}] onStateChange indisponível no cliente`);
-  }
-}
-
 async function destroySession(sessionId) {
   const state = getSessionState(sessionId);
   clearQrWatchdog(state);
+  sessionListeners.clearSessionListenerRegistry(state, 'destroy', listenerDeps);
   const current = state.client;
   state.client = null;
   state.clientGraceUntil = null;
@@ -2126,6 +2087,14 @@ async function recoverWhatsAppSession(sessionId) {
       await ensureSessionBrowserStopped(sessionId);
       removeSessionSingletonLocks(path.join(SESSION_DIR, sessionId));
       await startSessionCreate(sessionId);
+      // Re-registro pós-recuperação: garante listeners frescos assim que o
+      // novo cliente assentar (idempotente; pula se ainda fresco).
+      sessionListeners.ensureSessionListeners(
+        getSessionState(sessionId),
+        'watchdog recovery',
+        { force: true },
+        listenerDeps
+      );
     });
     const afterState = getSessionState(sessionId).connectionState;
     if (afterState === 'error') {
@@ -2157,6 +2126,17 @@ async function watchdogTick() {
         const state = getSessionState(sessionId);
         const health = await classifySessionHealth(state);
         applyWatchdogNoted(health, sessionId);
+        if (health === 'healthy') {
+          // Heartbeat preventivo: uma sessão 'healthy' (sonda válida) pode ter
+          // os relays da página mortos (reinjeção de wapi sem recriar os
+          // relays). Re-registra listeners periodicamente por staleness.
+          sessionListeners.ensureSessionListeners(
+            state,
+            'watchdog healthcheck',
+            {},
+            listenerDeps
+          );
+        }
         if (health === 'degraded') {
           await recoverWhatsAppSession(sessionId);
         }
