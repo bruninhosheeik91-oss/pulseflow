@@ -52,6 +52,13 @@ function extractMemberCount(value) {
 /**
  * Lê o payload cru de um chat/grupo sem assumir estrutura única.
  * Verifica participantCount, participants e groupMetadata.participants/size.
+ *
+ * Contagem POSITIVA (> 0) é aceita como confirmação do payload.
+ * 0 vindo do payload (participantCount:0, participants:[], groupMetadata.size:0,
+ * groupMetadata.participants:[], memberCount etc.) NÃO é confirmação confiável
+ * quando usamos ignoreGroupMetadata:true — vira null para o fallback real de
+ * getGroupMembersIds() decidir. Somente o retorno REAL de getGroupMembersIds
+ * (ex.: []) pode confirmar "0 membros".
  */
 function extractMemberCountFromRaw(chat) {
   if (!chat || typeof chat !== 'object') return null;
@@ -65,7 +72,7 @@ function extractMemberCountFromRaw(chat) {
   ];
   for (const candidate of candidates) {
     const count = extractMemberCount(candidate);
-    if (count !== null) return count;
+    if (typeof count === 'number' && count > 0) return count;
   }
   return null;
 }

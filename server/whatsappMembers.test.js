@@ -4,6 +4,7 @@ const assert = require('assert');
 const { createGroupsSyncEngine } = require('./whatsappGroups.js');
 const {
   extractMemberCount,
+  extractMemberCountFromRaw,
   normalizeGroupSource,
 } = require('./whatsappGroupMembers.js');
 
@@ -246,6 +247,161 @@ function testExtractMemberCountVariants() {
   assert.strictEqual(extractMemberCount('nope'), null);
 }
 
+// I) payload cru com 0 como placeholder da metadata ignorada -> null.
+function testRawZeroCountsAreNull() {
+  assert.strictEqual(
+    extractMemberCountFromRaw({ participantCount: 0 }),
+    null,
+    'I: participantCount:0 -> null'
+  );
+  assert.strictEqual(
+    extractMemberCountFromRaw({ participants: [] }),
+    null,
+    'I: participants:[] -> null'
+  );
+  assert.strictEqual(
+    extractMemberCountFromRaw({ groupMetadata: { size: 0 } }),
+    null,
+    'I: groupMetadata.size:0 -> null'
+  );
+  assert.strictEqual(
+    extractMemberCountFromRaw({ groupMetadata: { participants: [] } }),
+    null,
+    'I: groupMetadata.participants:[] -> null'
+  );
+  assert.strictEqual(
+    extractMemberCountFromRaw({ memberCount: 0 }),
+    null,
+    'I: memberCount:0 -> null'
+  );
+}
+
+// J) payload cru com contagem POSITIVA continua sendo aceito.
+function testRawPositiveCountsAccepted() {
+  assert.strictEqual(
+    extractMemberCountFromRaw({ participantCount: 35 }),
+    35,
+    'J: participantCount:35 -> 35'
+  );
+  assert.strictEqual(
+    extractMemberCountFromRaw({ participants: [1, 2, 3] }),
+    3,
+    'J: participants preenchido -> 3'
+  );
+  assert.strictEqual(
+    extractMemberCountFromRaw({ groupMetadata: { size: 42 } }),
+    42,
+    'J: groupMetadata.size:42 -> 42'
+  );
+}
+
+// K) raw 0 -> fallback getGroupMembersIds(35) -> memberCount 35.
+async function testRawZeroEnrichedBy35() {
+  const clock = makeClock();
+  let memberCalls = 0;
+  const client = {
+    listChats: () =>
+      Promise.resolve([
+        { id: 'k@g.us', name: 'K', participantCount: 0 },
+      ]),
+    getGroupMembersIds: (groupId) => {
+      memberCalls += 1;
+      return Promise.resolve(new Array(35).fill({ user: 'x' }));
+    },
+  };
+  const engine = createGroupsSyncEngine(baseOptions(clock));
+  const r = await engine.listGroups('wa_k', client);
+
+  assert.strictEqual(r.status, 'ok');
+  assert.strictEqual(r.groups[0].memberCount, 35, 'K: 0 do payload vira 35');
+  assert.strictEqual(memberCalls, 1, 'K: fallback EXECUTADO (0 não sinalizou)');
+}
+
+// L) raw 0 -> fallback getGroupMembersIds(120) -> memberCount 120.
+async function testRawZeroEnrichedBy120() {
+  const clock = makeClock();
+  let memberCalls = 0;
+  const client = {
+    listChats: () =>
+      Promise.resolve([
+        { id: 'l@g.us', name: 'L', groupMetadata: { size: 0 } },
+      ]),
+    getGroupMembersIds: (groupId) => {
+      memberCalls += 1;
+      return Promise.resolve(new Array(120).fill({ user: 'x' }));
+    },
+  };
+  const engine = createGroupsSyncEngine(baseOptions(clock));
+  const r = await engine.listGroups('wa_l', client);
+
+  assert.strictEqual(r.groups[0].memberCount, 120, 'L: groupMetadata.size:0 vira 120');
+  assert.strictEqual(memberCalls, 1, 'L: fallback EXECUTADO');
+}
+
+// M) raw 0 + fallback com erro -> último valor conhecido (95), NUNCA 0.
+async function testRawZeroFallbackErrorKeepsLastValue() {
+  const clock = makeClock();
+  const client = {
+    listChats: () =>
+      Promise.resolve([{ id: 'm@g.us', name: 'M', participantCount: 95 }]),
+    getGroupMembersIds: never,
+  };
+  const engine = createGroupsSyncEngine(baseOptions(clock));
+
+  const r1 = await engine.listGroups('wa_m', client);
+  assert.strictEqual(r1.groups[0].memberCount, 95, 'M: cache inicial 95');
+
+  // Expira o TTL; payload passa a trazer 0 (placeholder) e o fallback falha.
+  clock.advance(5_001);
+  client.listChats = () =>
+    Promise.resolve([{ id: 'm@g.us', name: 'M', participantCount: 0 }]);
+
+  const r2 = await engine.listGroups('wa_m', client);
+  assert.strictEqual(
+    r2.groups[0].memberCount,
+    95,
+    'M: erro do fallback preserva 95 (nunca 0)'
+  );
+  assert.notStrictEqual(r2.groups[0].memberCount, 0, 'M: 0 jamais inventado');
+}
+
+// N) raw 0 + fallback com erro sem cache -> null (nunca 0).
+async function testRawZeroFallbackErrorWithoutCacheIsNull() {
+  const clock = makeClock();
+  const client = {
+    listChats: () =>
+      Promise.resolve([{ id: 'n@g.us', name: 'N', participantCount: 0 }]),
+    getGroupMembersIds: never,
+  };
+  const engine = createGroupsSyncEngine(baseOptions(clock));
+  const r = await engine.listGroups('wa_n', client);
+
+  assert.strictEqual(r.status, 'ok', 'N: listagem segue ok');
+  assert.strictEqual(r.groups[0].memberCount, null, 'N: sem cache = null');
+  assert.notStrictEqual(r.groups[0].memberCount, 0, 'N: falha NUNCA vira 0');
+}
+
+// O) getGroupMembersIds retorna [] DE VERDADE -> 0 confirmado é válido.
+async function testFallbackRealEmptyArrayIsZero() {
+  const clock = makeClock();
+  let memberCalls = 0;
+  const client = {
+    listChats: () =>
+      Promise.resolve([
+        { id: 'o@g.us', name: 'O', participantCount: 0 },
+      ]),
+    getGroupMembersIds: (groupId) => {
+      memberCalls += 1;
+      return Promise.resolve([]);
+    },
+  };
+  const engine = createGroupsSyncEngine(baseOptions(clock));
+  const r = await engine.listGroups('wa_o', client);
+
+  assert.strictEqual(r.groups[0].memberCount, 0, 'O: [] real confirma 0');
+  assert.strictEqual(memberCalls, 1, 'O: fallback EXECUTADO para confirmar');
+}
+
 async function run() {
   const tests = [
     ['A) participants no payload -> memberCount=35 sem WPP', testPayloadParticipantsPreferred],
@@ -257,6 +413,13 @@ async function run() {
     ['G) dashboard total/média/conhecidos', testDashboardStats],
     ['H) dedupe de grupos por id', testDedupeGroupsById],
     ['extra) extração tolerante de memberCount', testExtractMemberCountVariants],
+    ['I) payload cru com 0 -> null (placeholder)', testRawZeroCountsAreNull],
+    ['J) payload cru positivo -> aceito', testRawPositiveCountsAccepted],
+    ['K) raw 0 + fallback 35 ids -> 35', testRawZeroEnrichedBy35],
+    ['L) raw 0 + fallback 120 ids -> 120', testRawZeroEnrichedBy120],
+    ['M) raw 0 + erro do fallback -> preserva último (95)', testRawZeroFallbackErrorKeepsLastValue],
+    ['N) raw 0 + erro do fallback sem cache -> null', testRawZeroFallbackErrorWithoutCacheIsNull],
+    ['O) getGroupMembersIds [] real -> 0 confirmado', testFallbackRealEmptyArrayIsZero],
   ];
 
   let failures = 0;
