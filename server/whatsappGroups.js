@@ -311,7 +311,7 @@ function createGroupsSyncEngine(options = {}) {
     } else {
       const out = await invokeWithTimeout(
         sessionId,
-        () => client.listChats({ onlyGroups: true }),
+        () => client.listChats({ onlyGroups: true, ignoreGroupMetadata: true }),
         listChatsTimeoutMs,
         `listChats (${sessionId})`
       );

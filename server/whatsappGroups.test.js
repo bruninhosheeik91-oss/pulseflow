@@ -232,6 +232,48 @@ async function testValidEmptyIsNotTimeout() {
   assert.strictEqual(r.groups.length, 0);
 }
 
+// L) listChats envia onlyGroups + ignoreGroupMetadata; grupos sem metadata
+// voltam normalmente, memberCount é enriquecido por getGroupMembersIds e
+// falha na contagem de um grupo NÃO derruba a listagem.
+async function testListChatsIgnoresGroupMetadata() {
+  const clock = makeClock();
+  let lastOptions = null;
+  let memberCalls = 0;
+  const client = {
+    listChats: (options) => {
+      lastOptions = options;
+      return Promise.resolve([
+        group('a@g.us', 'A'),
+        group('b@g.us', 'B'),
+      ]);
+    },
+    getGroupMembersIds: (groupId) => {
+      memberCalls += 1;
+      if (groupId === 'b@g.us') return Promise.reject(new Error('boom'));
+      return Promise.resolve(new Array(7).fill({ user: 'x' }));
+    },
+  };
+  const engine = createGroupsSyncEngine(baseOptions(clock));
+  const r = await engine.listGroups('wa_x', client);
+
+  assert.ok(lastOptions, 'L: listChats foi chamado');
+  assert.strictEqual(lastOptions.onlyGroups, true, 'L: onlyGroups:true enviado');
+  assert.strictEqual(
+    lastOptions.ignoreGroupMetadata,
+    true,
+    'L: ignoreGroupMetadata:true enviado'
+  );
+
+  assert.strictEqual(r.status, 'ok', 'L: listagem continua ok sem metadata');
+  assert.strictEqual(r.groups.length, 2, 'L: grupos retornam normalmente');
+
+  const a = r.groups.find((g) => g.id === 'a@g.us');
+  const b = r.groups.find((g) => g.id === 'b@g.us');
+  assert.strictEqual(a.memberCount, 7, 'L: memberCount via getGroupMembersIds');
+  assert.strictEqual(b.memberCount, null, 'L: falha do grupo B mantém null (não 0)');
+  assert.strictEqual(memberCalls, 2, 'L: getGroupMembersIds chamado p/ ambos');
+}
+
 async function testOrphanOperationIsReleased() {
   const clock = makeClock();
   let listChatsCalls = 0;
@@ -355,6 +397,7 @@ async function run() {
     ['fallback em vazio válido de listChats', testFallbackOnValidEmpty],
     ['timeout no fallback encerra a cadeia', testFallbackTimeoutStopsChain],
     ['vazio válido não é timeout', testValidEmptyIsNotTimeout],
+    ['listChats com ignoreGroupMetadata + enriquecimento (L)', testListChatsIgnoresGroupMetadata],
     ['operação órfã (>60s) é liberada', testOrphanOperationIsReleased],
     ['WppCallTimeoutError é tipado', testTimeoutErrorType],
     ['syncedAt real + cache não atualiza horário (H)', testSyncedAtFromRealSnapshot],
