@@ -1719,6 +1719,9 @@ async function createSession(sessionId) {
       },
       // Mantem a sessao viva em segundo plano mesmo sem QR escaneado.
       autoClose: 0,
+      // Pin do WhatsApp Web para a versao conhecida pelo wa-version instalado,
+      // evitando o fallback para a versao mais recente (2.3000.1047775310).
+      whatsappVersion: '2.3000.1047296119-alpha',
     });
 
     // Uma inicialização mais nova começou enquanto esta terminava: descarta
