@@ -12,6 +12,11 @@ RUN npm install --omit=dev
 
 COPY . .
 
+# Pina a versão do WhatsApp Web no interceptor do WPPConnect (aceita query string
+# em navegação do documento principal). Falha o build se a assinatura do dist
+# 2.3.3 não casar — nunca publica sem o patch.
+RUN node scripts/patch-wppconnect-version-interceptor.js
+
 # Valida o executável real do Chromium durante o build e persiste o caminho em
 # /app/.env (server.js carrega o próprio .env no boot; variáveis já presentes no
 # ambiente nunca são sobrescritas, então o deploy vence).
