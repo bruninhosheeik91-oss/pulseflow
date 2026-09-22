@@ -212,8 +212,8 @@ const handleRetry = async (item: ScheduleItem) => {
             Agendamentos
           </h1>
           <p className="text-xs text-[#64748B] mt-1">
-            Planejamento e agendamento de publicações. Nenhum disparo é
-            executado nesta etapa.
+            Planeje e automatize suas publicações para envio na data e hora
+            programadas.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -337,9 +337,9 @@ const handleRetry = async (item: ScheduleItem) => {
                 Nenhum agendamento ainda
               </p>
               <p className="text-xs text-[#64748B] mt-1 max-w-sm mx-auto">
-                Clique em "Novo Agendamento" para planejar a primeira
-                publicação. Nesta etapa o agendamento só é registrado no
-                backend — o envio ficará por conta da próxima etapa.
+                Clique em "Novo Agendamento" para programar sua primeira
+                publicação. O PULSE FLOW realizará o envio automaticamente na
+                data e hora programadas.
               </p>
             </div>
           ) : (

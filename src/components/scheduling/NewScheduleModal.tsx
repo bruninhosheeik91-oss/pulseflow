@@ -176,7 +176,7 @@ export const NewScheduleModal: React.FC<NewScheduleModalProps> = ({
       isOpen={isOpen}
       onClose={handleClose}
       title="Novo Agendamento"
-      subtitle="Planeje uma publicação futura. Nenhuma mensagem é enviada nesta etapa."
+      subtitle="Planeje uma publicação futura. O envio ocorrerá automaticamente na data e hora programadas."
       maxWidth="lg"
     >
       <div className="space-y-4">
@@ -294,7 +294,7 @@ export const NewScheduleModal: React.FC<NewScheduleModalProps> = ({
           ) : (
             <p className="text-[11px] text-[#64748B] mt-1 pl-1 flex items-center gap-1">
               <MessageSquare className="w-3 h-3" />
-              Texto ainda não é disparado; apenas armazenado para o backend.
+              Texto que será enviado ao destino automaticamente na data e hora programadas.
             </p>
           )}
         </div>
