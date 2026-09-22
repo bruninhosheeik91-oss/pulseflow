@@ -25,6 +25,7 @@ const {
   createMonitorDeduper,
 } = require('./monitorPipeline.js');
 const sessionListeners = require('./sessionListeners.js');
+const { createInitQueue } = require('./whatsappInitQueue.js');
 const {
   createTenantAutomationsStore,
 } = require('./linkConversion/tenantAutomationsStore.js');
@@ -203,6 +204,14 @@ function createSessionState(sessionId) {
     // Registro ativo de listeners (server/sessionListeners.js): cliente, geração,
     // listenGen, timestamp e disposables de onMessage/onAnyMessage/onStateChange.
     listenerRegistry: null,
+    // Fila global de inicialização WPPConnect: true enquanto esta sessão está
+    // AGUARDANDO o slot único (outra sessão em fase pesada de create()). O
+    // estado de conexão continua honesto ('connecting'); o frontend usa a flag
+    // para o rótulo "Aguardando inicialização".
+    queued: false,
+    // Token da fila global quando esta sessão é a detentora atual do slot.
+    // null quando a sessão não está em fase inicial (conectada/ociosa/erro).
+    initQueueToken: null,
   };
 }
 
@@ -406,6 +415,35 @@ async function ensureSessionBrowserStopped(sessionId) {
 const sessionCreatePromises = new Map();
 const sessionLifecycleChains = new Map();
 
+// ===== Fila global de inicialização WPPConnect =====
+// Além do mutex por sessão, o create() em fase de inicialização pesada é
+// GLOBALMENTE serializado: no máximo 1 Chromium sendo criado por vez. Sessões
+// já conectadas JAMAIS entram na fila. O slot é liberado assim que a sessão
+// atual gera QR real, conecta ou falha definitivamente (nunca fica preso
+// enquanto o usuário olha o QR).
+const initQueue = createInitQueue();
+
+function acquireInitToken() {
+  return initQueue.acquire();
+}
+
+// Libera o slot global quando a sessão detentora terminou a fase pesada
+// (QR real / conectado / erro definitivo / fim do ciclo create()). Idempotente
+// e segura também por estado: se a sessão não é mais a detentora (token limpo),
+// não faz nada — releases em sequência não promovem ninguém duas vezes.
+function releaseInitQueueForState(state, reason) {
+  const token = state.initQueueToken;
+  if (!token) return;
+  state.initQueueToken = null;
+  state.queued = false;
+  const promoted = initQueue.release(token);
+  logWhatsApp(
+    `[${state.sessionId}] fila global liberada (${reason})${
+      promoted ? ' - próxima sessão aguardando iniciará' : ' - fila vazia'
+    }`
+  );
+}
+
 function runSessionLifecycleOp(sessionId, op) {
   const previous = sessionLifecycleChains.get(sessionId) || Promise.resolve();
   const next = previous.then(op, op);
@@ -417,13 +455,43 @@ function runSessionLifecycleOp(sessionId, op) {
 function startSessionCreate(sessionId) {
   const inFlight = sessionCreatePromises.get(sessionId);
   if (inFlight) return inFlight;
-  const creating = createSession(sessionId).finally(() => {
+  const creating = createSessionQueued(sessionId).finally(() => {
     if (sessionCreatePromises.get(sessionId) === creating) {
       sessionCreatePromises.delete(sessionId);
     }
   });
   sessionCreatePromises.set(sessionId, creating);
   return creating;
+}
+
+// Criação WPPConnect SOB a fila global. Sessões que já possuem cliente ativo
+// (conectado/conectando/QR/reconectando) NÃO entram na fila e continuam
+// funcionando normalmente. As demais aguardam o slot único.
+async function createSessionQueued(sessionId) {
+  const state = getSessionState(sessionId);
+  if (
+    state.client &&
+    state.connectionState !== 'disconnected' &&
+    state.connectionState !== 'error'
+  ) {
+    logWhatsApp(
+      `[${sessionId}] sessão ativa (${state.connectionState}) - fora da fila de inicialização`
+    );
+    return state;
+  }
+  logWhatsApp(`[${sessionId}] entrou na fila global de inicialização WPPConnect`);
+  state.queued = true;
+  const token = await acquireInitToken();
+  state.initQueueToken = token;
+  state.queued = false;
+  logWhatsApp(`[${sessionId}] fila liberada - iniciando criação WPPConnect`);
+  try {
+    return await createSession(sessionId);
+  } finally {
+    // Fail-safe: se o ciclo create() finalizar sem QR/conectado/erro (ex.:
+    // guarda de cliente já ativo), garante a liberação do slot global.
+    releaseInitQueueForState(state, 'fim do ciclo create()');
+  }
 }
 
 // Interrompe uma inicialização em curso (invalida callbacks pelo initGen e
@@ -632,6 +700,7 @@ function buildAccountView() {
       name: displayName,
       phone: st.devicePhone || acc.phone || null,
       status: st.connectionState,
+      queued: st.queued === true,
       connectedAt: st.connectedAt,
       lastSyncAt: st.lastSyncAt,
       createdAt: acc.createdAt,
@@ -1563,6 +1632,7 @@ function handleSocketState(state, generation, socketState) {
       state.qrCode = null;
       clearQrWatchdog(state);
       setSessionState(state, 'connected');
+      releaseInitQueueForState(state, 'conexão estabelecida');
       void refreshHostDevice(state);
       // Re-registra os listeners a cada (re)conexão para curar os relays mortos
       // da página (wapi reinjetada após recarregar o WhatsApp Web).
@@ -1616,6 +1686,9 @@ function decodeQr(state, generation, base64Qr) {
   state.qrLastDataAt = Date.now();
   logWhatsApp(`[${state.sessionId}] QR real gerado (init #${generation}) - pronto para escaneamento`);
   enterAwaitingQr(state);
+  // A fase pesada terminou (Chromium + página prontos): libera o slot global
+  // para a próxima sessão NÃO ficar presa enquanto o usuário escaneia o QR.
+  releaseInitQueueForState(state, 'QR real gerado');
 }
 
 // Falha real do ciclo create(). Priorização de estados (tempo não pode
@@ -1632,11 +1705,13 @@ async function handleCreateFailure(state, generation, err) {
 
   if (state.connectionState === 'connected') {
     state.starting = false;
+    releaseInitQueueForState(state, 'sessão conectada');
     return state;
   }
   if (state.qrCode && state.qrCode.length) {
     state.starting = false;
     enterAwaitingQr(state);
+    releaseInitQueueForState(state, 'QR real disponível');
     return state;
   }
 
@@ -1649,6 +1724,8 @@ async function handleCreateFailure(state, generation, err) {
     state.qrCode = null;
     setSessionState(state, 'error');
     await ensureSessionBrowserStopped(state.sessionId);
+    // Falha DEFINITIVA: libera o slot global para a próxima sessão da fila.
+    releaseInitQueueForState(state, 'falha definitiva');
     logError(
       `[WhatsApp ${state.sessionId}] tentativas de inicialização esgotadas - estado de erro + "Tentar novamente" disponível`
     );
@@ -1750,6 +1827,10 @@ async function createSession(sessionId) {
     state.initRetries = 0;
     state.clientGraceUntil = Date.now() + WATCHDOG_CLIENT_GRACE_MS;
     logWhatsApp(`[${sessionId}] cliente inicializado (init #${generation})`);
+    // create() resolveu: a inicialização pesada (Chromium + página WPPConnect)
+    // terminou. Libera o slot global para a próxima sessão da fila; QR/conexão
+    // seguem em paralelo sem segurar ninguém.
+    releaseInitQueueForState(state, 'cliente inicializado');
 
     // A v2.3.3 resolve o create() já com a sessão conectada quando há tokens
     // válidos. Confirma com getConnectionState e só então marca CONNECTED.
@@ -2367,6 +2448,9 @@ function statusPayload(state) {
     status: state.connectionState,
     connected: state.connectionState === 'connected',
     qrPending: state.connectionState === 'awaiting_qr',
+    // Fila global de inicialização: true = aguardando o slot único (outra
+    // sessão em fase pesada de create()). Estado honesto e não-bloqueante.
+    queued: state.queued === true,
     error: state.lastError,
   };
 }
@@ -2869,7 +2953,12 @@ app.post(
     logWhatsApp(`[${sessionId}] connect solicitado`);
     const state = getSessionState(sessionId);
     if (state.starting) {
-      return res.json({ ok: true, session: sessionId, status: 'connecting' });
+      return res.json({
+        ok: true,
+        session: sessionId,
+        status: state.connectionState,
+        queued: state.queued === true,
+      });
     }
     if (
       state.client &&
@@ -2882,7 +2971,14 @@ app.post(
     // Single-flight/mutex: se já houver init em andamento para esta sessão,
     // reutiliza a PROMISE em curso em vez de iniciar outro create().
     void runSessionLifecycleOp(sessionId, () => startSessionCreate(sessionId));
-    res.json({ ok: true, session: sessionId, status: 'connecting' });
+    res.json({
+      ok: true,
+      session: sessionId,
+      status: state.connectionState === 'awaiting_qr'
+        ? state.connectionState
+        : 'connecting',
+      queued: state.queued === true,
+    });
   }
 );
 
@@ -3059,7 +3155,12 @@ app.post('/api/whatsapp/connect', (req, res) => {
   logWhatsApp(`[${sessionId}] connect solicitado`);
   const state = getSessionState(sessionId);
   if (state.starting) {
-    return res.json({ ok: true, session: sessionId, status: 'connecting' });
+    return res.json({
+      ok: true,
+      session: sessionId,
+      status: state.connectionState,
+      queued: state.queued === true,
+    });
   }
   if (
     state.client &&
@@ -3070,7 +3171,7 @@ app.post('/api/whatsapp/connect', (req, res) => {
     return res.json({ ok: true, session: sessionId, status: state.connectionState });
   }
   void runSessionLifecycleOp(sessionId, () => startSessionCreate(sessionId));
-  res.json({ ok: true, session: sessionId, status: 'connecting' });
+  res.json({ ok: true, session: sessionId, status: 'connecting', queued: state.queued === true });
 });
 
 app.get('/api/whatsapp/qr',

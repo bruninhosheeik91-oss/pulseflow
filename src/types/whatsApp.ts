@@ -27,6 +27,12 @@ export interface WhatsAppAccount {
   name: string;
   status: WhatsAppConnectionStatus;
   connectionStatus: WhatsAppConnectionStatus;
+  /**
+   * Fila global de inicialização: true enquanto a sessão AGUARDA o slot único
+   * (outra sessão em fase pesada de create() WPPConnect). Não é bloqueante:
+   * assim que a atual gerar QR/conectar/falhar, esta é promovida.
+   */
+  queued: boolean;
   connectedAt: string | null;
   lastSyncAt: string | null;
 }

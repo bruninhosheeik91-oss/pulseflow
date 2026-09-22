@@ -13,6 +13,7 @@
     "test:groups": "node whatsappGroups.test.js",
     "test:members": "node whatsappMembers.test.js",
     "test:listeners": "node sessionListeners.test.js",
+    "test:queue": "node whatsappInitQueue.test.js",
     "test:schedules": "node schedulingStore.test.js && node schedulingExecutor.test.js"
   },
   "dependencies": {

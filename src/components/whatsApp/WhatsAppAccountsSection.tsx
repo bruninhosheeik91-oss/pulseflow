@@ -27,9 +27,18 @@ const ACCOUNT_NAME_MAX = 40;
 
 function StatusBadge({
   status,
+  queued,
 }: {
   status: WhatsAppConnectionStatus;
+  queued?: boolean;
 }) {
+  if (queued) {
+    return (
+      <span className="inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-medium border whitespace-nowrap bg-[#2563EB]/15 border-[#2563EB]/40 text-[#2563EB]">
+        Aguardando inicialização
+      </span>
+    );
+  }
   const tones: Record<WhatsAppConnectionStatus, string> = {
     connected: 'bg-emerald-500/15 border-emerald-500/30 text-emerald-700',
     connecting: 'bg-[#2563EB]/15 border-[#2563EB]/40 text-[#2563EB]',
@@ -360,7 +369,7 @@ export const WhatsAppAccountsSection: React.FC = () => {
                       )}
                     </div>
 
-                    <StatusBadge status={account.status} />
+                    <StatusBadge status={account.status} queued={account.queued} />
 
                     <div className="flex items-center gap-1.5 flex-wrap sm:justify-end">
                       {connected ? (

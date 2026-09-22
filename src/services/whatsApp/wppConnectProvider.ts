@@ -118,6 +118,7 @@ function normalizeAccount(raw: {
   name?: string | null;
   status?: string;
   connectionStatus?: string;
+  queued?: boolean;
   connectedAt?: string | null;
   lastSyncAt?: string | null;
 }): WhatsAppAccount {
@@ -132,6 +133,7 @@ function normalizeAccount(raw: {
     name: displayName,
     status,
     connectionStatus: status,
+    queued: raw.queued === true,
     connectedAt: raw.connectedAt ?? null,
     lastSyncAt: raw.lastSyncAt ?? null,
   };
