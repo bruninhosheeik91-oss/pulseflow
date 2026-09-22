@@ -8,6 +8,7 @@ import { ProductsPage } from './components/products/ProductsPage';
 import { CampaignsPage } from './components/campaigns/CampaignsPage';
 import { ChannelsPage } from './components/channels/ChannelsPage';
 import { QueuePage } from './components/queue/QueuePage';
+import { SchedulingPage } from './components/scheduling/SchedulingPage';
 import { HistoryPage } from './components/history/HistoryPage';
 import { AnalyticsPage } from './components/analytics/AnalyticsPage';
 import { SettingsPage } from './components/settings/SettingsPage';
@@ -235,6 +236,8 @@ export default function App() {
             <MonitorGroupPage />
           ) : activeNav === 'Fila de Publicação' ? (
             <QueuePage />
+          ) : activeNav === 'Agendamentos' ? (
+            <SchedulingPage />
           ) : activeNav === 'Canais e Grupos' ? (
             <ChannelsPage />
           ) : activeNav === 'WhatsApp' ? (

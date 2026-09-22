@@ -12,7 +12,8 @@
     "test:accounts": "node whatsappAccounts.test.js",
     "test:groups": "node whatsappGroups.test.js",
     "test:members": "node whatsappMembers.test.js",
-    "test:listeners": "node sessionListeners.test.js"
+    "test:listeners": "node sessionListeners.test.js",
+    "test:schedules": "node schedulingStore.test.js && node schedulingExecutor.test.js"
   },
   "dependencies": {
     "@wppconnect-team/wppconnect": "^2.3.3",

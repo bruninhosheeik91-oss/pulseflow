@@ -34,6 +34,11 @@ const {
 const { createTenantLinkListsStore } = require('./linkConversion/tenantLinkListsStore.js');
 const { createGroupsSyncEngine } = require('./whatsappGroups.js');
 const { normalizeGroupSource } = require('./whatsappGroupMembers.js');
+const {
+  createSchedulesStore,
+  ScheduleStoreError,
+} = require('./schedulingStore.js');
+const { createScheduleExecutor } = require('./schedulingExecutor.js');
 
 // Carrega server/.env (KEY=VAL, gitignored) para o runtime Node local, mesmo
 // padrão do helper test-real-shopee.js. Sem isso, `node server.js` rodaria sem
@@ -91,6 +96,11 @@ const affiliateStore = createAffiliateCredentialsStore({ dataDir: DATA_DIR });
 const automationsStore = createTenantAutomationsStore({ dataDir: DATA_DIR });
 const autoSearchSendsStore = createTenantAutoSearchSendsStore({ dataDir: DATA_DIR });
 const linkListsStore = createTenantLinkListsStore({ dataDir: DATA_DIR });
+const schedulesStore = createSchedulesStore({ dataDir: DATA_DIR });
+// BOOT: agendamentos que ficaram no estado 'running' de execução anterior
+// viram failed com mensagem clara. NUNCA há reenvio automático: se o processo
+// caiu após enviar, reenviar duplicaria; o usuário usa "Reenviar" (failed -> scheduled).
+schedulesStore.recoverOrphanedRunning();
 
 function logInfo(message) {
   console.log(`[info] ${new Date().toISOString()} ${message}`);
@@ -2651,6 +2661,19 @@ function sanitizeSendError(err) {
   return raw.trim().slice(0, 300);
 }
 
+// ===== Executor 24/7 de agendamentos (Etapa 3) =====
+// Roda dentro do processo (não há cron externo nem scheduler no frontend).
+// Reutiliza o MESMO envio real do backend (sendViaClient -> client.sendText)
+// e o MESMO estado de sessão (getSessionState). O claim atômico é feito no
+// schedulingStore e o single-flight global impede ciclos concorrentes.
+const scheduleExecutor = createScheduleExecutor({
+  schedulesStore,
+  getSessionState,
+  sendText: sendViaClient,
+  logInfo,
+  logError,
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, service: 'domnex-whatsapp-server', session: DOMNEX_DEFAULT_SESSION });
 });
@@ -3853,6 +3876,57 @@ app.get('/api/affiliate/auto-search/destinations', resolveTenant, async (req, re
   }
 });
 
+// ===== Agendamentos (persistência real em <STATE_DIR>/data/schedules.json) =====
+// Nesta etapa SÓ registram a intenção: nada de scheduler nem envio automático.
+// A máquina de estados (scheduled/running/executed/failed/cancelled) é aplicada
+// pelo schedulingStore; o motor de execução virá na Etapa 3.
+function handleScheduleStoreError(res, err) {
+  if (err instanceof ScheduleStoreError) {
+    return res
+      .status(err.statusCode)
+      .json({ ok: false, error: err.message, code: err.statusCode });
+  }
+  logError(
+    `[Agendamentos] erro inesperado: ${String((err && err.message) || err)}`
+  );
+  return res.status(500).json({ ok: false, error: 'Erro interno ao processar agendamentos.' });
+}
+
+app.get('/api/schedules', setDynamicWppHeaders, (req, res) => {
+  try {
+    res.json({ ok: true, schedules: schedulesStore.list() });
+  } catch (err) {
+    handleScheduleStoreError(res, err);
+  }
+});
+
+app.post('/api/schedules', (req, res) => {
+  try {
+    const schedule = schedulesStore.create(req.body || {});
+    res.status(201).json({ ok: true, schedule });
+  } catch (err) {
+    handleScheduleStoreError(res, err);
+  }
+});
+
+app.patch('/api/schedules/:id', (req, res) => {
+  try {
+    const schedule = schedulesStore.update(String(req.params.id || ''), req.body || {});
+    res.json({ ok: true, schedule });
+  } catch (err) {
+    handleScheduleStoreError(res, err);
+  }
+});
+
+app.delete('/api/schedules/:id', (req, res) => {
+  try {
+    schedulesStore.remove(String(req.params.id || ''));
+    res.json({ ok: true, removed: true, id: String(req.params.id || '') });
+  } catch (err) {
+    handleScheduleStoreError(res, err);
+  }
+});
+
 app.use((err, req, res, next) => {
   logError(`erro nao tratado: ${String((err && err.message) || err)}`);
   res.status(500).json({ ok: false, error: 'Erro interno.' });
@@ -3898,4 +3972,7 @@ app.listen(PORT, HOST, () => {
   // Vigilância server-side 24/7: mantém monitor ativo e sessão conectada mesmo
   // com PC/frontend desligados (nenhum keep-alive via Vercel é necessário).
   startWatchdog();
+  // Executor 24/7 de agendamentos: dispara os vencidos dentro deste processo,
+  // independente de o frontend estar aberto.
+  scheduleExecutor.start();
 });
